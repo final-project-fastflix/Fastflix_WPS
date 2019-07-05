@@ -27,9 +27,9 @@ class CreateLike(View):
         if request.user.is_authenticated:
             if 'movie_id' in kwargs['movie_id']:
                 parent_user = request.user
-                sub_user = parent_user.sub_user.all().filter(logined=True)
+                sub_user = parent_user.sub_user.all().filter(logined=True).get()
                 movie = Movie.objects.get(pk=request.kwargs['movie_id'])
                 if sub_user in movie.likes.all():
-                    movie.like.remove(sub_user)
+                    movie.likes.remove(sub_user)
                 else:
-                    movie.like.add(sub_user)
+                    movie.likes.add(sub_user)

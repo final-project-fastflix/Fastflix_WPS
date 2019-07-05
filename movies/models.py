@@ -1,6 +1,6 @@
 from django.db import models
-
-
+from datetime import datetime
+from django.utils import timezone
 # Create your models here.
 
 
@@ -55,8 +55,8 @@ class Movie(models.Model):
     author = models.ManyToManyField(Author, related_name='movie_author')
     degree = models.ForeignKey(Degree, on_delete=models.SET_NULL, related_name='movie_degree', null=True)
     genre = models.ManyToManyField(Genre, related_name='movie_genre')
-    production = models.DateField()
-    uploaded = models.DateField()
+    production = models.DateField(default=timezone.now())
+    uploaded = models.DateField(default=timezone.now())
     synopsis = models.TextField()
     running_time = models.CharField(max_length=10)
 
