@@ -1,8 +1,10 @@
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.views import View
 from rest_framework import generics
 from .serializers import *
 from .models import *
+
 # Create your views here.
 
 
@@ -33,3 +35,5 @@ class CreateLike(View):
                     movie.likes.remove(sub_user)
                 else:
                     movie.likes.add(sub_user)
+
+        return JsonResponse("찜 목록에 추가되었습니다.")
