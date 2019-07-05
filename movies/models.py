@@ -27,7 +27,6 @@ class Author(models.Model):
 
 class Genre(models.Model):
     name = models.CharField(max_length=40)
-    parent_genre = models.ForeignKey('self', on_delete=models.CASCADE, related_name='sub_genre')
 
     def __str__(self):
         return self.name
@@ -53,7 +52,9 @@ class Movie(models.Model):
     directors = models.ManyToManyField(Director, related_name='movie_directors')
     actors = models.ManyToManyField(Actor, related_name='movie_actors')
     feature = models.ManyToManyField(Feature, related_name='movie_feature')
+    author = models.ManyToManyField(Author, related_name='movie_author')
     degree = models.ForeignKey(Degree, on_delete=models.SET_NULL, related_name='movie_degree', null=True)
+    genre = models.ManyToManyField(Genre, related_name='movie_genre')
     synopsis = models.TextField()
 
     def __str__(self):
