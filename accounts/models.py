@@ -12,11 +12,20 @@ class User(AbstractUser):
         return self.username
 
 
+# # class Like(models.Model):
+# #     like = models.
+#
+#
+#     def __str__(self):
+#         return self.like
+
+
 class SubUser(models.Model):
     name = models.CharField(max_length=20)
     parent_user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='sub_user')
     like = models.ManyToManyField(Movie, related_name='likes')
     kid = models.BooleanField(default=False)
+    logined = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name

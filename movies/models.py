@@ -48,7 +48,7 @@ class Degree(models.Model):
 
 class Movie(models.Model):
     name = models.CharField(max_length=50)
-    movie = models.FileField()
+    video_file = models.FileField(upload_to='media/%Y/%m/%d')
     directors = models.ManyToManyField(Director, related_name='movie_directors')
     actors = models.ManyToManyField(Actor, related_name='movie_actors')
     feature = models.ManyToManyField(Feature, related_name='movie_feature')
@@ -56,6 +56,7 @@ class Movie(models.Model):
     degree = models.ForeignKey(Degree, on_delete=models.SET_NULL, related_name='movie_degree', null=True)
     genre = models.ManyToManyField(Genre, related_name='movie_genre')
     synopsis = models.TextField()
+
 
     def __str__(self):
         return self.name
