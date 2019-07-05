@@ -55,7 +55,10 @@ class Movie(models.Model):
     author = models.ManyToManyField(Author, related_name='movie_author')
     degree = models.ForeignKey(Degree, on_delete=models.SET_NULL, related_name='movie_degree', null=True)
     genre = models.ManyToManyField(Genre, related_name='movie_genre')
+    production = models.DateField()
+    uploaded = models.DateField()
     synopsis = models.TextField()
+    running_time = models.CharField(max_length=10)
 
 
     def __str__(self):
