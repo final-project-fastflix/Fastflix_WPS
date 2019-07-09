@@ -58,7 +58,7 @@ class Movie(models.Model):
     uploaded = models.DateField(default=timezone.now)
     synopsis = models.TextField()
     running_time = models.CharField(max_length=10)
-    view_count = models.PositiveIntegerField(blank=True)
+    view_count = models.PositiveIntegerField(default=0)
     logo = models.ImageField(upload_to=f'media/movie/{name}/logo')
     horizontal_photo = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
     vertical_photo = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
