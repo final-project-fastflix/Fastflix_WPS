@@ -44,7 +44,9 @@ schema_view_v1 = get_schema_view(
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('movies/', include('movies.urls')),
+  
     # 스웨거 API 문서
+
     path('swagger/.json/', schema_view_v1.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/v1/', schema_view_v1.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('docs/v1/', schema_view_v1.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
