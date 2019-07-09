@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'movies',
     'rest_framework',
     'haystack',
+    'drf_yasg',
+    'rest_framework_swagger',
 
 
 ]

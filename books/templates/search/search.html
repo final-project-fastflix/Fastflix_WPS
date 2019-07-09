@@ -1,7 +1,0 @@
-{% for result in page.object_list %}
-    {{ result.object.title }}
-    {{ result.object.description }}
-    {{ result.object.created_on }}
-{% empty %}
-    No results found.
-{% endfor %}

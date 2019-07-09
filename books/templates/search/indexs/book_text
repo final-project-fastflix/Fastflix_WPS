@@ -1,4 +1,0 @@
-{{ object.title }}
-    {% for a in authors%}
-        {{ a }}
-    {% endfor %}
