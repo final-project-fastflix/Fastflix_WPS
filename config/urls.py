@@ -16,9 +16,38 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+# 스웨거 API 문서
+from rest_framework.permissions import AllowAny
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+schema_url_v1_patterns = [
+    path('movies/', include('movies.urls', namespace='movies_api')),
+]
+
+
+schema_view_v1 = get_schema_view(
+    openapi.Info(
+        title="Jay Open API",
+        default_version='v1',
+        description="안녕하세요. Jay의 Open API 문서 페이지 입니다.",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="Jay@google.com"),
+        license=openapi.License(name="Jay's CodeFactory"),
+    ),
+    validators=['flex'], #'ssv'],
+    public=True,
+    permission_classes=(AllowAny,),
+    patterns=schema_url_v1_patterns,
+)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('movies/', include('movies.urls')),
-    path('search/', include('books.urls')),
+  
+    # 스웨거 API 문서
+    path('swagger/.json', schema_view_v1.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/v1', schema_view_v1.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('docs/v1', schema_view_v1.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
 ]

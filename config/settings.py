@@ -31,6 +31,8 @@ INSTALLED_APPS = [
     'movies',
     'rest_framework',
     'haystack',
+    'drf_yasg',
+    'rest_framework_swagger',
 
 
 ]
@@ -133,7 +135,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
