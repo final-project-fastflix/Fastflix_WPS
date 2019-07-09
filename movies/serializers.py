@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import Movie, Genre
+from accounts.models import SubUser
 
 
 class MovieListSerializer(serializers.ModelSerializer):

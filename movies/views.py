@@ -80,7 +80,15 @@ class ListByMovieGenre(generics.ListAPIView):
     """
         장르별 영화 리스트 입니다
 
+
         ---
+
+            - 요청할때 /genre/'카테고리 명'/list/로 요청하시면 됩니다
+                - Ex) /genre/액션/list/
+                - Ex) /genre/스릴러/list/
+
+                - id : 카테고리의 ID
+                - name : 카테고리 명
 
     """
 
@@ -94,8 +102,6 @@ class ListByMovieGenre(generics.ListAPIView):
             kind = None
 
         queryset = Movie.objects.filter(genre__name__icontains=kind).distinct()
-
-
 
         page = self.paginate_queryset(queryset)
         if page is not None:
