@@ -11,8 +11,6 @@ class MovieListSerializer(serializers.ModelSerializer):
 
 
 class MovieCreateSerializer(serializers.ModelSerializer):
-    # logo_image = serializers.ImageField(use_url=True)
-
     class Meta:
         model = Movie
         fields = '__all__'
@@ -23,3 +21,8 @@ class GenreListSerializer(serializers.ModelSerializer):
         model = Genre
         fields = '__all__'
 
+
+class ListByMovieGenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = '__all__'

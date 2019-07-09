@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.views import View
 from rest_framework import generics
-
+from rest_framework.response import Response
 from .models import *
 from .serializers import *
 
@@ -11,7 +11,8 @@ from .serializers import *
 
 class MovieList(generics.ListAPIView):
     """
-        # 전체 영화 목록입니다
+        전체 영화 목록입니다
+
         ---
             - id : 영화의 고유 ID
             - name : 영화의 이름
@@ -34,7 +35,6 @@ class MovieList(generics.ListAPIView):
             - genre : 장르
     """
 
-
     queryset = Movie.objects.all()
     serializer_class = MovieListSerializer
 
@@ -42,6 +42,7 @@ class MovieList(generics.ListAPIView):
 class MovieCerate(generics.CreateAPIView):
     """
         영화 등록 API 입니다
+
         ---
             - name : 영화 이름
             - production_date : 영화 개봉 날짜
@@ -64,8 +65,10 @@ class MovieCerate(generics.CreateAPIView):
 class GenreList(generics.ListAPIView):
     """
         영화 장르 리스트입니다
-        - id : 영화 장르 ID
-        - name : 영화 장르
+
+        ---
+            - id : 영화 장르 ID
+            - name : 영화 장르
     
     """
     
@@ -73,8 +76,38 @@ class GenreList(generics.ListAPIView):
     serializer_class = GenreListSerializer
 
 
-class CreateLike(View):
+class ListByMovieGenre(generics.ListAPIView):
+    """
+        장르별 영화 리스트 입니다
 
+        ---
+
+    """
+
+    queryset = Genre.objects.all()
+    serializer_class = ListByMovieGenreSerializer
+
+    def list(self, request, *args, **kwargs):
+        if 'kind' in kwargs:
+            kind = kwargs['kind']
+        else:
+            kind = None
+
+        queryset = Movie.objects.filter(genre__name__icontains=kind).distinct()
+
+
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+
+class CreateLike(View):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
             if 'movie_id' in kwargs['movie_id']:
