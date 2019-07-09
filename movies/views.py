@@ -33,6 +33,8 @@ class MovieList(generics.ListAPIView):
             - author : 각본가
             - genre : 장르
     """
+
+
     queryset = Movie.objects.all()
     serializer_class = MovieListSerializer
 

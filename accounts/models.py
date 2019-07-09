@@ -2,7 +2,8 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 
-from movies.models import *
+from django.db import models
+from movies.models import Movie
 
 
 class User(AbstractUser):
@@ -10,14 +11,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-
-
-# # class Like(models.Model):
-# #     like = models.
-#
-#
-#     def __str__(self):
-#         return self.like
 
 
 class SubUser(models.Model):
@@ -29,5 +22,7 @@ class SubUser(models.Model):
     kid = models.BooleanField(default=False)
     logined = models.BooleanField(default=False)
 
+
     def __str__(self):
         return self.name
+

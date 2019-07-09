@@ -21,6 +21,5 @@ class MovieCreateSerializer(serializers.ModelSerializer):
 class GenreListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
-        # fields = []
         fields = '__all__'
 

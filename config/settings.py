@@ -12,7 +12,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '%jxcb%4lssv4-9jeoy$-tf-rp!ov3t(wztk-350)820t3u5qaa'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -33,8 +33,6 @@ INSTALLED_APPS = [
     'haystack',
     'drf_yasg',
     'rest_framework_swagger',
-
-
 ]
 
 ELASTICSEARCH_DSL = {

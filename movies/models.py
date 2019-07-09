@@ -1,6 +1,8 @@
-from django.db import models
 from django.utils import timezone
+
 # Create your models here.
+from django.db import models
+# from accounts.models import SubUser
 
 
 class Director(models.Model):
@@ -70,15 +72,21 @@ class Movie(models.Model):
     vertical_image = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
     circle_image = models.ImageField(upload_to=f'media/movie/{name}/circle')
 
-    # 영화 국적
-    # 이미지필드 최소 3개
-    # 세로 영
-    # 미리보기 동영상(마우스 오버를 하면 요청을 받아 보내기)
-    # 이미지 가로,세로요청을 헤더로 T/F를 넣어 보냄
-    # 영화 이어보기(멈췄던) 시간
-
-    # 절찬 스트리밍?
-
-
     def __str__(self):
         return self.name
+
+
+class MovieContinue(models.Model):
+    movie_id = models.ForeignKey(Movie, related_name='movie_continue', on_delete=models.CASCADE)
+    sub_user_id = models.ForeignKey('accounts.SubUser', related_name='movie_continue', on_delete=models.CASCADE)
+    to_be_continue = models.TimeField()
+
+    def __str__(self):
+        return str(self.movie_id) + " " + str(self.sub_user_id) + " " + str(self.to_be_continue)
+
+    # 영화 국적 - 완
+    # 이미지필드 최소 3개 - 완
+    # 세로 영상 - 보류
+    # 미리보기 동영상(마우스 오버를 하면 요청을 받아 보내기) - 완
+    # 이미지 가로,세로요청을 헤더로 T/F를 넣어 보냄 - ?
+    # 영화 이어보기(멈췄던) 시간 - ?
