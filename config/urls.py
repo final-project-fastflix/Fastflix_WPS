@@ -28,12 +28,12 @@ schema_url_v1_patterns = [
 
 schema_view_v1 = get_schema_view(
     openapi.Info(
-        title="Jay Open API",
+        title="FastFlix API",
         default_version='v1',
-        description="안녕하세요. Jay의 Open API 문서 페이지 입니다.",
+        description="WPS의 FastFlix API 문서 페이지 입니다.",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="Jay@google.com"),
-        license=openapi.License(name="Jay's CodeFactory"),
+        license=openapi.License(name="WPS의 FastFlix 문서"),
     ),
     validators=['flex'], #'ssv'],
     public=True,
@@ -45,7 +45,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('movies/', include('movies.urls')),
     # 스웨거 API 문서
-    path('swagger/.json', schema_view_v1.without_ui(cache_timeout=0), name='schema-json'),
-    path('swagger/v1', schema_view_v1.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('docs/v1', schema_view_v1.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    path('swagger/.json/', schema_view_v1.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/v1/', schema_view_v1.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('docs/v1/', schema_view_v1.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

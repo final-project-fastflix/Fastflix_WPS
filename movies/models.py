@@ -47,22 +47,28 @@ class Degree(models.Model):
 
 class Movie(models.Model):
     name = models.CharField(max_length=50)
+
     video_file = models.FileField(upload_to=f'media/movie/{name}/video')
+    sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video')
+
     directors = models.ManyToManyField(Director, related_name='movie_directors')
     actors = models.ManyToManyField(Actor, related_name='movie_actors')
     feature = models.ManyToManyField(Feature, related_name='movie_feature')
     author = models.ManyToManyField(Author, related_name='movie_author')
     degree = models.ForeignKey(Degree, on_delete=models.SET_NULL, related_name='movie_degree', null=True)
     genre = models.ManyToManyField(Genre, related_name='movie_genre')
-    production = models.DateField(default=timezone.now)
-    uploaded = models.DateField(default=timezone.now)
+
+    production_date = models.DateField(default=timezone.now)
+    uploaded_date = models.DateField(default=timezone.now)
+
     synopsis = models.TextField()
     running_time = models.CharField(max_length=10)
     view_count = models.PositiveIntegerField(default=0)
-    logo = models.ImageField(upload_to=f'media/movie/{name}/logo')
-    horizontal_photo = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
-    vertical_photo = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
-    circle_photo = models.ImageField(upload_to=f'media/movie/{name}/circle')
+
+    logo_image = models.ImageField(upload_to=f'media/movie/{name}/logo')
+    horizontal_image = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
+    vertical_image = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
+    circle_image = models.ImageField(upload_to=f'media/movie/{name}/circle')
 
     # 영화 국적
     # 이미지필드 최소 3개
