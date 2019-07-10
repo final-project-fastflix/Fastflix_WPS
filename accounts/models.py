@@ -26,6 +26,6 @@ class SubUser(models.Model):
         return self.name
 
 
-# class DisLike(models.Model):
-#     movie_id = models.ForeignKey(Movie, related_name='dislike', on_delete=models.CASCADE)
-#     sub_user_id = models.ForeignKey(SubUser, related_name='dislike', on_delete=models.CASCADE)
+class DisLike(models.Model):
+    movie = models.ForeignKey(Movie, related_name='dislike', on_delete=models.CASCADE)
+    sub_user = models.ForeignKey(SubUser, related_name='dislike', on_delete=models.CASCADE)
