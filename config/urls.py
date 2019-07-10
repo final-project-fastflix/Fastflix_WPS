@@ -33,7 +33,7 @@ schema_view_v1 = get_schema_view(
         default_version='v1',
         description="WPS의 FastFlix API 문서 페이지 입니다.",
         terms_of_service="https://www.google.com/policies/terms/",
-        contact=openapi.Contact(email="Jay@google.com"),
+        contact=openapi.Contact(email="sug5806@gmail.com"),
         license=openapi.License(name="WPS의 FastFlix 문서"),
     ),
     validators=['flex'], #'ssv'],
@@ -48,7 +48,12 @@ urlpatterns = [
   
     # 스웨거 API 문서
 
+    # 이 주소를 입력하자 마자 다운로드가 됨 json 파일인데 쓸일은 없을듯싶음
     path('swagger/.json/', schema_view_v1.without_ui(cache_timeout=0), name='schema-json'),
+
+    # swagger/v1/로 접속하면 기존 swagger 기능이 가능한 API 문서?
     path('swagger/v1/', schema_view_v1.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+
+    # docs/v1/로 접속하면 API 목록이 한눈에 들어오는 API 문서가 나옴 깔-끔함
     path('docs/v1/', schema_view_v1.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]

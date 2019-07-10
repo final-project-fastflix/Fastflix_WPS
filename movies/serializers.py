@@ -25,5 +25,13 @@ class GenreListSerializer(serializers.ModelSerializer):
 
 class ListByMovieGenreSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Genre
+        model = Movie
         fields = '__all__'
+        depth = 2
+
+
+class PreferenceListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = '__all__'
+        depth = 2

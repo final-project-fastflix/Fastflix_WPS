@@ -1,9 +1,14 @@
 from django.http import JsonResponse
 from django.views import View
 from rest_framework import generics
-from rest_framework.response import Response
+from rest_framework.response import Response, Serializer
 from .models import *
+from accounts.models import User
 from .serializers import *
+
+from django.shortcuts import get_object_or_404
+
+from django.core import serializers
 
 
 # Create your views here.
@@ -23,10 +28,10 @@ class MovieList(generics.ListAPIView):
             - synopsis : 영화 줄거리
             - running_time : 영화 러닝타임
             - view_count : 영화 조회수
-            - logo_image : 영화 로고 이미지
-            - horizontal_image : 영화 가로 이미지
-            - vetical_image : 영화 세로 이미지
-            - circle_image : 영화 동그라미 이미지
+            - logo_image_path : 영화 로고 이미지 경로
+            - horizontal_image_path : 영화 가로 이미지 경로
+            - vetical_image : 영화 세로 이미지(추후 변경예정)
+            - circle_image : 영화 동그라미 이미지(추후 변경예정)
             - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
             - directors : 영화 감독
             - actors : 배우
@@ -50,6 +55,8 @@ class MovieCerate(generics.CreateAPIView):
             - synopsis : 영화 줄거리
             - running_time : 영화 러닝타임
             - view_count : 영화 조회수
+            - logo_image_path : 영화 로고 이미지 경로
+            - horizontal_image_path : 영화 가로 이미지 경로
             - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
             - directors : 영화 감독
             - actors : 배우
@@ -83,16 +90,32 @@ class ListByMovieGenre(generics.ListAPIView):
 
         ---
 
-            - 요청할때 /genre/'카테고리 명'/list/로 요청하시면 됩니다
-                - Ex) /genre/액션/list/
-                - Ex) /genre/스릴러/list/
+            - 요청할때 movie/genre/'카테고리 명'/list/로 요청하시면 됩니다
+                - Ex) movie/genre/액션/list/
+                - Ex) movie/genre/스릴러/list/
 
-                - id : 카테고리의 ID
-                - name : 카테고리 명
+                - name : 영화 이름
+                - video_file : 비디오파일
+                - sample_video_file : 샘플 비디오 파일
+                - production_date : 영화 개봉 날짜
+                - uploaded_date : 영화 등록(업로드) 날짜
+                - synopsis : 영화 줄거리
+                - running_time : 영화 러닝타임
+                - view_count : 영화 조회수
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지(차후 변경 예정)
+                - circle_image : 원형 이미지(차후 변경예정)
+                - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
+                - directors : 영화 감독
+                - actors : 배우
+                - feature : 영화 특징(Ex.흥미진진)
+                - author : 각본가
+                - genre : 장르
 
     """
 
-    queryset = Genre.objects.all()
+    queryset = Movie.objects.all()
     serializer_class = ListByMovieGenreSerializer
 
     def list(self, request, *args, **kwargs):
@@ -111,6 +134,65 @@ class ListByMovieGenre(generics.ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
+class PreferenceList(generics.ListAPIView):
+    """
+        유저별 찜 목록 영화 리스트 입니다
+
+        ---
+            - 요청할때 "/movie/'프로필의 고유 ID값/list/" 로 요청하시면 됩니다
+            
+                - Ex) /movie/2/list/
+                - Ex) /movie/7/list/
+                
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - video_file : 비디오파일
+                - sample_video_file : 샘플 비디오 파일
+                - production_date : 영화 개봉 날짜
+                - uploaded_date : 영화 등록(업로드) 날짜
+                - synopsis : 영화 줄거리
+                - running_time : 영화 러닝타임
+                - view_count : 영화 조회수
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지(차후 변경 예정)
+                - circle_image : 원형 이미지(차후 변경예정)
+                - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
+                - directors : 영화 감독
+                - actors : 배우
+                - feature : 영화 특징(Ex.흥미진진)
+                - author : 각본가
+                - genre : 장르
+    """
+
+    queryset = SubUser.objects.all()
+    serializer_class = PreferenceListSerializer
+
+    def list(self, request, *args, **kwargs):
+        if 'sub_user_id' in kwargs:
+            sub_user_id = kwargs['sub_user_id']
+        else:
+            sub_user_id = None
+
+        queryset = SubUser.objects.get(pk=sub_user_id).like.all()
+
+        print(queryset)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        response_list = serializer.data
+
+        context = {
+            'Test 데이터': 'Test 데이터',
+        }
+        response_list.append(context)
+        return Response(response_list)
 
 
 class CreateLike(View):

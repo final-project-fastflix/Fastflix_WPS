@@ -67,8 +67,8 @@ class Movie(models.Model):
     running_time = models.CharField(max_length=10)
     view_count = models.PositiveIntegerField(default=0)
 
-    logo_image = models.ImageField(upload_to=f'media/movie/{name}/logo')
-    horizontal_image = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
+    logo_image_path = models.TextField(default="")
+    horizontal_image_path = models.TextField(default="")
     vertical_image = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
     circle_image = models.ImageField(upload_to=f'media/movie/{name}/circle')
 
