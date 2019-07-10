@@ -22,6 +22,8 @@ class SubUser(models.Model):
     kid = models.BooleanField(default=False)
     logined = models.BooleanField(default=False)
 
+    evaluation = models.ManyToManyField(Movie, related_name='evaluation')
+
     def __str__(self):
         return self.name
 
