@@ -1,14 +1,10 @@
 from django.http import JsonResponse
 from django.views import View
 from rest_framework import generics
-from rest_framework.response import Response, Serializer
-from .models import *
-from accounts.models import User
+from rest_framework.response import Response
+
+from accounts.models import SubUser
 from .serializers import *
-
-from django.shortcuts import get_object_or_404
-
-from django.core import serializers
 
 
 # Create your views here.
@@ -41,7 +37,7 @@ class MovieList(generics.ListAPIView):
     """
 
     queryset = Movie.objects.all()
-    serializer_class = MovieListSerializer
+    serializer_class = MovieSerializer
 
 
 class MovieCerate(generics.CreateAPIView):
@@ -66,7 +62,7 @@ class MovieCerate(generics.CreateAPIView):
 
     """
     queryset = Movie.objects.all()
-    serializer_class = MovieCreateSerializer
+    serializer_class = MovieSerializer
 
 
 class GenreList(generics.ListAPIView):
@@ -78,7 +74,7 @@ class GenreList(generics.ListAPIView):
             - name : 영화 장르
     
     """
-    
+
     queryset = Genre.objects.all()
     serializer_class = GenreListSerializer
 
@@ -116,7 +112,7 @@ class ListByMovieGenre(generics.ListAPIView):
     """
 
     queryset = Movie.objects.all()
-    serializer_class = ListByMovieGenreSerializer
+    serializer_class = MovieSerializer
 
     def list(self, request, *args, **kwargs):
         if 'kind' in kwargs:
@@ -167,7 +163,7 @@ class MarkedList(generics.ListAPIView):
     """
 
     queryset = SubUser.objects.all()
-    serializer_class = MarkedListSerializer
+    serializer_class = MovieSerializer
 
     def list(self, request, *args, **kwargs):
         if 'sub_user_id' in kwargs:
@@ -177,32 +173,38 @@ class MarkedList(generics.ListAPIView):
 
         queryset = SubUser.objects.get(pk=sub_user_id).like.all()
 
-        print(queryset)
-
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
         serializer = self.get_serializer(queryset, many=True)
-
-        context2 = self.get_serializer(Movie.objects.filter(name='영화1')[0])
         response_list = serializer.data
-
-        context = {
-            '기타 데이터': {
-                'Test 데이터'
-            }
-            ,
-        }
-        response_list.append(context)
-        response_list.append(context2.data)
         print(response_list)
-
         return Response(response_list)
 
 
-# class Movie
+class MovieDetail(generics.RetrieveAPIView):
+    queryset = Movie.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        genre = serializer.data['genre'][0]['name']
+
+        response_list = serializer.data
+
+        movie_list = Movie.objects.filter(genre__name=genre)[:6]
+        print(movie_list)
+        context = self.get_serializer(movie_list, many=True)
+        # print(context.data)
+
+        # response_list.update(context)
+        return Response(response_list)
+
+    serializer_class = MovieSerializer
+
 
 class CreateLike(View):
     def get(self, request, *args, **kwargs):
