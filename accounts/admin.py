@@ -4,3 +4,4 @@ from .models import *
 
 admin.site.register(SubUser)
 
+admin.site.register(LikeDisLikeMarked)

@@ -1,14 +1,21 @@
 from rest_framework import serializers
 
 from .models import Movie, Genre
+from accounts.models import LikeDisLikeMarked
 
 
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = '__all__'
-        depth = 1
+        depth = 2
 
+
+class LikeDisLikeMaredSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LikeDisLikeMarked
+        fields = ['movie']
+        depth = 2
 
 
 class GenreListSerializer(serializers.ModelSerializer):
