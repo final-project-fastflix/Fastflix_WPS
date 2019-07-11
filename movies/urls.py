@@ -8,5 +8,5 @@ urlpatterns = [
     path('create/', MovieCerate.as_view(), name='create'),
     path('genre/list/', GenreList.as_view(), name='genre_list'),
     path('genre/<str:kind>/list/', ListByMovieGenre.as_view(), name='genre_kind_list'),
-    path('<int:sub_user_id>/list/', PreferenceList.as_view(), name="preference_list"),
+    # path('<int:sub_user_id>/list/', PreferenceList.as_view(), name="preference_list"),
 ]
