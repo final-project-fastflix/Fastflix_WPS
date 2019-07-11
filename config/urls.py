@@ -43,7 +43,7 @@ schema_view_v1 = get_schema_view(
 )
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('config_site/', admin.site.urls),
     path('movies/', include('movies.urls')),
   
     # 스웨거 API 문서

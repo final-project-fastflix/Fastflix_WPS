@@ -77,7 +77,7 @@ class Movie(models.Model):
 class MovieContinue(models.Model):
     movie_id = models.ForeignKey(Movie, related_name='movie_continue', on_delete=models.CASCADE)
     sub_user_id = models.ForeignKey('accounts.SubUser', related_name='movie_continue', on_delete=models.CASCADE)
-    to_be_continue = models.TimeField()
+    to_be_continue = models.CharField(max_length=10)
 
     def __str__(self):
         return str(self.movie_id) + " " + str(self.sub_user_id) + " " + str(self.to_be_continue)

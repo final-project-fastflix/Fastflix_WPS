@@ -17,11 +17,10 @@ class SubUser(models.Model):
 
     name = models.CharField(max_length=20)
     parent_user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='sub_user')
-    like = models.ManyToManyField(Movie, related_name='likes')
-    kid = models.BooleanField(default=False)
-    logined = models.BooleanField(default=False)
-
-    evaluation = models.ManyToManyField(Movie, related_name='evaluation')
+    # like = models.ManyToManyField(Movie, related_name='likes', blank=True)
+    kid = models.BooleanField(default=False, blank=True)
+    logined = models.BooleanField(default=False, blank=True)
+    evaluation = models.ManyToManyField(Movie, related_name='evaluation', blank=True)
 
     def __str__(self):
         return self.name
@@ -30,3 +29,5 @@ class SubUser(models.Model):
 class DisLike(models.Model):
     movie = models.ForeignKey(Movie, related_name='dislike', on_delete=models.CASCADE)
     sub_user = models.ForeignKey(SubUser, related_name='dislike', on_delete=models.CASCADE)
+    like_or_dislike = 'TF'
+    jjim = 'TF'
