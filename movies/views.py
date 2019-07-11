@@ -135,65 +135,74 @@ class ListByMovieGenre(generics.ListAPIView):
         return Response(serializer.data)
 
 
-# class PreferenceList(generics.ListAPIView):
-#     """
-#         유저별 찜 목록 영화 리스트 입니다
-#
-#         ---
-#             - 요청할때 "/movie/'프로필의 고유 ID값/list/" 로 요청하시면 됩니다
-#
-#                 - Ex) /movie/2/list/
-#                 - Ex) /movie/7/list/
-#
-#                 - id : 영화의 고유 ID 값
-#                 - name : 영화 이름
-#                 - video_file : 비디오파일
-#                 - sample_video_file : 샘플 비디오 파일
-#                 - production_date : 영화 개봉 날짜
-#                 - uploaded_date : 영화 등록(업로드) 날짜
-#                 - synopsis : 영화 줄거리
-#                 - running_time : 영화 러닝타임
-#                 - view_count : 영화 조회수
-#                 - logo_image_path : 로고 이미지의 경로
-#                 - horizontal_image_path : 가로 이미지 경로
-#                 - vertical_image : 세로 이미지(차후 변경 예정)
-#                 - circle_image : 원형 이미지(차후 변경예정)
-#                 - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
-#                 - directors : 영화 감독
-#                 - actors : 배우
-#                 - feature : 영화 특징(Ex.흥미진진)
-#                 - author : 각본가
-#                 - genre : 장르
-#     """
-#
-#     queryset = SubUser.objects.all()
-#     serializer_class = PreferenceListSerializer
-#
-#     def list(self, request, *args, **kwargs):
-#         if 'sub_user_id' in kwargs:
-#             sub_user_id = kwargs['sub_user_id']
-#         else:
-#             sub_user_id = None
-#
-#         queryset = SubUser.objects.get(pk=sub_user_id).like.all()
-#
-#         print(queryset)
-#
-#         page = self.paginate_queryset(queryset)
-#         if page is not None:
-#             serializer = self.get_serializer(page, many=True)
-#             return self.get_paginated_response(serializer.data)
-#
-#         serializer = self.get_serializer(queryset, many=True)
-#
-#         response_list = serializer.data
-#
-#         context = {
-#             'Test 데이터': 'Test 데이터',
-#         }
-#         response_list.append(context)
-#         return Response(response_list)
+class MarkedList(generics.ListAPIView):
+    """
+        유저별 찜 목록 영화 리스트 입니다
 
+        ---
+            - 요청할때 "/movie/'프로필의 고유 ID값/list/" 로 요청하시면 됩니다
+
+                - Ex) /movie/2/list/
+                - Ex) /movie/7/list/
+
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - video_file : 비디오파일
+                - sample_video_file : 샘플 비디오 파일
+                - production_date : 영화 개봉 날짜
+                - uploaded_date : 영화 등록(업로드) 날짜
+                - synopsis : 영화 줄거리
+                - running_time : 영화 러닝타임
+                - view_count : 영화 조회수
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지(차후 변경 예정)
+                - circle_image : 원형 이미지(차후 변경예정)
+                - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
+                - directors : 영화 감독
+                - actors : 배우
+                - feature : 영화 특징(Ex.흥미진진)
+                - author : 각본가
+                - genre : 장르
+    """
+
+    queryset = SubUser.objects.all()
+    serializer_class = MarkedListSerializer
+
+    def list(self, request, *args, **kwargs):
+        if 'sub_user_id' in kwargs:
+            sub_user_id = kwargs['sub_user_id']
+        else:
+            sub_user_id = None
+
+        queryset = SubUser.objects.get(pk=sub_user_id).like.all()
+
+        print(queryset)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+
+        context2 = self.get_serializer(Movie.objects.filter(name='영화1')[0])
+        response_list = serializer.data
+
+        context = {
+            '기타 데이터': {
+                'Test 데이터'
+            }
+            ,
+        }
+        response_list.append(context)
+        response_list.append(context2.data)
+        print(response_list)
+
+        return Response(response_list)
+
+
+# class Movie
 
 class CreateLike(View):
     def get(self, request, *args, **kwargs):

@@ -30,7 +30,7 @@ class ListByMovieGenreSerializer(serializers.ModelSerializer):
         depth = 2
 
 
-class PreferenceListSerializer(serializers.ModelSerializer):
+class MarkedListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = '__all__'
