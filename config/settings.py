@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'haystack',
     'drf_yasg',
     'rest_framework_swagger',
+    
 ]
 
 ELASTICSEARCH_DSL = {

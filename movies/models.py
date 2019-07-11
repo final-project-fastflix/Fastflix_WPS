@@ -1,8 +1,6 @@
-from django.utils import timezone
-
 # Create your models here.
 from django.db import models
-# from accounts.models import SubUser
+from django.utils import timezone
 
 
 class Director(models.Model):
