@@ -34,3 +34,4 @@ class LikeDisLikeMarked(models.Model):
 
     def __str__(self):
         return str(self.movie) + " " + str(self.sub_user) + " " + str(self.like_or_dislike) + " " + str(self.marked)
+
