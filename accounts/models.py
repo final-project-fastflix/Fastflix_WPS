@@ -32,4 +32,5 @@ class LikeDisLikeMarked(models.Model):
     like_or_dislike = models.SmallIntegerField(default=0)
     marked = models.BooleanField(default=False)
 
-
+    def __str__(self):
+        return str(self.movie) + " " + str(self.sub_user) + " " + str(self.like_or_dislike) + " " + str(self.marked)

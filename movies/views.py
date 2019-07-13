@@ -176,7 +176,7 @@ class MarkedList(generics.ListAPIView):
     """
 
     queryset = SubUser.objects.all()
-    serializer_class = MovieSerializer
+    serializer_class = LikeDisLikeMaredSerializer
 
     def list(self, request, *args, **kwargs):
         if 'sub_user_id' in kwargs:
@@ -184,20 +184,17 @@ class MarkedList(generics.ListAPIView):
         else:
             sub_user_id = None
 
-        queryset = SubUser.objects.get(pk=sub_user_id).like.all()
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        sub_user = SubUser.objects.get(pk=sub_user_id)
+        queryset = sub_user.dislike.filter(sub_user=sub_user_id, marked=True)
 
         serializer = self.get_serializer(queryset, many=True)
-        response_list = serializer.data
-        return Response(response_list)
+
+        return Response(serializer.data)
 
 
 class MovieDetail(generics.RetrieveAPIView):
     queryset = Movie.objects.all()
+    serializer_class = MovieSerializer
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -211,9 +208,8 @@ class MovieDetail(generics.RetrieveAPIView):
 
         # user = get_user_model()
         # likes = LikeDisLikeMarked.objects.filter(movie=kwargs['pk'], usb_user=)
-        return Response(response_list)
 
-    serializer_class = MovieSerializer
+        return Response(response_list)
 
 
 class CreateLike(View):
