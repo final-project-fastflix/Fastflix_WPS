@@ -32,3 +32,4 @@ class LikeDisLikeMarked(models.Model):
     like_or_dislike = models.SmallIntegerField(default=0)
     marked = models.BooleanField(default=False)
 
+
