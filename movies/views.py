@@ -1,15 +1,15 @@
+import random
+import time
+import re
+
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse, HttpResponse
+from django.db.models import Max
 from django.views import View
 from rest_framework import generics
 from rest_framework.response import Response
 
 from accounts.models import SubUser, LikeDisLikeMarked
-from .serializers import *
-
-import time
-import re
-
 from django.shortcuts import render
 from selenium.webdriver.chrome.options import Options
 
@@ -17,12 +17,14 @@ from bs4 import BeautifulSoup
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium import webdriver
 from openpyxl import Workbook
+
 from .models import *
+from .serializers import *
 
 
 # Create your views here.
 
-
+# 영화 전체 목록 리스트
 class MovieList(generics.ListAPIView):
     """
         전체 영화 목록입니다
@@ -53,6 +55,49 @@ class MovieList(generics.ListAPIView):
     serializer_class = MovieSerializer
 
 
+# 홈페이지 메인에 쓰일 영화 1개
+class HomePage(generics.ListAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieListSerializer
+
+    def list(self, request, *args, **kwargs):
+        # 랜덤하게 영화 1개를 가져오기 위함
+        max_id = Movie.objects.all().aggregate(max_id=Max('id'))['max_id']
+        while True:
+            pk = random.randint(1, max_id)
+
+            # 랜덤으로 선택한 영화 1편
+            main_movie = Movie.objects.filter(pk=pk).first()
+            if main_movie:
+                break
+
+        main_movie_serialize = self.get_serializer(main_movie)
+        response_list = main_movie_serialize.data
+
+        # 전체 영화 장르를 가져옴
+        genre_list = Genre.objects.all()
+
+        # 장르별 영화 목록을 가져와 dict 으로 만듬
+        # list_by_genre = {genre.name: Movie.objects.filter(genre__name=genre)[:10] for genre in genre_list}
+        list_by_genre = [Movie.objects.filter(genre__name = genre) for genre in genre_list]
+
+        list_by_genre_serialize = self.get_serializer(list_by_genre, many=True)
+        print(list_by_genre_serialize.data)
+
+        context = {
+            'asdf': 12,
+        }
+
+        response_list.update(context)
+        response_list.update(list_by_genre_serialize)
+
+
+
+        return Response(response_list)
+
+
+
+# 영화 등록
 class MovieCerate(generics.CreateAPIView):
     """
         영화 등록 API 입니다
@@ -78,6 +123,7 @@ class MovieCerate(generics.CreateAPIView):
     serializer_class = MovieSerializer
 
 
+# 영화 장르 리스트
 class GenreList(generics.ListAPIView):
     """
         영화 장르 리스트입니다
@@ -92,6 +138,7 @@ class GenreList(generics.ListAPIView):
     serializer_class = GenreListSerializer
 
 
+# 장르별 영화 리스트
 class ListByMovieGenre(generics.ListAPIView):
     """
         장르별 영화 리스트 입니다
@@ -144,6 +191,7 @@ class ListByMovieGenre(generics.ListAPIView):
         return Response(serializer.data)
 
 
+# 해당 유저의 찜 영화 목록
 class MarkedList(generics.ListAPIView):
     """
         유저별 찜 목록 영화 리스트 입니다
@@ -176,7 +224,7 @@ class MarkedList(generics.ListAPIView):
     """
 
     queryset = SubUser.objects.all()
-    serializer_class = LikeDisLikeMaredSerializer
+    serializer_class = LikeDisLikeMarkedSerializer
 
     def list(self, request, *args, **kwargs):
         if 'sub_user_id' in kwargs:
@@ -192,7 +240,38 @@ class MarkedList(generics.ListAPIView):
         return Response(serializer.data)
 
 
+# 특정 영화의 상세정보 - 미완성
 class MovieDetail(generics.RetrieveAPIView):
+    """
+         유저별 찜 목록 영화 리스트 입니다
+
+         ---
+             - 요청할때 "/movie/'프로필의 고유 ID값/list/" 로 요청하시면 됩니다
+
+                 - Ex) /movie/2/list/
+                 - Ex) /movie/7/list/
+
+                 - id : 영화의 고유 ID 값
+                 - name : 영화 이름
+                 - video_file : 비디오파일
+                 - sample_video_file : 샘플 비디오 파일
+                 - production_date : 영화 개봉 날짜
+                 - uploaded_date : 영화 등록(업로드) 날짜
+                 - synopsis : 영화 줄거리
+                 - running_time : 영화 러닝타임
+                 - view_count : 영화 조회수
+                 - logo_image_path : 로고 이미지의 경로
+                 - horizontal_image_path : 가로 이미지 경로
+                 - vertical_image : 세로 이미지(차후 변경 예정)
+                 - circle_image : 원형 이미지(차후 변경예정)
+                 - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
+                 - directors : 영화 감독
+                 - actors : 배우
+                 - feature : 영화 특징(Ex.흥미진진)
+                 - author : 각본가
+                 - genre : 장르
+     """
+
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
 

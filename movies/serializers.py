@@ -11,7 +11,21 @@ class MovieSerializer(serializers.ModelSerializer):
         depth = 2
 
 
-class LikeDisLikeMaredSerializer(serializers.ModelSerializer):
+class MovieListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = [
+            'name',
+            'sample_video_file',
+            'degree',
+            'feature',
+            'running_time',
+            'dislike',
+        ]
+        depth = 1
+
+
+class LikeDisLikeMarkedSerializer(serializers.ModelSerializer):
     class Meta:
         model = LikeDisLikeMarked
         fields = ['movie']
