@@ -1,24 +1,12 @@
 import random
-import time
-import re
 
-from django.contrib.auth import get_user_model
-from django.http import JsonResponse, HttpResponse
 from django.db.models import Max
+from django.http import JsonResponse
 from django.views import View
 from rest_framework import generics
 from rest_framework.response import Response
 
-from accounts.models import SubUser, LikeDisLikeMarked
-from django.shortcuts import render
-from selenium.webdriver.chrome.options import Options
-
-from bs4 import BeautifulSoup
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium import webdriver
-from openpyxl import Workbook
-
-from .models import *
+from accounts.models import SubUser
 from .serializers import *
 
 
@@ -79,7 +67,7 @@ class HomePage(generics.ListAPIView):
 
         # 장르별 영화 목록을 가져와 dict 으로 만듬
         # list_by_genre = {genre.name: Movie.objects.filter(genre__name=genre)[:10] for genre in genre_list}
-        list_by_genre = [Movie.objects.filter(genre__name = genre) for genre in genre_list]
+        list_by_genre = [Movie.objects.filter(genre__name=genre) for genre in genre_list]
 
         list_by_genre_serialize = self.get_serializer(list_by_genre, many=True)
         print(list_by_genre_serialize.data)
@@ -91,10 +79,7 @@ class HomePage(generics.ListAPIView):
         response_list.update(context)
         response_list.update(list_by_genre_serialize)
 
-
-
         return Response(response_list)
-
 
 
 # 영화 등록
@@ -304,8 +289,3 @@ class CreateLike(View):
                 else:
                     movie.likes.add(sub_user)
                     return JsonResponse({'data': 'add'})
-
-
-
-
-
