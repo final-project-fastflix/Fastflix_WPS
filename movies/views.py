@@ -1,12 +1,24 @@
 import random
+import time
+import re
 
+from django.contrib.auth import get_user_model
+from django.http import JsonResponse, HttpResponse
 from django.db.models import Max
-from django.http import JsonResponse
 from django.views import View
 from rest_framework import generics
 from rest_framework.response import Response
 
-from accounts.models import SubUser
+from accounts.models import SubUser, LikeDisLikeMarked
+from django.shortcuts import render
+from selenium.webdriver.chrome.options import Options
+
+from bs4 import BeautifulSoup
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium import webdriver
+from openpyxl import Workbook
+
+from .models import *
 from .serializers import *
 
 
@@ -266,17 +278,16 @@ class MovieDetail(generics.RetrieveAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-
-        genre = serializer.data['genre'][0]['name']
-
         response_list = serializer.data
 
-        movie_list = Movie.objects.filter(genre__name=genre)[:6]
-        print(movie_list)
-        context = self.get_serializer(movie_list)
-        print(context)
+        genre = instance.genre.all()[0]
+        similar_movies = genre.movie_genre.all()[:6]
+        context = self.get_serializer(similar_movies, many=True)
+        response_list['similar'] = context.data
 
-        response_list.update(context)
+        # user = get_user_model()
+        # likes = LikeDisLikeMarked.objects.filter(movie=kwargs['pk'], usb_user=)
+
         return Response(response_list)
 
 
@@ -293,3 +304,8 @@ class CreateLike(View):
                 else:
                     movie.likes.add(sub_user)
                     return JsonResponse({'data': 'add'})
+
+
+
+
+
