@@ -26,14 +26,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts',
     'django_extensions',
-    'movies',
     'rest_framework',
     'haystack',
     'drf_yasg',
     'rest_framework_swagger',
-    
+    'accounts',
+    'movies',
+    'corsheaders',
 ]
 
 ELASTICSEARCH_DSL = {
@@ -60,6 +60,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # CORS
+    'corsheaders.middleware.CorsMiddleware',
 
 ]
 
@@ -95,6 +97,9 @@ DATABASES = {
     }
 }
 
+# CROS
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
