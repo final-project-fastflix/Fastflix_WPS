@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
+from rest_framework.permissions import AllowAny
+from rest_framework.views import APIView
 
 from .models import User
 from .serializer import UserCreateSerializer, SubUserCreateSerializer
@@ -13,6 +15,7 @@ from .serializer import UserCreateSerializer, SubUserCreateSerializer
 # 회원가입 API
 class UserCreate(generics.CreateAPIView):
     serializer_class = UserCreateSerializer
+    permission_classes = (AllowAny, )
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -75,3 +78,5 @@ class SubUserCreate(generics.CreateAPIView):
         serializer.save(
             parent_user=self.request.user
         )
+
+

@@ -1,7 +1,15 @@
+from django.core.serializers import get_serializer
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views import View
+from requests import Response
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import AllowAny
 
 from movies.models import Movie
+from .forms import GetTokenForm
+from .models import User
 
 
 class CreateLike(View):
@@ -19,3 +27,16 @@ class CreateLike(View):
                     return JsonResponse({'data': 'add'})
 
 
+@permission_classes((AllowAny,))
+def get_token(request):
+    form = GetTokenForm()
+    if request.method == "POST":
+        username = request.POST.get('username')
+        user_id = User.objects.get(username=username).id
+        token = Token.objects.get(user_id=user_id).key
+
+        context = {'token': token}
+
+        return JsonResponse(context)
+
+    return render(request, 'accounts/forms.html', context={'form': form})

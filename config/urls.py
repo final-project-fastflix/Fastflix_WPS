@@ -49,7 +49,6 @@ urlpatterns = [
     path('config_site/', admin.site.urls),
     path('movies/', include('movies.urls')),
     path('accounts/', include('accounts.urls')),
-    path('get_token/', obtain_auth_token),
   
     # 스웨거 API 문서
 
