@@ -26,6 +26,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 
 schema_url_v1_patterns = [
     path('movies/', include('movies.urls', namespace='movies_api')),
+    path('accounts/', include('accounts.urls', namespace='accounts_api')),
 ]
 
 

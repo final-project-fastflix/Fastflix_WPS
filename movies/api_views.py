@@ -218,57 +218,6 @@ class MarkedList(generics.ListAPIView):
         return Response(serializer.data)
 
 
-# 특정 영화의 상세정보 - 미완성
-class MovieDetail(generics.RetrieveAPIView):
-    """
-         유저별 찜 목록 영화 리스트 입니다
-
-         ---
-             - 요청할때 "/movie/'프로필의 고유 ID값/list/" 로 요청하시면 됩니다
-
-                 - Ex) /movie/2/list/
-                 - Ex) /movie/7/list/
-
-                 - id : 영화의 고유 ID 값
-                 - name : 영화 이름
-                 - video_file : 비디오파일
-                 - sample_video_file : 샘플 비디오 파일
-                 - production_date : 영화 개봉 날짜
-                 - uploaded_date : 영화 등록(업로드) 날짜
-                 - synopsis : 영화 줄거리
-                 - running_time : 영화 러닝타임
-                 - view_count : 영화 조회수
-                 - logo_image_path : 로고 이미지의 경로
-                 - horizontal_image_path : 가로 이미지 경로
-                 - vertical_image : 세로 이미지(차후 변경 예정)
-                 - circle_image : 원형 이미지(차후 변경예정)
-                 - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
-                 - directors : 영화 감독
-                 - actors : 배우
-                 - feature : 영화 특징(Ex.흥미진진)
-                 - author : 각본가
-                 - genre : 장르
-     """
-
-    queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        response_list = serializer.data
-
-        genre = instance.genre.all()[0]
-        similar_movies = genre.movie_genre.all()[:6]
-        context = self.get_serializer(similar_movies, many=True)
-        response_list['similar'] = context.data
-
-        # user = get_user_model()
-        # likes = LikeDisLikeMarked.objects.filter(movie=kwargs['pk'], usb_user=)
-
-        return Response(response_list)
-
-
 class MovieDetail(generics.RetrieveAPIView):
 
     """
