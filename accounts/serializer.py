@@ -1,7 +1,7 @@
 from django.db.models import signals
 from rest_framework import serializers
 
-from .models import User
+from .models import User, SubUser
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -17,3 +17,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+
+class SubUserCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubUser
+        fields = ['name', 'kid', ]
+
+    def create(self, validated_data):
+        sub_user = SubUser.objects.create(**validated_data)
+        sub_user.save()
+
+        return sub_user
+
+

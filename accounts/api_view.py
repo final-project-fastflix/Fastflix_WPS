@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.settings import api_settings
 
 from .models import User
-from .serializer import UserCreateSerializer
+from .serializer import UserCreateSerializer, SubUserCreateSerializer
 
 
 # 회원가입 API
@@ -53,3 +53,25 @@ class UserCreate(generics.CreateAPIView):
 def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
+
+
+class SubUserCreate(generics.CreateAPIView):
+    serializer_class = SubUserCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        print(serializer)
+        serializer.is_valid(raise_exception=True)
+
+        # 넘어온 데이터값이 유효하다면
+        # serializer의 create 함수를 실행시킨다
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def perform_create(self, serializer):
+        # serializer에 parent_user 속성 추가?
+        serializer.save(
+            parent_user=self.request.user
+        )

@@ -20,7 +20,7 @@ class MovieListSerializer(serializers.ModelSerializer):
             'degree',
             'feature',
             'running_time',
-            'dislike',
+            'like',
         ]
         depth = 1
 

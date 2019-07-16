@@ -17,3 +17,5 @@ class CreateLike(View):
                 else:
                     movie.likes.add(sub_user)
                     return JsonResponse({'data': 'add'})
+
+
