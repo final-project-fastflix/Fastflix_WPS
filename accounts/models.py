@@ -18,7 +18,6 @@ class SubUser(models.Model):
     name = models.CharField(max_length=20)
     parent_user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='sub_user')
     kid = models.BooleanField(default=False, blank=True)
-    logined = models.BooleanField(default=False, blank=True) # 서버에서 체크하는 대신 클라이언트에서 sub_usr_id를 받기로 함
 
     def __str__(self):
         return self.name
