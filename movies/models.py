@@ -48,8 +48,8 @@ class Degree(models.Model):
 class Movie(models.Model):
     name = models.CharField(max_length=50)
 
-    video_file = models.FileField(upload_to=f'media/movie/{name}/video')
-    sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video')
+    video_file = models.FileField(upload_to=f'media/movie/{name}/video', blank=True, null=True)
+    sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
 
     directors = models.ManyToManyField(Director, related_name='movie')
     actors = models.ManyToManyField(Actor, related_name='movie')
@@ -61,15 +61,15 @@ class Movie(models.Model):
     production_date = models.CharField(max_length=10, blank=True)
     uploaded_date = models.DateField(default=timezone.now)
 
-    synopsis = models.TextField()
+    synopsis = models.TextField(blank=True)
     running_time = models.CharField(max_length=10)
     view_count = models.PositiveIntegerField(default=0)
 
-    logo_image_path = models.TextField(default=None)
-    horizontal_image_path = models.TextField(default=None)
+    logo_image_path = models.TextField(default=None, blank=True, null=True)
+    horizontal_image_path = models.TextField(default=None, blank=True, null=True)
     vertical_image = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
-    circle_image = models.ImageField(upload_to=f'media/movie/{name}/circle')
-    big_image_path = models.TextField(default=None)
+    circle_image = models.ImageField(upload_to=f'media/movie/{name}/circle', null=True, blank=True)
+    big_image_path = models.TextField(default=None, null=True, blank=True)
 
     def __str__(self):
         return self.name
