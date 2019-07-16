@@ -1,10 +1,7 @@
-
 from django.http import JsonResponse
 from django.views import View
 
-
 from movies.models import Movie
-
 
 
 class CreateLike(View):
@@ -20,18 +17,3 @@ class CreateLike(View):
                 else:
                     movie.likes.add(sub_user)
                     return JsonResponse({'data': 'add'})
-
-
-
-
-# def create_user(request):
-#     if request.method == "POST":
-#         form = UserCreateForm(request.POST)
-#         if form.is_valid():
-#             user = User(username=form.data['name'], password=form.data['password'])
-#             user.save()
-#             return JsonResponse('success')
-#
-#     else:
-#         form = UserCreateForm()
-#         return JsonResponse(form)
