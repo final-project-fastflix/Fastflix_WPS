@@ -22,6 +22,8 @@ from rest_framework.permissions import AllowAny
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+from rest_framework.authtoken.views import obtain_auth_token
+
 schema_url_v1_patterns = [
     path('movies/', include('movies.urls', namespace='movies_api')),
 ]
@@ -45,6 +47,8 @@ schema_view_v1 = get_schema_view(
 urlpatterns = [
     path('config_site/', admin.site.urls),
     path('movies/', include('movies.urls')),
+    path('accounts/', include('accounts.urls')),
+    path('get_token/', obtain_auth_token),
   
     # 스웨거 API 문서
 

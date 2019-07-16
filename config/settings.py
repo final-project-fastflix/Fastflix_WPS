@@ -1,9 +1,7 @@
-
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -15,7 +13,6 @@ SECRET_KEY = '%jxcb%4lssv4-9jeoy$-tf-rp!ov3t(wztk-350)820t3u5qaa'
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
 
 # Application definition
 
@@ -31,9 +28,11 @@ INSTALLED_APPS = [
     'haystack',
     'drf_yasg',
     'rest_framework_swagger',
+    'corsheaders',
+    'rest_framework.authtoken',
     'accounts',
     'movies',
-    'corsheaders',
+
 ]
 
 ELASTICSEARCH_DSL = {
@@ -49,7 +48,6 @@ HAYSTACK_CONNECTIONS = {
         'INDEX_NAME': 'haystack',
     },
 }
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -85,8 +83,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
@@ -119,6 +115,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# rest_framework token
+REST_FRAMEWORK = {
+    # 토큰 인증방식 추가
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -133,7 +139,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
@@ -142,24 +147,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-
 # AUTH_USER_MODELS
 
 AUTH_USER_MODEL = 'accounts.User'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

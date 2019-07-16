@@ -28,7 +28,7 @@ class LikeDisLikeMarked(models.Model):
     movie = models.ForeignKey(Movie, related_name='dislike', on_delete=models.CASCADE)
     sub_user = models.ForeignKey(SubUser, related_name='dislike', on_delete=models.CASCADE)
 
-    # 1 : like,  2 : dislike
+    # 0: no choice 1 : like,  2 : dislike
     like_or_dislike = models.SmallIntegerField(default=0)
     marked = models.BooleanField(default=False)
 
