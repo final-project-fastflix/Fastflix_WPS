@@ -54,7 +54,7 @@ class Movie(models.Model):
     directors = models.ManyToManyField(Director, related_name='movie')
     actors = models.ManyToManyField(Actor, related_name='movie')
     feature = models.ManyToManyField(Feature, related_name='movie')
-    author = models.ManyToManyField(Author, related_name='movie')
+    author = models.ManyToManyField(Author, related_name='movie', blank=True)
     degree = models.ForeignKey(Degree, on_delete=models.SET_NULL, related_name='movie_degree', null=True)
     genre = models.ManyToManyField(Genre, related_name='movie')
 
@@ -78,7 +78,7 @@ class Movie(models.Model):
 class MovieContinue(models.Model):
     movie_id = models.ForeignKey(Movie, related_name='movie_continue', on_delete=models.CASCADE)
     sub_user_id = models.ForeignKey('accounts.SubUser', related_name='movie_continue', on_delete=models.CASCADE)
-    to_be_continue = models.CharField(max_length=10)
+    to_be_continue = models.CharField(max_length=20)
 
     def __str__(self):
         return str(self.movie_id) + " " + str(self.sub_user_id) + " " + str(self.to_be_continue)
