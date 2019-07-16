@@ -224,11 +224,10 @@ class MovieDetail(generics.RetrieveAPIView):
         영화 디테일 페이지 url 입니다.
 
         ---
-            - 요청할때 "/movie/'영화 ID값'/" 으로 요청하시면 됩니다.
-            - body에 sub_user_id 를 넣어주셔야 합니다.
+            - 요청할때 "/movie/'영화 ID값'/'sub_user_id 값'" 으로 요청하시면 됩니다.
 
-                - Ex) /movie/2/
-                - Ex) /movie/7/
+                - Ex) /movie/2/1
+                - Ex) /movie/7/35
 
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
@@ -263,12 +262,15 @@ class MovieDetail(generics.RetrieveAPIView):
     serializer_class = MovieSerializer
 
     def retrieve(self, request, *args, **kwargs):
+        # 영화 오브젝트
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        response_list = serializer.data
-        print(kwargs)
-        sub_user_id = kwargs['pk']
+        serializer_data = serializer.data
+
+        sub_user_id = kwargs['sub_user_id']
+
         if instance.like.filter(sub_user=sub_user_id):
+            # 해당 서브유저의 좋아요 정보에 접근해서 찜목록과 좋아요 여부를 확인
             like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
             marked = like_dislike_marked.marked
             like = like_dislike_marked.like_or_dislike
@@ -276,8 +278,10 @@ class MovieDetail(generics.RetrieveAPIView):
             marked = False
             like = 0
 
+        # 임시적으로 일치율 설정
         match_rate = random.randint(70, 97)
 
+        # 영화정보의 러닝타임( x시간 x분 형식)과 유저가 이전에 재생을 멈춘시간을 xx분 형식으로 변환해서 남은시간과 총시간을 반환
         runningtime = instance.running_time.split('시간 ')
         total_minute = int(runningtime[0]) * 60 + int(runningtime[1][:-1])
 
@@ -290,24 +294,28 @@ class MovieDetail(generics.RetrieveAPIView):
             to_be_continue = None
             remaining_time = None
 
+        # 저장가능 영화인지 확인
         can_i_store = int(instance.production_date) < 2015
 
+        # 계산한 값들을 반환할 딕셔너리에 추가
         key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'remaining_time', 'can_i_store']
         value_list = [marked, like, match_rate, total_minute, to_be_continue, remaining_time, can_i_store]
 
         for i in range(len(key_list)):
-            response_list[f'{key_list[i]}'] = value_list[i]
+            serializer_data[f'{key_list[i]}'] = value_list[i]
 
+        # 선택된 영화와 같은 장르를 가진 영화 6개를 골라서 딕셔너리에 추가
         genre = instance.genre.all()[0]
         similar_movies = genre.movie.exclude(pk=instance.id)[:6]
         context = self.get_serializer(similar_movies, many=True)
 
+        # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
         for i in range(len(context.data)):
             if similar_movies[i].like.filter(sub_user_id=sub_user_id):
                 context.data[i]['marked'] = similar_movies[i].like.filter(sub_user_id=sub_user_id)[0].marked
             else:
                 context.data[i]['marked'] = False
 
-        response_list['similar_movies'] = context.data
+        serializer_data['similar_movies'] = context.data
 
-        return Response(response_list)
+        return Response(serializer_data)
