@@ -266,23 +266,29 @@ class MovieDetail(generics.RetrieveAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         response_list = serializer.data
-
-        sub_user_id = request.data['sub_user_id']
-        like_dislike_marked = instance.like.get(sub_user=sub_user_id)
-
-        marked = like_dislike_marked.marked
-        like = like_dislike_marked.like_or_dislike
+        print(kwargs)
+        sub_user_id = kwargs['pk']
+        if instance.like.filter(sub_user=sub_user_id):
+            like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
+            marked = like_dislike_marked.marked
+            like = like_dislike_marked.like_or_dislike
+        else:
+            marked = False
+            like = 0
 
         match_rate = random.randint(70, 97)
 
         runningtime = instance.running_time.split('시간 ')
         total_minute = int(runningtime[0]) * 60 + int(runningtime[1][:-1])
 
-        to_be_continue = instance.movie_continue.get(sub_user_id=sub_user_id).to_be_continue
-        time_list = instance.movie_continue.get(sub_user_id=sub_user_id).to_be_continue.split(':')
-
-        spent_time = int(time_list[0])*60 + int(time_list[1])
-        remaining_time = total_minute - spent_time
+        if instance.movie_continue.filter(sub_user_id=sub_user_id):
+            to_be_continue = instance.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue
+            time_list = instance.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue.split(':')
+            spent_time = int(time_list[0]) * 60 + int(time_list[1])
+            remaining_time = total_minute - spent_time
+        else:
+            to_be_continue = None
+            remaining_time = None
 
         can_i_store = int(instance.production_date) < 2015
 
