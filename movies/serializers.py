@@ -2,8 +2,8 @@ import random
 
 from rest_framework import serializers
 
-from .models import Movie, Genre, MovieContinue
 from accounts.models import LikeDisLikeMarked
+from .models import Movie, Genre, MovieContinue
 
 
 class MovieSerializer(serializers.ModelSerializer):
@@ -11,6 +11,14 @@ class MovieSerializer(serializers.ModelSerializer):
         model = Movie
         fields = '__all__'
         depth = 2
+
+
+class ListByMovieGenre(serializers.ModelSerializer):
+
+    class Meta:
+        model = Movie
+        fields = ['name', 'horizontal_image_path', 'vertical_image']
+
 
 
 class MovieListSerializer(serializers.ModelSerializer):
@@ -35,6 +43,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         serializer_data = super().to_representation(instance)
+
         sub_user_id = self.context['sub_user_id']
         if instance.like.filter(sub_user=sub_user_id):
             # 해당 서브유저의 좋아요 정보에 접근해서 찜목록과 좋아요 여부를 확인
@@ -79,13 +88,13 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
         for i in range(len(similar_movies_serializer.data)):
             if similar_movies[i].like.filter(sub_user_id=sub_user_id):
-                similar_movies_serializer.data[i]['marked'] = similar_movies[i].like.filter(sub_user_id=sub_user_id)[0].marked
+                similar_movies_serializer.data[i]['marked'] = similar_movies[i].like.filter(sub_user_id=sub_user_id)[
+                    0].marked
             else:
                 similar_movies_serializer.data[i]['marked'] = False
 
         serializer_data['similar_movies'] = similar_movies_serializer.data
         return serializer_data
-
 
 
 class LikeDisLikeMarkedSerializer(serializers.ModelSerializer):
@@ -100,11 +109,11 @@ class GenreListSerializer(serializers.ModelSerializer):
         model = Genre
         fields = '__all__'
 
+
 class MovieOfMovieContinueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ('id', 'name', 'video_file', 'logo_image_path', 'horizontal_image_path', 'vertical_image')
-
 
 
 class MovieContinueMovieSerializer(serializers.ModelSerializer):

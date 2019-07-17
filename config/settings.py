@@ -116,15 +116,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # rest_framework token
-REST_FRAMEWORK = {
-    # 토큰 인증방식 추가
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    )
-}
+# REST_FRAMEWORK = {
+#     # 토큰 인증방식 추가
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework.authentication.TokenAuthentication',
+#     ),
+#     'DEFAULT_PERMISSION_CLASSES': (
+#         'rest_framework.permissions.IsAuthenticated',
+#     )
+# }
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

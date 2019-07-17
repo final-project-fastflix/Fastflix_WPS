@@ -147,23 +147,17 @@ class ListByMovieGenre(generics.ListAPIView):
     """
 
     queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
+    serializer_class = ListByMovieGenre
 
-    def list(self, request, *args, **kwargs):
-        if 'kind' in kwargs:
-            kind = kwargs['kind']
+    def get_queryset(self):
+        if 'kind' in self.kwargs:
+            kind = self.kwargs['kind']
         else:
             kind = None
 
-        queryset = Movie.objects.filter(genre__name__icontains=kind).distinct()
+        queryset = Movie.objects.filter(genre__name__icontains=kind).distinct()[:5]
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return queryset
 
 
 # 해당 유저의 찜 영화 목록
