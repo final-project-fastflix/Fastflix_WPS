@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
 from accounts.models import SubUser
+from movies.models import MovieContinue
 from .serializers import *
 
 
@@ -259,63 +260,66 @@ class MovieDetail(generics.RetrieveAPIView):
 
     """
     queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
+    serializer_class = MovieDetailSerializer
 
-    def retrieve(self, request, *args, **kwargs):
-        # 영화 오브젝트
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        serializer_data = serializer.data
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['sub_user_id'] = self.kwargs['sub_user_id']
+        return context
 
-        sub_user_id = kwargs['sub_user_id']
+    # def retrieve(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     serializer = self.get_serializer(instance)
+    #     return Response(serializer.data)
+    #
+    # def retrieve(self, request, *args, **kwargs):
+    #     # 영화 오브젝트
+    #     instance = self.get_object()
+    #     serializer = self.get_serializer(instance)
+    #     serializer_data = serializer.data
+    #
+    #     sub_user_id = kwargs['sub_user_id']
+    #     return Response(serializer_data)
 
-        if instance.like.filter(sub_user=sub_user_id):
-            # 해당 서브유저의 좋아요 정보에 접근해서 찜목록과 좋아요 여부를 확인
-            like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
-            marked = like_dislike_marked.marked
-            like = like_dislike_marked.like_or_dislike
-        else:
-            marked = False
-            like = 0
 
-        # 임시적으로 일치율 설정
-        match_rate = random.randint(70, 97)
+class FollowUpMovies(generics.ListAPIView):
+    queryset = Movie.objects.all()
+    serializer_class = MovieContinueSerializer
 
-        # 영화정보의 러닝타임( x시간 x분 형식)과 유저가 이전에 재생을 멈춘시간을 xx분 형식으로 변환해서 남은시간과 총시간을 반환
-        runningtime = instance.running_time.split('시간 ')
-        total_minute = int(runningtime[0]) * 60 + int(runningtime[1][:-1])
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
 
-        if instance.movie_continue.filter(sub_user_id=sub_user_id):
-            to_be_continue = instance.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue
-            time_list = instance.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue.split(':')
-            spent_time = int(time_list[0]) * 60 + int(time_list[1])
-            remaining_time = total_minute - spent_time
-        else:
-            to_be_continue = None
-            remaining_time = None
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
-        # 저장가능 영화인지 확인
-        can_i_store = int(instance.production_date) < 2015
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
-        # 계산한 값들을 반환할 딕셔너리에 추가
-        key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'remaining_time', 'can_i_store']
-        value_list = [marked, like, match_rate, total_minute, to_be_continue, remaining_time, can_i_store]
+    def list(self, request, *args, **kwargs):
+        sub_user_id = 1
+        # queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
+        queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
 
-        for i in range(len(key_list)):
-            serializer_data[f'{key_list[i]}'] = value_list[i]
+        # serializer = MovieContinueSerializer(queryset, many=True)
+        serializer = self.get_serializer(queryset, many=True)
 
-        # 선택된 영화와 같은 장르를 가진 영화 6개를 골라서 딕셔너리에 추가
-        genre = instance.genre.all()[0]
-        similar_movies = genre.movie.exclude(pk=instance.id)[:6]
-        context = self.get_serializer(similar_movies, many=True)
+        # movie_id = queryset[0].movie_id.id
+        # print(movie_id)
+        # movie = Movie.objects.filter(id=movie_id)
+        # print(movie)
+        #
+        # serializer2 = self.get_serializer(movie, many=True)
+        # print(serializer2.data)
+        #
+        # new_dict = dict()
+        # new_dict.update({'1': serializer2.data})
+        # print(serializer.data)
+        # print(new_dict['1'][0])
+        # new_dict['1'][0].update(serializer.data[0])
+        # print(new_dict)
 
-        # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
-        for i in range(len(context.data)):
-            if similar_movies[i].like.filter(sub_user_id=sub_user_id):
-                context.data[i]['marked'] = similar_movies[i].like.filter(sub_user_id=sub_user_id)[0].marked
-            else:
-                context.data[i]['marked'] = False
+        # print(serializer.data)
+        return Response(serializer.data)
 
-        serializer_data['similar_movies'] = context.data
-
-        return Response(serializer_data)
