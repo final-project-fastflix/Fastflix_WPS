@@ -13,6 +13,21 @@ from .serializer import *
 
 # 회원가입 API
 class UserCreate(generics.CreateAPIView):
+    """
+        계정을 만드는 API 입니다
+        ---
+
+            - username : 계정이름
+            - password : 비밀번호
+
+        return 값은 방금 만든 계정이름과 비밀번호가 리턴됩니다
+
+        요청시 아래와 같이 요청해주시면 됩니다.
+        ```
+                username : "계정이름"
+                password : 패스워드
+        ```
+    """
     serializer_class = UserCreateSerializer
     permission_classes = (AllowAny,)
 
@@ -26,6 +41,23 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 # 기본 계정에 대한 서브유저(프로필계정)을 만드는 뷰
 class SubUserCreate(generics.CreateAPIView):
+    """
+            서브계정(프로필계정)을 만드는 API입니다
+
+        ---
+
+            - name : 계정이름
+            - kid : 어린이인지? (true/false)
+
+        return 값은 방금 만든 계정이름과 어린이 여부가 리턴됩니다
+
+        요청시 아래와 같이 요청해주시면 됩니다.
+        ```
+                user : "계정이름"
+                kid : true/false
+
+        ```
+    """
     serializer_class = SubUserCreateSerializer
 
     def perform_create(self, serializer):
@@ -36,7 +68,20 @@ class SubUserCreate(generics.CreateAPIView):
 
 
 # 로그인 API뷰
-class UserLogin(APIView):
+class Login(APIView):
+    """
+        로그인 API 입니다
+
+        ---
+        ```
+        요청시 아래와같이 해주시면 됩니다
+
+        username : 계정
+        password : 비밀번호
+
+        로그인 완료시 해당 계정의 토큰이 반환됩니다
+        ```
+    """
     # 로그인은 인증을 받지 않아도 접속가능
     permission_classes = (AllowAny,)
 
