@@ -1,12 +1,8 @@
-import random
-
 from django.db.models import Max
 from rest_framework import generics
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
 
 from accounts.models import SubUser
-from movies.models import MovieContinue
 from .serializers import *
 
 
@@ -220,7 +216,6 @@ class MarkedList(generics.ListAPIView):
 
 
 class MovieDetail(generics.RetrieveAPIView):
-
     """
         영화 디테일 페이지 url 입니다.
 

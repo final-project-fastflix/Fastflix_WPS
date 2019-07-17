@@ -14,3 +14,4 @@ urlpatterns = [
     path('followup/<int:sub_user_id>/', FollowUpMovies.as_view(), name='follow_up_movies'),
     # path('save_data/', save_data1,),
 ]
+
