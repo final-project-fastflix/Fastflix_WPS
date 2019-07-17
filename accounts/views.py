@@ -18,16 +18,3 @@ class CreateLike(View):
                     movie.likes.add(sub_user)
                     return JsonResponse({'data': 'add'})
 
-# @permission_classes((AllowAny,))
-# def get_token(request):
-#     print(request.data)
-#     username = request.POST.get('username')
-#     user_id = User.objects.get(username=username).id
-#     token = Token.objects.get(user_id=user_id).key
-#
-#     context = {'token': token}
-#
-#     return JsonResponse(context)
-#
-#     # return render(request, 'accounts/forms.html', context={'form': form})
-#

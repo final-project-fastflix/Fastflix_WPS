@@ -31,8 +31,14 @@ class LikeDisLikeMarked(models.Model):
     like_or_dislike = models.SmallIntegerField(default=0)
     marked = models.BooleanField(default=False)
     # 추가
-    # created = models.DateTimeField(auto_now_add=True, default=0)
-    # updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.movie) + " " + str(self.sub_user) + " " + str(self.like_or_dislike) + " " + str(self.marked)
+        return f'{self.movie} ' \
+            f'{self.sub_user} ' \
+            f'{self.like_or_dislike} ' \
+            f'{self.marked} ' \
+            f'{self.created} ' \
+            f'{self.updated}'
+
