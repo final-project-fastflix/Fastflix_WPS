@@ -283,43 +283,30 @@ class MovieDetail(generics.RetrieveAPIView):
 
 
 class FollowUpMovies(generics.ListAPIView):
-    queryset = Movie.objects.all()
+
+    """
+        메인화면에서 보여줄 시청 중인 영화리스트 url 입니다.
+
+        ---
+            - 요청할때 /movie/followup/'sub_user_id 값' 으로 요청하시면 됩니다.
+
+                - Ex) /movie/followup/1
+                - Ex) /movie/followup/25
+
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - video_file : 비디오파일
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지(차후 변경 예정)
+                - to_be_continue : 유저가 재생을 멈춘시간
+    """
+
     serializer_class = MovieContinueSerializer
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    def list(self, request, *args, **kwargs):
-        sub_user_id = 1
-        # queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
+    def get_queryset(self):
+        sub_user_id = self.kwargs['sub_user_id']
+        print(sub_user_id)
         queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
-
-        # serializer = MovieContinueSerializer(queryset, many=True)
-        serializer = self.get_serializer(queryset, many=True)
-
-        # movie_id = queryset[0].movie_id.id
-        # print(movie_id)
-        # movie = Movie.objects.filter(id=movie_id)
-        # print(movie)
-        #
-        # serializer2 = self.get_serializer(movie, many=True)
-        # print(serializer2.data)
-        #
-        # new_dict = dict()
-        # new_dict.update({'1': serializer2.data})
-        # print(serializer.data)
-        # print(new_dict['1'][0])
-        # new_dict['1'][0].update(serializer.data[0])
-        # print(new_dict)
-
-        # print(serializer.data)
-        return Response(serializer.data)
+        return queryset
 

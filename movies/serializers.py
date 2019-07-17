@@ -103,7 +103,7 @@ class GenreListSerializer(serializers.ModelSerializer):
 class MovieOfMovieContinueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ('id', 'name', 'video_file', 'logo_image_path', 'horizontal_image_path', 'vertical_image')
+        fields = ('id', 'name', )
 
 
 
@@ -113,12 +113,16 @@ class MovieContinueMovieSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
+            'video_file',
+            'logo_image_path',
+            'horizontal_image_path',
+            'vertical_image',
         )
 
 
 class MovieContinueSerializer(serializers.ModelSerializer):
-    movie_id = MovieContinueMovieSerializer()
+    movie = MovieContinueMovieSerializer()
 
     class Meta:
         model = MovieContinue
-        fields = ('movie_id', 'to_be_continue')
+        fields = ('movie', 'to_be_continue')
