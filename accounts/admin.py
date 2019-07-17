@@ -2,14 +2,9 @@ from django.contrib import admin
 
 from .models import *
 
-
 # Register your models here.
 
-class SubUserAdmin(admin.ModelAdmin):
-    pass
-
-
-admin.site.register(SubUser, SubUserAdmin)
+admin.site.register(SubUser)
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -20,4 +15,12 @@ class UserAdmin(admin.ModelAdmin):
 
 admin.site.register(User, UserAdmin)
 
-admin.site.register(LikeDisLikeMarked)
+
+class LikeDisLikeMaredAdmin(admin.ModelAdmin):
+    list_display_links = ['id', 'movie', ]
+    list_editable = ['like_or_dislike', 'marked', ]
+    list_display = ['id', 'movie', 'like_or_dislike',
+                    'marked', 'created', 'updated', ]
+
+
+admin.site.register(LikeDisLikeMarked, LikeDisLikeMaredAdmin)

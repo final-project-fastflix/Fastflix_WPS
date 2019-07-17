@@ -1,5 +1,5 @@
-from django.db.models import signals
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 
 from .models import User, SubUser
 
@@ -31,3 +31,13 @@ class SubUserCreateSerializer(serializers.ModelSerializer):
         return sub_user
 
 
+class GetTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Token
+        fields = ['user_id', 'key']
+
+
+class UserLoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'password', ]

@@ -16,19 +16,15 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
-
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
 # 스웨거 API 문서
 from rest_framework.permissions import AllowAny
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
-
-from rest_framework.authtoken.views import obtain_auth_token
 
 schema_url_v1_patterns = [
     path('movies/', include('movies.urls', namespace='movies_api')),
     path('accounts/', include('accounts.urls', namespace='accounts_api')),
 ]
-
 
 schema_view_v1 = get_schema_view(
     openapi.Info(
@@ -39,7 +35,7 @@ schema_view_v1 = get_schema_view(
         contact=openapi.Contact(email="sug5806@gmail.com"),
         license=openapi.License(name="WPS의 FastFlix 문서"),
     ),
-    validators=['flex'], #'ssv'],
+    validators=['flex'],  # 'ssv'],
     public=True,
     permission_classes=(AllowAny,),
     patterns=schema_url_v1_patterns,
@@ -49,8 +45,7 @@ urlpatterns = [
     path('config_site/', admin.site.urls),
     path('movies/', include('movies.urls')),
     path('accounts/', include('accounts.urls')),
-    path('get_token/', obtain_auth_token),
-  
+
     # 스웨거 API 문서
 
     # 이 주소를 입력하자 마자 다운로드가 됨 json 파일인데 쓸일은 없을듯싶음

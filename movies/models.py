@@ -81,17 +81,5 @@ class MovieContinue(models.Model):
     to_be_continue = models.CharField(max_length=20)
 
     def __str__(self):
-        # return '{movie} {sub_user} {to_be_continue}'.format(
-        #     movie=str(self.movie_id),
-        #     sub_user=str(self.sub_user_id),
-        #     to_be_continue=str(self.to_be_continue),
-        # )
         return f'{self.movie_id} {self.sub_user_id} {self.to_be_continue}'
-        # return str(self.movie_id) + " " + str(self.sub_user_id) + " " + str(self.to_be_continue)
 
-    # 영화 국적 - 완
-    # 이미지필드 최소 3개 - 완
-    # 세로 영상 - 보류
-    # 미리보기 동영상(마우스 오버를 하면 요청을 받아 보내기) - 완
-    # 이미지 가로,세로요청을 헤더로 T/F를 넣어 보냄 - ?
-    # 영화 이어보기(멈췄던) 시간 - ?
