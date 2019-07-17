@@ -35,3 +35,9 @@ class GetTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Token
         fields = ['user_id', 'key']
+
+
+class UserLoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'password', ]
