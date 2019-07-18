@@ -39,37 +39,36 @@ class MovieList(generics.ListAPIView):
     serializer_class = MovieSerializer
 
 
-# 홈페이지 메인에 쓰일 영화 1개
-class HomePage(generics.ListAPIView):
-    queryset = Movie.objects.all()
-    serializer_class = MovieListSerializer
 
-    def list(self, request, *args, **kwargs):
+# 영화를 누르면 나오는 화면에 필요한 영화들의 목록
+class GenreSelectBefore(generics.ListAPIView):
+    """
+        추가할거임
+
+    """
+    serializer_class = ListByMovieGenreAll
+
+    def get_queryset(self):
+
         # 랜덤하게 영화 1개를 가져오기 위함
         max_id = Movie.objects.all().aggregate(max_id=Max('id'))['max_id']
         while True:
             pk = random.randint(1, max_id)
 
             # 랜덤으로 선택한 영화 1편
-            main_movie = Movie.objects.filter(pk=pk).first()
-            if main_movie:
+            queryset = Movie.objects.filter(pk=pk)
+            if queryset:
                 break
 
-        main_movie_serialize = self.get_serializer(main_movie)
-        response_list = [main_movie_serialize.data]
+        return queryset
 
-        # 전체 영화 장르를 가져옴
-        genre_list = Genre.objects.all()
-
-        # 장르별 영화 목록을 가져와 dict 으로 만듬
-
-        for genre in genre_list:
-            list_by_genre = Movie.objects.filter(genre__name=genre)
-            list_by_genre_serialize = self.get_serializer(list_by_genre, many=True)
-            context = list_by_genre_serialize.data
-            response_list.append({str(genre): context})
-
-        return Response(response_list)
+    def get_serializer_context(self):
+        genre_list = ['한국 영화', '외국 영화', '어린이', '가족', '액션', '스릴러', 'SF',
+                      '판타지', '범죄', '호러', '다큐멘터리', '로맨스', '코미디', '애니', '오리지널']
+        context = super().get_serializer_context()
+        context['genre_list'] = genre_list
+        print("2번 get_serializer_context")
+        return context
 
 
 # 영화 등록
@@ -113,7 +112,7 @@ class GenreList(generics.ListAPIView):
     serializer_class = GenreListSerializer
 
 
-# 장르별 영화 리스트
+# 장르별 영화 리스트를 전체로 뿌려주기
 class ListByMovieGenre(generics.ListAPIView):
     """
         장르별 영화 리스트 입니다
@@ -146,8 +145,8 @@ class ListByMovieGenre(generics.ListAPIView):
 
     """
 
-    queryset = Movie.objects.all()
-    serializer_class = ListByMovieGenre
+    # queryset = Movie.objects.all()
+    serializer_class = ListByMovieGenreAll
 
     def get_queryset(self):
         if 'kind' in self.kwargs:
@@ -155,7 +154,7 @@ class ListByMovieGenre(generics.ListAPIView):
         else:
             kind = None
 
-        queryset = Movie.objects.filter(genre__name__icontains=kind).distinct()[:5]
+        queryset = Movie.objects.filter(genre__name__icontains=kind).distinct()[:20]
 
         return queryset
 

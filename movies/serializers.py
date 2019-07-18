@@ -9,16 +9,30 @@ from .models import Movie, Genre, MovieContinue
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = '__all__'
-        depth = 2
+        fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
 
 
-class ListByMovieGenre(serializers.ModelSerializer):
-
+class ListByMovieGenreAll(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ['name', 'horizontal_image_path', 'vertical_image']
+        fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
 
+    def to_representation(self, instance):
+        serializer_data = super().to_representation(instance)
+
+        # 지정해둔 영화 장르를 넘겨받은 context에서 가져옴
+        genre_list = self.context['genre_list']
+        genre_movie_list = dict()
+
+        # 장르별 영화 목록을 가져와 dict 으로 만듬
+        for genre in genre_list:
+            if genre == '외국 영화':
+                movie_list = Movie.objects.exclude(genre__name__icontains='한국 영화')[:1]
+            else:
+                movie_list = Movie.objects.filter(genre__name__icontains=genre)[:20]
+            movie_list_serializer = MovieSerializer(movie_list, many=True)
+            genre_movie_list[genre] = movie_list_serializer.data
+        return {'메인 영화': serializer_data, '장르별 영화리스트': genre_movie_list}
 
 
 class MovieListSerializer(serializers.ModelSerializer):
@@ -45,6 +59,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         serializer_data = super().to_representation(instance)
 
         sub_user_id = self.context['sub_user_id']
+        print(sub_user_id)
         if instance.like.filter(sub_user=sub_user_id):
             # 해당 서브유저의 좋아요 정보에 접근해서 찜목록과 좋아요 여부를 확인
             like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
