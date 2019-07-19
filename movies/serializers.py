@@ -12,15 +12,43 @@ class MovieSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
 
 
-class ListByMovieGenreAll(serializers.ModelSerializer):
+class HomePageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
+        # fields = '__all__'
+        
+    def to_representation(self, instance):
+        serializers_data = super().to_representation(instance)
+        sub_user_id = self.context['sub_user_id']
+
+        """
+        "재생중인 목록, 
+        찜 목록, 
+        넷플릭스 오리지널, 
+        추천 영화, 
+        OST좋은것,
+        여름과 관련 영화, 
+        디즈니 영화, 
+        미친듯이 웃을 수 있는 영화, 
+        영어공부하기 좋은 영화
+        """
+        speical_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은것', '여름과 관련 영화',
+                        '디즈니 영화', '미친듯이 웃을 수 있는 영화', '영어공부하기 좋은 영화', ]
+
+
+class ListByMovieGenreAll(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        # fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
+        fields = '__all__'
+        depth = 1
 
     def to_representation(self, instance):
         serializer_data = super().to_representation(instance)
 
         # 지정해둔 영화 장르를 넘겨받은 context에서 가져옴
+        print(self.context)
         genre_list = self.context['genre_list']
         genre_movie_list = dict()
 

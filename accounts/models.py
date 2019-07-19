@@ -15,7 +15,7 @@ class User(AbstractUser):
 
 class SubUser(models.Model):
 
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=20, unique=True)
     parent_user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='sub_user')
     kid = models.BooleanField(default=False, blank=True)
 

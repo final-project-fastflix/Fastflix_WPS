@@ -2,9 +2,15 @@ from django.contrib import admin
 
 from .models import *
 
+
 # Register your models here.
 
-admin.site.register(SubUser)
+class SubUserAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'parent_user']
+    list_display_links = ['name']
+
+
+admin.site.register(SubUser, SubUserAdmin)
 
 
 class UserAdmin(admin.ModelAdmin):

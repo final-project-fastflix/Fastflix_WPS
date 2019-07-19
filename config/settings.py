@@ -93,6 +93,17 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#        'NAME': 'roqkfwkehlwk',
+#        'USER': 'fastflix',
+#        'PASSWORD': 'admin12345!',
+#        'HOST': 'fastflix.cothlpjjzaxu.ap-northeast-2.rds.amazonaws.com',
+#        'PORT': '5432',
+#    }
+# }
+
 # CROS
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
@@ -116,15 +127,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # rest_framework token
-# REST_FRAMEWORK = {
-#     # 토큰 인증방식 추가
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
-#         'rest_framework.authentication.TokenAuthentication',
-#     ),
-#     'DEFAULT_PERMISSION_CLASSES': (
-#         'rest_framework.permissions.IsAuthenticated',
-#     )
-# }
+REST_FRAMEWORK = {
+    # 토큰 인증방식 추가
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    )
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/

@@ -50,6 +50,7 @@ class Movie(models.Model):
 
     video_file = models.FileField(upload_to=f'media/movie/{name}/video', blank=True, null=True)
     sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
+    # vertical_sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
 
     directors = models.ManyToManyField(Director, related_name='movie')
     actors = models.ManyToManyField(Actor, related_name='movie')
