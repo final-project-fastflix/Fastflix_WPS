@@ -59,6 +59,21 @@ class SubUserCreate(APIView):
             ```
                 헤더에 Authorization : Token '토큰값' 을 넣어주세요
                 Body에 user와 kid를 넣어서 보내주시면 됩니다
+
+                만약 여러개의 데이터를 넣고싶으신 경우 아래와 같이 보내주시면 됩니다.
+
+                요청시 :
+                {
+                    "name": ["이름1", "이름2", "이름3", "이름4"]
+                    "kid": ["false", "true", "false", "false"]
+                }
+
+
+                리턴값:
+                {
+                    "id": 이름1의 ID값
+                }
+
                     name : 프로필이름
                     kid : true/false
 

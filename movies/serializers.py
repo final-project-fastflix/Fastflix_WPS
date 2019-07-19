@@ -63,6 +63,12 @@ class ListByMovieGenreAll(serializers.ModelSerializer):
         return {'메인 영화': serializer_data, '장르별 영화리스트': genre_movie_list}
 
 
+class PreviewCellListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ['id', 'name', 'circle_image', 'logo_image_path', 'video_file', 'vertical_sample_video_file', ]
+
+
 class MovieListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie

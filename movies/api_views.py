@@ -18,6 +18,8 @@ class MovieList(generics.ListAPIView):
             - name : 영화의 이름
             - horizontal_image_path : 영화 가로 이미지 경로
             - vetical_image : 영화 세로 이미지(추후 변경예정)
+
+
     """
 
     queryset = Movie.objects.all()
@@ -27,7 +29,8 @@ class MovieList(generics.ListAPIView):
 class HomePage(generics.ListAPIView):
     serializer_class = HomePageSerializer
     """
-        맨처음 홈페이지 화면입니다
+    
+        맨처음 홈페이지 화면입니다 - 미완성
         
         ---
         
@@ -91,6 +94,33 @@ class GenreSelectBefore(generics.ListAPIView):
         context = super().get_serializer_context()
         context['genre_list'] = genre_list
         return context
+
+
+class PreviewCellList(generics.ListAPIView):
+    """
+        앱을 위한 프리뷰셀 API입니다
+
+        ---
+
+        ```
+            GET 으로 요청 하시면 됩니다
+
+            리턴값 :
+            - id : 영화의 고유 ID
+            - name : 영화 이름
+            - circle_image : 영화의 원형 이미지
+            - logo_image_path : 영화의 로고 이미지 path
+            - video_file : 영화 파일
+            - vertical_sample_video_file : 영화의 세로 샘플 영상
+        ```
+    """
+
+    serializer_class = PreviewCellListSerializer
+
+    def get_queryset(self):
+        queryset = Movie.objects.all().order_by('?')[:10]
+
+        return queryset
 
 
 # 영화 등록
@@ -279,6 +309,16 @@ class MovieDetail(generics.RetrieveAPIView):
 
 
 class FollowUpMovies(generics.ListAPIView):
+    """
+        시청중인 영화 목록입니다
+
+        ---
+
+        설명 추가 예정
+
+
+    """
+
     queryset = Movie.objects.all()
     serializer_class = MovieContinueSerializer
 
