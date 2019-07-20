@@ -85,7 +85,7 @@ class SubUserCreate(APIView):
 
         # 바디 형
         username = request.data.get('name')
-        kids = request.data.get('kids')
+        kids = request.data.get('kid')
 
         sub_user_name_list = []
         for sub_user in SubUser.objects.filter(parent_user_id=request.user.id):
