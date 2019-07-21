@@ -328,5 +328,7 @@ fabric.properties
 pyvenv.cfg
 pip-selfcheck.json
 
+config/settings.py
+
 # End of https://www.gitignore.io/api/venv,linux,macos,python,django,pycharm
 

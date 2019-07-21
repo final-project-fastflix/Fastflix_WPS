@@ -61,9 +61,9 @@ def save_data1(request):
     driver.get('http://www.netflix.com/browse')
 
     # 로그인
-    driver.find_element_by_name('userLoginId').send_keys('roqkfwkehlwk@naver.com')
+    driver.find_element_by_name('userLoginId').send_keys('')
     time.sleep(3)
-    driver.find_element_by_name('password').send_keys('admin12345!')
+    driver.find_element_by_name('password').send_keys('')
     time.sleep(3)
     driver.find_element_by_xpath('//*[@class="btn login-button btn-submit btn-small"]').click()
     time.sleep(3)
