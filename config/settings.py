@@ -97,6 +97,17 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#        'NAME': 'roqkfwkehlwk',
+#        'USER': 'fastflix',
+#        'PASSWORD': 'admin12345!',
+#        'HOST': 'fastflix.cothlpjjzaxu.ap-northeast-2.rds.amazonaws.com',
+#        'PORT': '5432',
+#    }
+# }
+
 # CROS
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True

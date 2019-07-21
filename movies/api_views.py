@@ -17,60 +17,111 @@ class MovieList(generics.ListAPIView):
         ---
             - id : 영화의 고유 ID
             - name : 영화의 이름
-            - video_file : 영화 파일
-            - sample_video_file : 영화 샘플 파일
-            - production_date : 영화 개봉 날짜
-            - uploaded_date : 영화 등록(업로드) 날짜
-            - synopsis : 영화 줄거리
-            - running_time : 영화 러닝타임
-            - view_count : 영화 조회수
-            - logo_image_path : 영화 로고 이미지 경로
             - horizontal_image_path : 영화 가로 이미지 경로
             - vetical_image : 영화 세로 이미지(추후 변경예정)
-            - circle_image : 영화 동그라미 이미지(추후 변경예정)
-            - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
-            - directors : 영화 감독
-            - actors : 배우
-            - feature : 영화 특징(Ex.흥미진진)
-            - author : 각본가
-            - genre : 장르
+
+
     """
 
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
 
 
-# 홈페이지 메인에 쓰일 영화 1개
 class HomePage(generics.ListAPIView):
-    queryset = Movie.objects.all()
-    serializer_class = MovieListSerializer
+    serializer_class = HomePageSerializer
+    """
+    
+        맨처음 홈페이지 화면입니다 - 미완성
+        
+        ---
+        
+            
+    """
 
-    def list(self, request, *args, **kwargs):
+    def get_queryset(self):
+
         # 랜덤하게 영화 1개를 가져오기 위함
         max_id = Movie.objects.all().aggregate(max_id=Max('id'))['max_id']
         while True:
             pk = random.randint(1, max_id)
 
             # 랜덤으로 선택한 영화 1편
-            main_movie = Movie.objects.filter(pk=pk).first()
-            if main_movie:
+            queryset = Movie.objects.filter(pk=pk)
+            if queryset:
                 break
 
-        main_movie_serialize = self.get_serializer(main_movie)
-        response_list = [main_movie_serialize.data]
+        return queryset
 
-        # 전체 영화 장르를 가져옴
-        genre_list = Genre.objects.all()
+    def get_serializer_context(self):
+        sub_user_id = self.kwargs['sub_user_id']
+        context = super().get_serializer_context()
+        context['sub_user_id'] = sub_user_id
+        return context
 
-        # 장르별 영화 목록을 가져와 dict 으로 만듬
 
-        for genre in genre_list:
-            list_by_genre = Movie.objects.filter(genre__name=genre)
-            list_by_genre_serialize = self.get_serializer(list_by_genre, many=True)
-            context = list_by_genre_serialize.data
-            response_list.append({str(genre): context})
+# 영화를 누르면 나오는 화면에 필요한 영화들의 목록
+class GenreSelectBefore(generics.ListAPIView):
+    """
 
-        return Response(response_list)
+        영화 탭을 누르면 나오는 화면에 전달하는 데이터를 전달하는 뷰 입니다
+
+       ---
+
+        - id : 영화의 id
+        - name : 영화의 이름
+        - horizontal_image_path : 가로 이미지의 path
+        - vertical_image : 세로 이미지 파일
+
+    """
+    serializer_class = ListByMovieGenreAll
+
+    def get_queryset(self):
+
+        # 랜덤하게 영화 1개를 가져오기 위함
+        max_id = Movie.objects.all().aggregate(max_id=Max('id'))['max_id']
+        while True:
+            pk = random.randint(1, max_id)
+
+            # 랜덤으로 선택한 영화 1편
+            queryset = Movie.objects.filter(pk=pk)
+            if queryset:
+                break
+
+        return queryset
+
+    def get_serializer_context(self):
+        genre_list = ['한국 영화', '외국 영화', '어린이', '가족', '액션', '스릴러', 'SF',
+                      '판타지', '범죄', '호러', '다큐멘터리', '로맨스', '코미디', '애니', '오리지널']
+        context = super().get_serializer_context()
+        context['genre_list'] = genre_list
+        return context
+
+
+class PreviewCellList(generics.ListAPIView):
+    """
+        앱을 위한 프리뷰셀 API입니다
+
+        ---
+
+        ```
+            GET 으로 요청 하시면 됩니다
+
+            리턴값 :
+            - id : 영화의 고유 ID
+            - name : 영화 이름
+            - circle_image : 영화의 원형 이미지
+            - logo_image_path : 영화의 로고 이미지 path
+            - video_file : 영화 파일
+            - vertical_sample_video_file : 영화의 세로 샘플 영상
+        ```
+    """
+
+    serializer_class = PreviewCellListSerializer
+
+    def get_queryset(self):
+        queryset = Movie.objects.all().order_by('?')[:10]
+
+        return queryset
 
 
 # 영화 등록
@@ -114,7 +165,7 @@ class GenreList(generics.ListAPIView):
     serializer_class = GenreListSerializer
 
 
-# 장르별 영화 리스트
+# 장르별 영화 리스트를 전체로 뿌려주기
 class ListByMovieGenre(generics.ListAPIView):
     """
         장르별 영화 리스트 입니다
@@ -147,24 +198,18 @@ class ListByMovieGenre(generics.ListAPIView):
 
     """
 
-    queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
+    # queryset = Movie.objects.all()
+    serializer_class = ListByMovieGenreAll
 
-    def list(self, request, *args, **kwargs):
-        if 'kind' in kwargs:
-            kind = kwargs['kind']
+    def get_queryset(self):
+        if 'kind' in self.kwargs:
+            kind = self.kwargs['kind']
         else:
             kind = None
 
-        queryset = Movie.objects.filter(genre__name__icontains=kind).distinct()
+        queryset = Movie.objects.filter(genre__name__icontains=kind).distinct()[:20]
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return queryset
 
 
 # 해당 유저의 찜 영화 목록
@@ -263,20 +308,6 @@ class MovieDetail(generics.RetrieveAPIView):
         context['sub_user_id'] = self.kwargs['sub_user_id']
         return context
 
-    # def retrieve(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     serializer = self.get_serializer(instance)
-    #     return Response(serializer.data)
-    #
-    # def retrieve(self, request, *args, **kwargs):
-    #     # 영화 오브젝트
-    #     instance = self.get_object()
-    #     serializer = self.get_serializer(instance)
-    #     serializer_data = serializer.data
-    #
-    #     sub_user_id = kwargs['sub_user_id']
-    #     return Response(serializer_data)
-
 
 class FollowUpMovies(generics.ListAPIView):
 
@@ -298,6 +329,7 @@ class FollowUpMovies(generics.ListAPIView):
                 - to_be_continue : 유저가 재생을 멈춘시간
     """
 
+    queryset = Movie.objects.all()
     serializer_class = MovieContinueSerializer
 
     def get_queryset(self):
@@ -306,45 +338,6 @@ class FollowUpMovies(generics.ListAPIView):
         queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
         return queryset
 
-
-# class MovieListByGenre(generics.ListAPIView):
-#     serializer_class = MovieListByGenreSerializer
-#     # queryset = Movie.objects.all()
-#
-#     def get_queryset(self):
-#         vertical_genre = self.kwargs['genre_key']
-#         if vertical_genre == '한국':
-#             horizontal_genre = '액션'
-#         else:
-#             horizontal_genre = '한국'
-#
-#         queryset = Movie.objects.filter(genre__name__icontains=vertical_genre).filter(genre__name__icontains=horizontal_genre).distinct()
-#         return queryset.order_by('?')[:20]
-#
-#     def get_serializer_context(self):
-#         context = super().get_serializer_context()
-#
-#         vertical_genre = self.kwargs['genre_key']
-#
-#         genre_list = [
-#             '한국',
-#             '미국',
-#             '액션',
-#             '스릴러',
-#             'sf',
-#             '판타지',
-#             '범죄',
-#             '호러',
-#             '다큐',
-#             '로맨스',
-#             '코미디',
-#             '애니',
-#         ]
-#
-#
-#         print(context)
-#
-#         return context
 
 class MovieListByGenre(APIView):
 

@@ -7,16 +7,24 @@ from .models import User, SubUser
 class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'password']
+        fields = ['id', 'email', 'password']
 
     def create(self, validated_data):
-        user = User.objects.create(**validated_data)
+        user = User.objects.create(username=validated_data['email'],
+                                   email=validated_data['email'],
+                                   password=validated_data['password'], )
         user.set_password(validated_data.get('password'))
         user.is_staff = True
         user.is_superuser = True
         user.save()
 
         return user
+
+
+class SubUserListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubUser
+        fields = ['name', 'kid', ]
 
 
 class SubUserCreateSerializer(serializers.ModelSerializer):
