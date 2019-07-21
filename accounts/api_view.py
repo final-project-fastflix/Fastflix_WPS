@@ -81,28 +81,53 @@ class SubUserCreate(APIView):
         """
 
     def post(self, request, *args, **kwargs):
-        # 넘겨준 데이터를 읽음
+        # 프로필계정을 5개를 초과할 수 없음
+        # 기존 등록 되어있는 프로필계정의 목록
+        sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
+
+        if len(sub_user_list) >= 5:
+            return JsonResponse(data={'error': '프로필을 더이상 만들 수 없습니다.'},
+                                status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # 바디 형
         username = request.data.get('name')
+
         kids = request.data.get('kid')
 
+        # 이름을 비교하기 위한 리스트
+        # 기존 프로필 계정 목록에서 이름만 가져온 리스트
         sub_user_name_list = []
-        for sub_user in SubUser.objects.filter(parent_user_id=request.user.id):
+        for sub_user in sub_user_list:
             sub_user_name_list.append(sub_user.name)
 
-        for i in range(len(username)):
+        # 입력한 username이 여러개인 경우
+        if isinstance(username, list):
 
-            if username[i] in sub_user_name_list:
+            for index in range(len(username)):
+
+                if username[index] in sub_user_name_list:
+                    return JsonResponse(data={'error': False}, status=status.HTTP_403_FORBIDDEN)
+
+                serializer = SubUserCreateSerializer(
+                    data={'name': username[index], 'kid': kids[index]}
+                )
+                if serializer.is_valid():
+                    serializer.save(parent_user=request.user)
+
+            return JsonResponse(data={'id': SubUser.objects.get(name=username[0]).id}, status=status.HTTP_200_OK)
+
+        # 1개 인 경우
+        else:
+            if username in sub_user_name_list:
                 return JsonResponse(data={'error': False}, status=status.HTTP_403_FORBIDDEN)
 
             serializer = SubUserCreateSerializer(
-                data={'name': username[i], 'kid': kids[i]}
+                data={'name': username, 'kid': kids}
             )
             if serializer.is_valid():
                 serializer.save(parent_user=request.user)
 
-        return JsonResponse(data={'id': SubUser.objects.get(name=username[0]).id}, status=status.HTTP_200_OK)
+            return JsonResponse(data={'id': SubUser.objects.get(name=username).id}, status=status.HTTP_200_OK)
 
 
 class SubUserList(generics.ListAPIView):
@@ -137,7 +162,7 @@ class Login(APIView):
 
         ---
         ```
-        Header에 넣어 요청하시면 됩니다
+        바디에 넣어서 보내주시면 됩니다
 
         id : 가입시 Email
         pw : 비밀번호
@@ -149,15 +174,17 @@ class Login(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        # 넘겨준 데이터를 읽음
-
         # 헤더 형
         # username = request.META.get('HTTP_ID')
         # password = request.META.get('HTTP_PW')
 
-        # 바디 형
-        username = request.POST.get('id')
-        password = request.POST.get('pw')
+        # 바디 형1 -> request.POST로도 가능하나 request.data가 좀더 유연한 방식이다
+        # username = request.POST.get('id')
+        # password = request.POST.get('pw')
+
+        # 바디 형2
+        username = request.data.get('id')
+        password = request.data.get('pw')
 
         # 해당하는 유저가 있는지 확인
         user = authenticate(username=username, password=password)

@@ -21,7 +21,7 @@ urlpatterns = [
     # 프로필 계정별 찜 목록
     path('<int:sub_user_id>/list/', MarkedList.as_view(), name="preference_list"),
     # 특정 영화의 상세 페이지
-    # sub_user_id가 필요한 이유는
+    # sub_user_id가 필요한 이유는음
     # 프로필 계정당 찜목록을 불러오기 위함
     path('<int:pk>/<int:sub_user_id>/', MovieDetail.as_view(), name='movie_detail'),
     # 재생 중 목록
