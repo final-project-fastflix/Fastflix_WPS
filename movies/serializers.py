@@ -1,4 +1,5 @@
 import random
+import time
 
 from rest_framework import serializers
 
@@ -87,7 +88,6 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         return serializer_data
 
 
-
 class LikeDisLikeMarkedSerializer(serializers.ModelSerializer):
     class Meta:
         model = LikeDisLikeMarked
@@ -100,11 +100,11 @@ class GenreListSerializer(serializers.ModelSerializer):
         model = Genre
         fields = '__all__'
 
-class MovieOfMovieContinueSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Movie
-        fields = ('id', 'name', )
 
+# class MovieOfMovieContinueSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Movie
+#         fields = ('id', 'name', )
 
 
 class MovieContinueMovieSerializer(serializers.ModelSerializer):
@@ -126,3 +126,18 @@ class MovieContinueSerializer(serializers.ModelSerializer):
     class Meta:
         model = MovieContinue
         fields = ('movie', 'to_be_continue')
+
+
+class MovieListByGenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = (
+            'id',
+            'name',
+            'sample_video_file',
+            'logo_image_path',
+            'horizontal_image_path',
+            'vertical_image',
+        )
+
+

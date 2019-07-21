@@ -1,6 +1,7 @@
-from django.db.models import Max
+from django.db.models import Max, Q
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from accounts.models import SubUser
 from .serializers import *
@@ -304,4 +305,97 @@ class FollowUpMovies(generics.ListAPIView):
         print(sub_user_id)
         queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
         return queryset
+
+
+# class MovieListByGenre(generics.ListAPIView):
+#     serializer_class = MovieListByGenreSerializer
+#     # queryset = Movie.objects.all()
+#
+#     def get_queryset(self):
+#         vertical_genre = self.kwargs['genre_key']
+#         if vertical_genre == '한국':
+#             horizontal_genre = '액션'
+#         else:
+#             horizontal_genre = '한국'
+#
+#         queryset = Movie.objects.filter(genre__name__icontains=vertical_genre).filter(genre__name__icontains=horizontal_genre).distinct()
+#         return queryset.order_by('?')[:20]
+#
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#
+#         vertical_genre = self.kwargs['genre_key']
+#
+#         genre_list = [
+#             '한국',
+#             '미국',
+#             '액션',
+#             '스릴러',
+#             'sf',
+#             '판타지',
+#             '범죄',
+#             '호러',
+#             '다큐',
+#             '로맨스',
+#             '코미디',
+#             '애니',
+#         ]
+#
+#
+#         print(context)
+#
+#         return context
+
+class MovieListByGenre(APIView):
+
+    def get(self, request, format=None, **kwargs):
+        vertical_genre = self.kwargs['genre_key']
+
+        genre_list = [
+            '한국',
+            '미국',
+            '어린이',
+            '액션',
+            '스릴러',
+            'sf',
+            '판타지',
+            '범죄',
+            '호러',
+            '다큐',
+            '로맨스',
+            '코미디',
+            '애니',
+            '외국',
+        ]
+
+        context = {}
+        vertical_q = Q(genre__name__icontains=vertical_genre)
+
+        for genre in genre_list:
+            if vertical_genre == genre:
+                continue
+            else:
+                horizontal_q = Q(genre__name__icontains=genre)
+                if vertical_genre == '외국':
+                    queryset = Movie.objects.exclude(genre__name__icontains='한국').filter(horizontal_q)
+
+                else:
+                    if genre == '외국':
+                        queryset = Movie.objects.exclude(genre__name__icontains='한국').filter(vertical_q)
+                    else:
+                        queryset = Movie.objects.filter(vertical_q).filter(horizontal_q)
+
+                if queryset.count() < 3:
+                    continue
+                serializer = MovieListByGenreSerializer(queryset.distinct()[:20], many=True)
+                context[f'{genre}'] = serializer.data
+        if vertical_genre == '외국':
+            vertical_queryset = Movie.objects.exclude(genre__name__icontains='한국')
+        else:
+            vertical_queryset = Movie.objects.filter(vertical_q)
+
+        vertical_serializer = MovieListByGenreSerializer(vertical_queryset.distinct(), many=True)
+        context[f'{vertical_genre}'] = vertical_serializer.data
+
+        return Response(context)
 

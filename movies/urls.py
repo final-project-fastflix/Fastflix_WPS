@@ -5,6 +5,7 @@ app_name = 'movie'
 
 urlpatterns = [
     path('', HomePage.as_view(), name='home_page'),
+    path('list_by_genre/<genre_key>/', MovieListByGenre.as_view(), name='movie_list_by_genre'),
     path('all/', MovieList.as_view(), name='movie_all_list'),
     path('create/', MovieCerate.as_view(), name='create'),
     path('genre/list/', GenreList.as_view(), name='genre_list'),

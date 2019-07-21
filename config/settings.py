@@ -88,8 +88,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'roqkfwkehlwk',
+        'USER': 'fastflix',
+        'PASSWORD': 'admin12345!',
+        'HOST': 'fastflix.cothlpjjzaxu.ap-northeast-2.rds.amazonaws.com',
+        'PORT': '5432',
     }
 }
 

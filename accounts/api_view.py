@@ -87,10 +87,11 @@ class Login(APIView):
 
     def post(self, request):
         if request.method == "POST":
+            print(request.META)
             # 넘겨준 데이터를 읽음
             data = request.data
-            username = data.get('username', None)
-            password = data.get('password', None)
+            username = data.get('id')
+            password = data.get('pw')
 
             # 해당하는 유저가 있는지 확인
             user = authenticate(username=username, password=password)
@@ -111,3 +112,4 @@ class Login(APIView):
                     return Response(status=status.HTTP_404_NOT_FOUND)
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
+
