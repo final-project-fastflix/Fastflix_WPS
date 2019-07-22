@@ -341,6 +341,24 @@ class FollowUpMovies(generics.ListAPIView):
 
 class MovieListByGenre(APIView):
 
+    """
+        영화 페이지에서 장르를 선택하면 뿌려줄 영화리스트 url 입니다.
+
+        ---
+            - 요청할때 /movie/followup/'sub_user_id 값' 으로 요청하시면 됩니다.
+
+                - Ex) /movie/followup/1
+                - Ex) /movie/followup/25
+
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - video_file : 비디오파일
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지(차후 변경 예정)
+                - to_be_continue : 유저가 재생을 멈춘시간
+    """
+
     def get(self, request, format=None, **kwargs):
         vertical_genre = self.kwargs['genre_key']
 
