@@ -1,5 +1,4 @@
 import random
-import time
 
 from rest_framework import serializers
 
@@ -16,26 +15,38 @@ class MovieSerializer(serializers.ModelSerializer):
 class HomePageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
-        # fields = '__all__'
-        
+        fields = '__all__'
+        depth = 1
+
     def to_representation(self, instance):
         serializers_data = super().to_representation(instance)
         sub_user_id = self.context['sub_user_id']
 
+        home_page_list = {'메인 영화': serializers_data}
+
         """
-        "재생중인 목록, 
+        재생중인 목록, 
         찜 목록, 
-        넷플릭스 오리지널, 
-        추천 영화, 
-        OST좋은것,
-        여름과 관련 영화, 
-        디즈니 영화, 
-        미친듯이 웃을 수 있는 영화, 
-        영어공부하기 좋은 영화
+       
         """
+
         speical_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은것', '여름과 관련 영화',
                         '디즈니 영화', '미친듯이 웃을 수 있는 영화', '영어공부하기 좋은 영화', ]
+
+        play_list = Movie.objects.filter(movie_continue__sub_user=sub_user_id)
+        play_list_serializer = MovieSerializer(play_list, many=True)
+        home_page_list.update({'재생중인 목록': play_list_serializer.data})
+
+        bookmark_list = Movie.objects.filter(like__sub_user=sub_user_id)
+        bookmark_list_serializer = MovieSerializer(bookmark_list, many=True)
+        home_page_list.update({"찜 목록": bookmark_list_serializer.data})
+
+        for genre in speical_list:
+            special_genre_list = Movie.objects.filter(genre__name__icontains=genre)
+            special_genre_list_serializer = MovieSerializer(special_genre_list, many=True)
+            home_page_list.update({genre: special_genre_list_serializer.data})
+
+        return home_page_list
 
 
 class ListByMovieGenreAll(serializers.ModelSerializer):
@@ -49,7 +60,7 @@ class ListByMovieGenreAll(serializers.ModelSerializer):
         serializer_data = super().to_representation(instance)
 
         # 지정해둔 영화 장르를 넘겨받은 context에서 가져옴
-        print(self.context)
+
         genre_list = self.context['genre_list']
         genre_movie_list = dict()
 
@@ -159,6 +170,7 @@ class GenreListSerializer(serializers.ModelSerializer):
         model = Genre
         fields = '__all__'
 
+
 class MovieOfMovieContinueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
@@ -197,5 +209,3 @@ class MovieListByGenreSerializer(serializers.ModelSerializer):
             'horizontal_image_path',
             'vertical_image',
         )
-
-

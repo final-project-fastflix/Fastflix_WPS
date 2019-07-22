@@ -5,7 +5,7 @@ app_name = 'movie'
 
 urlpatterns = [
     # 홈페이지 
-    # path('<int:sub_user_id>/', HomePage.as_view(), name='home_page'),
+    path('<int:sub_user_id>/', HomePage.as_view(), name='home_page'),
     # 전체 목록 중 영화를 눌렀을 경우
     path('genre_select_before/', GenreSelectBefore.as_view(), name='genre_select_before'),
     # 앱을 위한 미리보기 뷰

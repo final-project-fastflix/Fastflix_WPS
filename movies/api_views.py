@@ -340,6 +340,13 @@ class FollowUpMovies(generics.ListAPIView):
 
 
 class MovieListByGenre(APIView):
+    """
+        SADFSDFDFSDFSDFD
+
+        ---
+            ASFSDFDSFFDS
+
+    """
 
     def get(self, request, format=None, **kwargs):
         vertical_genre = self.kwargs['genre_key']

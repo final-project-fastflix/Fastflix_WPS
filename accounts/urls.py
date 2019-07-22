@@ -1,7 +1,7 @@
 from django.urls import path
 
 from .api_view import *
-from .views import LikeOrDislike, save_data1
+from .views import LikeOrDislike
 
 app_name = 'accounts'
 
