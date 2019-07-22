@@ -2,7 +2,6 @@ import random
 
 from rest_framework import serializers
 
-from accounts.models import LikeDisLikeMarked
 from .models import Movie, Genre, MovieContinue
 
 
@@ -30,57 +29,69 @@ class HomePageSerializer(serializers.ModelSerializer):
        
         """
 
-        speical_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은것', '여름과 관련 영화',
+        special_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은것', '여름과 관련 영화',
                         '디즈니 영화', '미친듯이 웃을 수 있는 영화', '영어공부하기 좋은 영화', ]
 
-        play_list = Movie.objects.filter(movie_continue__sub_user=sub_user_id)
+        # 재생중인 목록 불러오기
+        play_list = Movie.objects.filter(movie_continue__sub_user=sub_user_id).order_by('-like__updated')
         play_list_serializer = MovieSerializer(play_list, many=True)
         home_page_list.update({'재생중인 목록': play_list_serializer.data})
 
-        bookmark_list = Movie.objects.filter(like__sub_user=sub_user_id)
+        # 찜 목록 불러오기
+        bookmark_list = Movie.objects.filter(like__sub_user=sub_user_id, like__marked=True).order_by('-like__updated')
         bookmark_list_serializer = MovieSerializer(bookmark_list, many=True)
         home_page_list.update({"찜 목록": bookmark_list_serializer.data})
 
-        for genre in speical_list:
-            special_genre_list = Movie.objects.filter(genre__name__icontains=genre)
+        for genre in special_list:
+            special_genre_list = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2) \
+                                     .filter(genre__name__icontains=genre)[:20]
             special_genre_list_serializer = MovieSerializer(special_genre_list, many=True)
             home_page_list.update({genre: special_genre_list_serializer.data})
 
         return home_page_list
 
 
-class ListByMovieGenreAll(serializers.ModelSerializer):
+# class ListByMovieGenreSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Movie
+#         fields = fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
+#         depth = 1
+
+# 영화 탭에서 영화 장르선택하기 전 화면
+class GenreSelectBeforeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        # fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
         fields = '__all__'
         depth = 1
 
     def to_representation(self, instance):
         serializer_data = super().to_representation(instance)
 
-        # 지정해둔 영화 장르를 넘겨받은 context에서 가져옴
+        sub_user_id = self.context['sub_user_id']
 
+        # 지정해둔 영화 장르를 넘겨받은 context에서 가져옴
         genre_list = self.context['genre_list']
         genre_movie_list = dict()
 
         # 장르별 영화 목록을 가져와 dict 으로 만듬
         for genre in genre_list:
             if genre == '외국 영화':
-                movie_list = Movie.objects.exclude(genre__name__icontains='한국 영화')[:1]
+                movie_list = Movie.objects.exclude(genre__name__icontains='한국 영화', like__sub_user=sub_user_id,
+                                                   like__like_or_dislike=2)[:20]
             else:
-                movie_list = Movie.objects.filter(genre__name__icontains=genre)[:20]
+                movie_list = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2) \
+                                 .filter(genre__name__icontains=genre)[:20]
             movie_list_serializer = MovieSerializer(movie_list, many=True)
             genre_movie_list[genre] = movie_list_serializer.data
         return {'메인 영화': serializer_data, '장르별 영화리스트': genre_movie_list}
 
-
+# IOS전용 미리보기 시리얼라이저
 class PreviewCellListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ['id', 'name', 'circle_image', 'logo_image_path', 'video_file', 'vertical_sample_video_file', ]
 
-
+# 영화 리스트 시리얼라이저
 class MovieListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
@@ -94,7 +105,7 @@ class MovieListSerializer(serializers.ModelSerializer):
         ]
         depth = 1
 
-
+# 영화 상세정보 시리얼라이저
 class MovieDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
@@ -158,13 +169,13 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         return serializer_data
 
 
-class LikeDisLikeMarkedSerializer(serializers.ModelSerializer):
+# 프로필 계정별 찜 목록 시리얼라이저
+class MarkedListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = LikeDisLikeMarked
-        fields = ['movie']
-        depth = 2
+        model = Movie
+        fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
 
-
+# 장르 리스트 시리얼라이저
 class GenreListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre

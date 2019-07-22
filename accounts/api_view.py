@@ -65,7 +65,7 @@ class SubUserCreate(APIView):
                 요청시 :
                 {
                     "name": ["이름1", "이름2", "이름3", "이름4"]
-                    "kid": ["false", "true", "false", "false"]
+                    "kid": [false, true, false, false]
                 }
 
 
@@ -199,6 +199,7 @@ class Login(APIView):
                 token = Token.objects.get(user_id=user_id).key
 
                 context = {'token': token}
+
 
                 return JsonResponse(context, status=status.HTTP_200_OK)
             else:

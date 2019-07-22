@@ -18,4 +18,10 @@ class MovieAdmin(admin.ModelAdmin):
 
 admin.site.register(Movie, MovieAdmin)
 
-admin.site.register(MovieContinue)
+
+class MovieContinueAdmin(admin.ModelAdmin):
+    list_display = ['id', 'movie', 'sub_user', 'to_be_continue']
+    list_display_links = ['id', 'movie']
+
+
+admin.site.register(MovieContinue,MovieContinueAdmin)
