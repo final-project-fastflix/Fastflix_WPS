@@ -27,15 +27,20 @@ class MovieList(generics.ListAPIView):
 
 
 class HomePage(generics.ListAPIView):
-    serializer_class = HomePageSerializer
     """
-    
-        맨처음 홈페이지 화면입니다 - 미완성
-        
+        맨처음 홈페이지 화면입니다
+
         ---
-        
-            
+            - 맨처음 나오는 영화는 맨위에 크게 들어갈 영화 입니다.
+
+            헤더에
+            - Authorization : Token 토큰 값
+            - subuserid : 프로필계정의 ID
+
+            를 입력해 주세요 (subuserid는 언더바(_)가 없습니다)
     """
+
+    serializer_class = HomePageSerializer
 
     def get_queryset(self):
         # 랜덤하게 영화 1개를 가져오기 위함
@@ -57,7 +62,7 @@ class HomePage(generics.ListAPIView):
         return context
 
 
-# 영화를 누르면 나오는 화면에 필요한 영화들의 목록
+# 영화 탭을 누르면 나오는 화면에 필요한 영화들의 목록
 class GenreSelectBefore(generics.ListAPIView):
     """
 
@@ -65,10 +70,19 @@ class GenreSelectBefore(generics.ListAPIView):
 
        ---
 
-        - id : 영화의 id
-        - name : 영화의 이름
-        - horizontal_image_path : 가로 이미지의 path
-        - vertical_image : 세로 이미지 파일
+            헤더에
+            - Authorization : Token 토큰 값
+            - subuserid : 프로필계정의 ID
+
+            를 입력해 주세요 (subuserid는 언더바(_)가 없습니다)
+
+
+           맨 처음 나오는 영화 1개는 맨위에 크게 등록되는 영화 입니다
+
+            - id : 영화의 id
+            - name : 영화의 이름
+            - horizontal_image_path : 가로 이미지의 path
+            - vertical_image : 세로 이미지 파일
 
     """
     serializer_class = GenreSelectBeforeSerializer
@@ -95,6 +109,7 @@ class GenreSelectBefore(generics.ListAPIView):
         context['genre_list'] = genre_list
         context['sub_user_id'] = sub_user_id
         return context
+
 
 # 앱을 위한 뷰
 class PreviewCellList(generics.ListAPIView):
@@ -156,6 +171,14 @@ class GenreList(generics.ListAPIView):
         영화 장르 리스트입니다
 
         ---
+
+            헤더에
+
+            - Authorization : Token 토큰 값
+
+            를 입력해 주세요
+
+
             - id : 영화 장르 ID
             - name : 영화 장르
     
@@ -219,6 +242,14 @@ class MarkedList(generics.ListAPIView):
         유저별 찜 목록 영화 리스트 입니다
 
         ---
+
+            헤더에
+            - Authorization : Token 토큰 값
+            - subuserid : 프로필계정의 ID
+
+            를 입력해 주세요 (subuserid는 언더바(_)가 없습니다)
+
+
             - 요청할때 "/movies/my_list" 로 요청하시면 됩니다
 
                 - Ex) /movies/my_list/
@@ -244,10 +275,21 @@ class MovieDetail(generics.RetrieveAPIView):
         영화 디테일 페이지 url 입니다.
 
         ---
-            - 요청할때 "/movie/'영화 ID값'/'sub_user_id 값'" 으로 요청하시면 됩니다.
 
-                - Ex) /movie/2/1
-                - Ex) /movie/7/35
+            헤더에
+
+            - Authorization : Token 토큰 값
+            - subuserid : 프로필계정의 ID
+
+            를 입력해 주세요 (subuserid는 언더바(_)가 없습니다)
+
+
+
+
+            - 요청할때 "/movie/'영화 ID값'" 으로 요청하시면 됩니다.
+
+                - Ex) /movie/2
+                - Ex) /movie/7
 
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
