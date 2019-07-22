@@ -203,5 +203,6 @@ class Login(APIView):
                 return JsonResponse(context, status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
+
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)

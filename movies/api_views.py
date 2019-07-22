@@ -1,6 +1,7 @@
-from django.db.models import Max
+from django.db.models import Max, Q
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from accounts.models import SubUser
 from .serializers import *
@@ -309,43 +310,85 @@ class MovieDetail(generics.RetrieveAPIView):
 
 
 class FollowUpMovies(generics.ListAPIView):
+
     """
-        시청중인 영화 목록입니다
+        메인화면에서 보여줄 시청 중인 영화리스트 url 입니다.
 
         ---
+            - 요청할때 /movie/followup/'sub_user_id 값' 으로 요청하시면 됩니다.
 
-        설명 추가 예정
+                - Ex) /movie/followup/1
+                - Ex) /movie/followup/25
 
-
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - video_file : 비디오파일
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지(차후 변경 예정)
+                - to_be_continue : 유저가 재생을 멈춘시간
     """
 
     queryset = Movie.objects.all()
     serializer_class = MovieContinueSerializer
 
-    # get queryset
-
-    def list(self, request, *args, **kwargs):
-        sub_user_id = 1
-        # queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
+    def get_queryset(self):
+        sub_user_id = self.kwargs['sub_user_id']
+        print(sub_user_id)
         queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
+        return queryset
 
-        # serializer = MovieContinueSerializer(queryset, many=True)
-        serializer = self.get_serializer(queryset, many=True)
 
-        # movie_id = queryset[0].movie_id.id
-        # print(movie_id)
-        # movie = Movie.objects.filter(id=movie_id)
-        # print(movie)
-        #
-        # serializer2 = self.get_serializer(movie, many=True)
-        # print(serializer2.data)
-        #
-        # new_dict = dict()
-        # new_dict.update({'1': serializer2.data})
-        # print(serializer.data)
-        # print(new_dict['1'][0])
-        # new_dict['1'][0].update(serializer.data[0])
-        # print(new_dict)
+class MovieListByGenre(APIView):
 
-        # print(serializer.data)
-        return Response(serializer.data)
+    def get(self, request, format=None, **kwargs):
+        vertical_genre = self.kwargs['genre_key']
+
+        genre_list = [
+            '한국',
+            '미국',
+            '어린이',
+            '액션',
+            '스릴러',
+            'sf',
+            '판타지',
+            '범죄',
+            '호러',
+            '다큐',
+            '로맨스',
+            '코미디',
+            '애니',
+            '외국',
+        ]
+
+        context = {}
+        vertical_q = Q(genre__name__icontains=vertical_genre)
+
+        for genre in genre_list:
+            if vertical_genre == genre:
+                continue
+            else:
+                horizontal_q = Q(genre__name__icontains=genre)
+                if vertical_genre == '외국':
+                    queryset = Movie.objects.exclude(genre__name__icontains='한국').filter(horizontal_q)
+
+                else:
+                    if genre == '외국':
+                        queryset = Movie.objects.exclude(genre__name__icontains='한국').filter(vertical_q)
+                    else:
+                        queryset = Movie.objects.filter(vertical_q).filter(horizontal_q)
+
+                if queryset.count() < 3:
+                    continue
+                serializer = MovieListByGenreSerializer(queryset.distinct()[:20], many=True)
+                context[f'{genre}'] = serializer.data
+        if vertical_genre == '외국':
+            vertical_queryset = Movie.objects.exclude(genre__name__icontains='한국')
+        else:
+            vertical_queryset = Movie.objects.filter(vertical_q)
+
+        vertical_serializer = MovieListByGenreSerializer(vertical_queryset.distinct(), many=True)
+        context[f'{vertical_genre}'] = vertical_serializer.data
+
+        return Response(context)
+
