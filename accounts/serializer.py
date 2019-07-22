@@ -4,6 +4,7 @@ from rest_framework.authtoken.models import Token
 from .models import User, SubUser
 
 
+# 계정을 만드는 시리얼라이저
 class UserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -21,12 +22,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return user
 
 
+# 프로필 계정 목록을 보여주는 시리얼라이저
 class SubUserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubUser
-        fields = ['name', 'kid', ]
+        fields = '__all__'
 
 
+# 서브유저를 만드는 시리얼라이저
 class SubUserCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubUser
@@ -39,12 +42,14 @@ class SubUserCreateSerializer(serializers.ModelSerializer):
         return sub_user
 
 
+# 토큰을 얻는 시리얼라이저
 class GetTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = Token
         fields = ['user_id', 'key']
 
 
+# 로그인을 하는 시리얼라이저
 class UserLoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
