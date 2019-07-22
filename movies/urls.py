@@ -30,7 +30,7 @@ urlpatterns = [
 
     # 특정 영화의 상세 페이지
     # sub_user_id가 필요한 이유는
-    # 프로필 계정당 찜목록을 불러오기 위함
+    # 프로필 계정당 좋아요, 싫어요, 찜목록, 재생시간을 불러오기 위함
     path('<int:pk>/', MovieDetail.as_view(), name='movie_detail'),
 
     # 재생 중 목록
