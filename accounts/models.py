@@ -14,7 +14,6 @@ class User(AbstractUser):
 
 
 class SubUser(models.Model):
-
     name = models.CharField(max_length=20, unique=True)
     parent_user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='sub_user')
     kid = models.BooleanField(default=False, blank=True)
@@ -42,3 +41,8 @@ class LikeDisLikeMarked(models.Model):
             f'{self.created} ' \
             f'{self.updated}'
 
+
+class ProfileImage(models.Model):
+    name = models.CharField(max_length=20, blank=True)
+    category = models.CharField(max_length=50)
+    image_path = models.TextField()

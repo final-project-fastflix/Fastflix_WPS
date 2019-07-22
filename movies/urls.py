@@ -26,5 +26,6 @@ urlpatterns = [
     path('<int:pk>/<int:sub_user_id>/', MovieDetail.as_view(), name='movie_detail'),
     # 재생 중 목록
     path('followup/<int:sub_user_id>/', FollowUpMovies.as_view(), name='follow_up_movies'),
+    path('list_by_genre/<genre_key>/<int:sub_user_id>/', MovieListByGenre.as_view(), name='MovieListByGenre'),
 ]
 

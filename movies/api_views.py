@@ -342,25 +342,30 @@ class FollowUpMovies(generics.ListAPIView):
 class MovieListByGenre(APIView):
 
     """
-        영화 페이지에서 장르를 선택하면 뿌려줄 영화리스트 url 입니다.
+        영화 페이지에서 장르를 선택하면 보여줄 영화리스트 url 입니다.
 
         ---
-            - 요청할때 /movie/followup/'sub_user_id 값' 으로 요청하시면 됩니다.
+            - 요청할때 /movies/list_by_genre/{genre_key}/{sub_user_id}/ 으로 요청하시면 됩니다.
 
-                - Ex) /movie/followup/1
-                - Ex) /movie/followup/25
+                - Ex) /movies/list_by_genre/액션/1/
+                - Ex) /movies/list_by_genre/외국/5/
+
+            genre_key 종류
+
+            '한국','미국','어린이','액션','스릴러','sf','판타지',
+            '범죄','호러','다큐','로맨스','코미디','애니','외국',
 
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
-                - video_file : 비디오파일
+                - sample_video_file : 미리보기 비디오파일
                 - logo_image_path : 로고 이미지의 경로
                 - horizontal_image_path : 가로 이미지 경로
-                - vertical_image : 세로 이미지(차후 변경 예정)
-                - to_be_continue : 유저가 재생을 멈춘시간
+                - vertical_image : 세로 이미지
     """
 
     def get(self, request, format=None, **kwargs):
         vertical_genre = self.kwargs['genre_key']
+        sub_user = self.kwargs['sub_user_id']
 
         genre_list = [
             '한국',
@@ -388,22 +393,27 @@ class MovieListByGenre(APIView):
             else:
                 horizontal_q = Q(genre__name__icontains=genre)
                 if vertical_genre == '외국':
-                    queryset = Movie.objects.exclude(genre__name__icontains='한국').filter(horizontal_q)
+                    queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2)\
+                        .exclude(genre__name__icontains='한국').filter(horizontal_q)
 
                 else:
                     if genre == '외국':
-                        queryset = Movie.objects.exclude(genre__name__icontains='한국').filter(vertical_q)
+                        queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2)\
+                            .exclude(genre__name__icontains='한국').filter(vertical_q)
                     else:
-                        queryset = Movie.objects.filter(vertical_q).filter(horizontal_q)
+                        queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2)\
+                            .filter(vertical_q).filter(horizontal_q)
 
                 if queryset.count() < 3:
                     continue
                 serializer = MovieListByGenreSerializer(queryset.distinct()[:20], many=True)
                 context[f'{genre}'] = serializer.data
         if vertical_genre == '외국':
-            vertical_queryset = Movie.objects.exclude(genre__name__icontains='한국')
+            vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2)\
+                .exclude(genre__name__icontains='한국')
         else:
-            vertical_queryset = Movie.objects.filter(vertical_q)
+            vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2)\
+                .filter(vertical_q)
 
         vertical_serializer = MovieListByGenreSerializer(vertical_queryset.distinct(), many=True)
         context[f'{vertical_genre}'] = vertical_serializer.data
