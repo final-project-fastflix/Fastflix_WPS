@@ -50,6 +50,7 @@ class Movie(models.Model):
 
     video_file = models.FileField(upload_to=f'media/movie/{name}/video', blank=True, null=True)
     sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
+    vertical_sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
 
     directors = models.ManyToManyField(Director, related_name='movie')
     actors = models.ManyToManyField(Actor, related_name='movie')
@@ -76,8 +77,8 @@ class Movie(models.Model):
 
 
 class MovieContinue(models.Model):
-    movie_id = models.ForeignKey(Movie, related_name='movie_continue', on_delete=models.CASCADE)
-    sub_user_id = models.ForeignKey('accounts.SubUser', related_name='movie_continue', on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, related_name='movie_continue', on_delete=models.CASCADE)
+    sub_user = models.ForeignKey('accounts.SubUser', related_name='movie_continue', on_delete=models.CASCADE)
     to_be_continue = models.CharField(max_length=20)
 
     def __str__(self):

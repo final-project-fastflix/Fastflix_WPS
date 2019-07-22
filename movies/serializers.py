@@ -1,16 +1,73 @@
 import random
+import time
 
 from rest_framework import serializers
 
-from .models import Movie, Genre, MovieContinue
 from accounts.models import LikeDisLikeMarked
+from .models import Movie, Genre, MovieContinue
 
 
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
+        fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
+
+
+class HomePageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
+        # fields = '__all__'
+        
+    def to_representation(self, instance):
+        serializers_data = super().to_representation(instance)
+        sub_user_id = self.context['sub_user_id']
+
+        """
+        "재생중인 목록, 
+        찜 목록, 
+        넷플릭스 오리지널, 
+        추천 영화, 
+        OST좋은것,
+        여름과 관련 영화, 
+        디즈니 영화, 
+        미친듯이 웃을 수 있는 영화, 
+        영어공부하기 좋은 영화
+        """
+        speical_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은것', '여름과 관련 영화',
+                        '디즈니 영화', '미친듯이 웃을 수 있는 영화', '영어공부하기 좋은 영화', ]
+
+
+class ListByMovieGenreAll(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        # fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
         fields = '__all__'
-        depth = 2
+        depth = 1
+
+    def to_representation(self, instance):
+        serializer_data = super().to_representation(instance)
+
+        # 지정해둔 영화 장르를 넘겨받은 context에서 가져옴
+        print(self.context)
+        genre_list = self.context['genre_list']
+        genre_movie_list = dict()
+
+        # 장르별 영화 목록을 가져와 dict 으로 만듬
+        for genre in genre_list:
+            if genre == '외국 영화':
+                movie_list = Movie.objects.exclude(genre__name__icontains='한국 영화')[:1]
+            else:
+                movie_list = Movie.objects.filter(genre__name__icontains=genre)[:20]
+            movie_list_serializer = MovieSerializer(movie_list, many=True)
+            genre_movie_list[genre] = movie_list_serializer.data
+        return {'메인 영화': serializer_data, '장르별 영화리스트': genre_movie_list}
+
+
+class PreviewCellListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ['id', 'name', 'circle_image', 'logo_image_path', 'video_file', 'vertical_sample_video_file', ]
 
 
 class MovieListSerializer(serializers.ModelSerializer):
@@ -35,7 +92,9 @@ class MovieDetailSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         serializer_data = super().to_representation(instance)
+
         sub_user_id = self.context['sub_user_id']
+        print(sub_user_id)
         if instance.like.filter(sub_user=sub_user_id):
             # 해당 서브유저의 좋아요 정보에 접근해서 찜목록과 좋아요 여부를 확인
             like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
@@ -79,13 +138,13 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
         for i in range(len(similar_movies_serializer.data)):
             if similar_movies[i].like.filter(sub_user_id=sub_user_id):
-                similar_movies_serializer.data[i]['marked'] = similar_movies[i].like.filter(sub_user_id=sub_user_id)[0].marked
+                similar_movies_serializer.data[i]['marked'] = similar_movies[i].like.filter(sub_user_id=sub_user_id)[
+                    0].marked
             else:
                 similar_movies_serializer.data[i]['marked'] = False
 
         serializer_data['similar_movies'] = similar_movies_serializer.data
         return serializer_data
-
 
 
 class LikeDisLikeMarkedSerializer(serializers.ModelSerializer):
@@ -106,19 +165,37 @@ class MovieOfMovieContinueSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'video_file', 'logo_image_path', 'horizontal_image_path', 'vertical_image')
 
 
-
 class MovieContinueMovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = (
             'id',
             'name',
+            'video_file',
+            'logo_image_path',
+            'horizontal_image_path',
+            'vertical_image',
         )
 
 
 class MovieContinueSerializer(serializers.ModelSerializer):
-    movie_id = MovieContinueMovieSerializer()
+    movie = MovieContinueMovieSerializer()
 
     class Meta:
         model = MovieContinue
-        fields = ('movie_id', 'to_be_continue')
+        fields = ('movie', 'to_be_continue')
+
+
+class MovieListByGenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = (
+            'id',
+            'name',
+            'sample_video_file',
+            'logo_image_path',
+            'horizontal_image_path',
+            'vertical_image',
+        )
+
+
