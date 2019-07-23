@@ -39,7 +39,7 @@ class Feature(models.Model):
 
 
 class Degree(models.Model):
-    name = models.CharField(max_length=10)
+    name = models.CharField(max_length=30)
 
     def __str__(self):
         return self.name
@@ -68,7 +68,7 @@ class Movie(models.Model):
 
     logo_image_path = models.TextField(default=None, blank=True, null=True)
     horizontal_image_path = models.TextField(default=None, blank=True, null=True)
-    vertical_image = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
+    vertical_image = models.ImageField(upload_to=f'media/movie/{name}/horizontal', blank=True, null=True)
     circle_image = models.ImageField(upload_to=f'media/movie/{name}/circle', null=True, blank=True)
     big_image_path = models.TextField(default=None, null=True, blank=True)
 
