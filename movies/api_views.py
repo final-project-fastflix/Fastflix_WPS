@@ -423,7 +423,7 @@ class MovieListByGenre(APIView):
         return Response(context)
 
 
-# 프로필계정 가입후 좋아하는 영화 목록3개 선택하기(무작위 50개) -> 성능 개선 필요
+# 프로필 생성후 좋아하는 영화 3개 선택하기(무작위 50개) -> 성능 개선 필요
 class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
     """
         프로필계정 가입후 좋아하는 영화 목록3개 선택하기입니다. 영화 60개를 리턴합니다.
