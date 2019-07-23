@@ -139,7 +139,7 @@ class SubUserCreate(APIView):
         for sub_user in sub_user_list:
             sub_user_name_list.append(sub_user.name)
 
-        # 입력한 username이 여러개인 경우
+        # 입력한 username이 여러개인 경우(맨 처음 회원가입 하였을때)
         if isinstance(username, list):
 
             for index in range(len(username)):
@@ -158,7 +158,7 @@ class SubUserCreate(APIView):
 
             return JsonResponse(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
 
-        # 1개 인 경우
+        # 입력된 username이 1개 인 경우(일반적인 경우)
         else:
             if username in sub_user_name_list:
                 return JsonResponse(data={'error': False}, status=status.HTTP_403_FORBIDDEN)

@@ -85,11 +85,13 @@ class GenreSelectBeforeSerializer(serializers.ModelSerializer):
             genre_movie_list[genre] = movie_list_serializer.data
         return {'메인 영화': serializer_data, '장르별 영화리스트': genre_movie_list}
 
+
 # IOS전용 미리보기 시리얼라이저
 class PreviewCellListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ['id', 'name', 'circle_image', 'logo_image_path', 'video_file', 'vertical_sample_video_file', ]
+
 
 # 영화 리스트 시리얼라이저
 class MovieListSerializer(serializers.ModelSerializer):
@@ -104,6 +106,7 @@ class MovieListSerializer(serializers.ModelSerializer):
             'like',
         ]
         depth = 1
+
 
 # 영화 상세정보 시리얼라이저
 class MovieDetailSerializer(serializers.ModelSerializer):
@@ -174,6 +177,7 @@ class MarkedListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
+
 
 # 장르 리스트 시리얼라이저
 class GenreListSerializer(serializers.ModelSerializer):
