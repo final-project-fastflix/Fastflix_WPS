@@ -35,5 +35,8 @@ urlpatterns = [
 
     # 재생 중 목록
     path('followup/', FollowUpMovies.as_view(), name='follow_up_movies'),
+
+    # 프로필계정 생성후 좋아하는 콘텐츠 선택하기
+    path('profiles/setup/', RecommendMovieAfterCreateSubUser.as_view(), name='profiles_setup'),
 ]
 

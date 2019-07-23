@@ -224,3 +224,4 @@ class MovieListByGenreSerializer(serializers.ModelSerializer):
             'horizontal_image_path',
             'vertical_image',
         )
+

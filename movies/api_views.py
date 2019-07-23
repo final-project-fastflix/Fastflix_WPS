@@ -421,3 +421,51 @@ class MovieListByGenre(APIView):
         context[f'{vertical_genre}'] = vertical_serializer.data
 
         return Response(context)
+
+
+# 프로필계정 가입후 좋아하는 영화 목록3개 선택하기(무작위 50개) -> 성능 개선 필요
+class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
+    """
+        프로필계정 가입후 좋아하는 영화 목록3개 선택하기입니다. 영화 60개를 리턴합니다.
+
+        ---
+
+            너무 느려서 성능 개선이 필수입니다
+
+            header에
+
+                Authorization: Token "토큰값"
+
+            을 넣어주세요
+
+            리턴값:
+                [
+                    {
+                        "id": 영화의 ID,
+                        "name": 영화 제목
+                        "horizontal_image_path": 영화의 가로 이미지 path
+                        "vertical_image": 영화의 세로 이미지 path
+                    },
+                    ... 이하 59개 동일
+                ]
+
+    """
+    serializer_class = MovieSerializer
+
+    def get_queryset(self):
+        # 등록된 영화의 최대 ID값을 구함
+        max_id = Movie.objects.all().aggregate(max_id=Max("id"))['max_id']
+        # queryset를 아래에서 사용하기 위해 미리 1개를 뽑아놓음
+        queryset = Movie.objects.filter(pk=random.randint(1, max_id))
+
+        # queryset의 갯수가 60개 이상일때 까지
+        while queryset.count() <= 60:
+            # 영화의 ID값 중에 하나를 골라옴
+            pk = random.randint(1, max_id)
+            # ID값에 해당하는 영화를 가져옴
+            movie = Movie.objects.filter(pk=pk)
+            if movie:
+                # 쿼리셋에 붙임
+                queryset |= movie
+
+        return queryset
