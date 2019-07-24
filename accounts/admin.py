@@ -25,7 +25,7 @@ admin.site.register(User, UserAdmin)
 class LikeDisLikeMaredAdmin(admin.ModelAdmin):
     list_display_links = ['movie', ]
     list_editable = ['like_or_dislike', 'marked', ]
-    list_display = ['sub_user', 'movie', 'like_or_dislike',
+    list_display = ['sub_user', 'movie', 'movie_id','like_or_dislike',
                     'marked', 'created', 'updated', ]
 
 

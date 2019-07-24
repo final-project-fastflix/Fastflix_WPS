@@ -45,5 +45,13 @@ urlpatterns = [
     # 카테고리별로 영화 요청
     path('genre/<kind>/list/', MovieListFirstGenre.as_view(), name='genre_movie'),
 
+    # 좋아요 추가
+    path('like/', AddLike.as_view(), name='like'),
+
+    # 싫어요 추가
+    path('dislike/', AddDisLike.as_view(), name='dislike'),
+
+    # 찜목록 추가, 제거
+    path('add_delete_my_list/', MyList.as_view(), name='my_list'),
 ]
 
