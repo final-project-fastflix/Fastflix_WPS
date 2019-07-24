@@ -19,7 +19,6 @@ class MovieList(generics.ListAPIView):
             - horizontal_image_path : 영화 가로 이미지 경로
             - vetical_image : 영화 세로 이미지(추후 변경예정)
 
-
     """
 
     queryset = Movie.objects.all()
@@ -189,7 +188,7 @@ class GenreList(generics.ListAPIView):
 
 
 # 장르별 영화 리스트를 전체로 뿌려주기
-class ListByMovieGenre(generics.ListAPIView):
+class MovieListFirstGenre(generics.ListAPIView):
     """
         장르별 영화 리스트 입니다
 
@@ -201,51 +200,24 @@ class ListByMovieGenre(generics.ListAPIView):
                 - Ex) movie/genre/스릴러/list/
 
                 - name : 영화 이름
-                - video_file : 비디오파일
-                - sample_video_file : 샘플 비디오 파일
-                - production_date : 영화 개봉 날짜
-                - uploaded_date : 영화 등록(업로드) 날짜
-                - synopsis : 영화 줄거리
-                - running_time : 영화 러닝타임
-                - view_count : 영화 조회수
                 - logo_image_path : 로고 이미지의 경로
                 - horizontal_image_path : 가로 이미지 경로
                 - vertical_image : 세로 이미지(차후 변경 예정)
-                - circle_image : 원형 이미지(차후 변경예정)
-                - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
-                - directors : 영화 감독
-                - actors : 배우
-                - feature : 영화 특징(Ex.흥미진진)
-                - author : 각본가
-                - genre : 장르
 
     """
-
-    # queryset = Movie.objects.all()
     serializer_class = MovieListSerializer
 
     def get_queryset(self):
         if 'kind' in self.kwargs:
-            print(self.kwargs)
             kind = self.kwargs['kind']
         else:
             kind = None
-        print(self.request.META)
         sub_user_id = self.request.META['HTTP_SUBUSERID']
-        print(sub_user_id)
+
         queryset = Movie.objects.filter(genre__name__icontains=kind).exclude(like__sub_user_id=sub_user_id,
                                                                              like__like_or_dislike=2).distinct()[:18]
-        return queryset
 
-    # def get_queryset(self):
-    #     if 'kind' in self.kwargs:
-    #         kind = self.kwargs['kind']
-    #     else:
-    #         kind = None
-    #
-    #     queryset = Movie.objects.filter(genre__name__icontains=kind).distinct()[:20]
-    #
-    #     return queryset
+        return queryset
 
 
 # 해당 유저의 찜 영화 목록
@@ -374,7 +346,6 @@ class FollowUpMovies(generics.ListAPIView):
 
 # 장르별 영화 리스트
 class MovieListByGenre(APIView):
-
     """
         영화 페이지에서 장르를 선택하면 보여줄 영화리스트 url 입니다.
 
@@ -429,15 +400,15 @@ class MovieListByGenre(APIView):
             else:
                 horizontal_q = Q(genre__name__icontains=genre)
                 if vertical_genre == '외국':
-                    queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2)\
+                    queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
                         .exclude(genre__name__icontains='한국').filter(horizontal_q).distinct()
 
                 else:
                     if genre == '외국':
-                        queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2)\
+                        queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
                             .exclude(genre__name__icontains='한국').filter(vertical_q).distinct()
                     else:
-                        queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2)\
+                        queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
                             .filter(vertical_q).filter(horizontal_q).distinct()
 
                 if queryset.count() < 3:
@@ -446,10 +417,10 @@ class MovieListByGenre(APIView):
                 context[f'{genre}'] = serializer.data
 
         if vertical_genre == '외국':
-            vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2)\
+            vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2) \
                 .exclude(genre__name__icontains='한국').distinct()
         else:
-            vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2)\
+            vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2) \
                 .filter(vertical_q).distinct()
 
         vertical_serializer = MovieListByGenreSerializer(vertical_queryset.order_by('?'), many=True)
