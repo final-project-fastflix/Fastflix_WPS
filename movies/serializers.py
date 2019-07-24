@@ -22,6 +22,9 @@ class HomePageSerializer(serializers.ModelSerializer):
         sub_user_id = self.context['sub_user_id']
 
         home_page_list = {'메인 영화': serializers_data}
+        special_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은 것', '여름과 관련 영화',
+                        '디즈니 영화', '미친듯이 웃을 수 있는 영화', '영어공부하기 좋은 영화', ]
+        home_page_list.update({'특별 장르': special_list})
 
         """
         재생중인 목록, 
@@ -34,24 +37,23 @@ class HomePageSerializer(serializers.ModelSerializer):
        
         """
 
-        special_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은 것', '여름과 관련 영화',
-                        '디즈니 영화', '미친듯이 웃을 수 있는 영화', '영어공부하기 좋은 영화', ]
+
 
         # 재생중인 목록 불러오기
-        play_list = Movie.objects.filter(movie_continue__sub_user=sub_user_id).order_by('-like__updated')
-        play_list_serializer = MovieSerializer(play_list, many=True)
-        home_page_list.update({'재생중인 목록': play_list_serializer.data})
-
-        # 찜 목록 불러오기
-        bookmark_list = Movie.objects.filter(like__sub_user=sub_user_id, like__marked=True).order_by('-like__updated')
-        bookmark_list_serializer = MovieSerializer(bookmark_list, many=True)
-        home_page_list.update({"찜 목록": bookmark_list_serializer.data})
-
-        for genre in special_list:
-            special_genre_list = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2) \
-                                     .filter(genre__name__icontains=genre)[:20]
-            special_genre_list_serializer = MovieSerializer(special_genre_list, many=True)
-            home_page_list.update({genre: special_genre_list_serializer.data})
+        # play_list = Movie.objects.filter(movie_continue__sub_user=sub_user_id).order_by('-like__updated')
+        # play_list_serializer = MovieSerializer(play_list, many=True)
+        # home_page_list.update({'재생중인 목록': play_list_serializer.data})
+        #
+        # # 찜 목록 불러오기
+        # bookmark_list = Movie.objects.filter(like__sub_user=sub_user_id, like__marked=True).order_by('-like__updated')
+        # bookmark_list_serializer = MovieSerializer(bookmark_list, many=True)
+        # home_page_list.update({"찜 목록": bookmark_list_serializer.data})
+        #
+        # for genre in special_list:
+        #     special_genre_list = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2) \
+        #                              .filter(genre__name__icontains=genre)[:20]
+        #     special_genre_list_serializer = MovieSerializer(special_genre_list, many=True)
+        #     home_page_list.update({genre: special_genre_list_serializer.data})
 
         return home_page_list
 
