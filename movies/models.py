@@ -40,10 +40,7 @@ class Feature(models.Model):
 
 class Degree(models.Model):
     name = models.CharField(max_length=30)
-<<<<<<< HEAD
-=======
     degree_image_path = models.TextField(blank=True)
->>>>>>> 71415c6dffe4e93ad0a48601d04850c1dbaf9835
 
     def __str__(self):
         return self.name
