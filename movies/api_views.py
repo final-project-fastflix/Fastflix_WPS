@@ -104,7 +104,6 @@ class GenreSelectBefore(generics.ListAPIView):
 
     def get_serializer_context(self):
         sub_user_id = self.request.META['HTTP_SUBUSERID']
-
         genre_list = ['한국 영화', '외국 영화', '어린이', '가족', '액션', '스릴러', 'SF',
                       '판타지', '범죄', '호러', '다큐멘터리', '로맨스', '코미디', '애니', '오리지널']
         context = super().get_serializer_context()
@@ -208,7 +207,6 @@ class MovieListFirstGenre(generics.ListAPIView):
                 - vertical_image : 세로 이미지(차후 변경 예정)
 
     """
-
     serializer_class = MovieListSerializer
 
     def get_queryset(self):
@@ -351,17 +349,32 @@ class FollowUpMovies(generics.ListAPIView):
 # 장르별 영화 리스트
 class MovieListByGenre(APIView):
     """
-        SADFSDFDFSDFSDFD
+        영화 페이지에서 장르를 선택하면 보여줄 영화리스트 url 입니다.
 
         ---
-            ASFSDFDSFFDS
+            - 요청할때 /movies/list_by_genre/'genre_key'/ 로 요청하시면 됩니다.
 
+                - Ex) /movies/list_by_genre/액션/
+                - Ex) /movies/list_by_genre/외국/
+
+            genre_key 종류
+
+            '한국', '미국', '어린이', '액션', '스릴러', 'sf', '판타지',
+            '범죄', '호러', '다큐', '로맨스', '코미디', '애니', '외국',
+
+            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
+
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - sample_video_file : 미리보기 비디오파일
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지
     """
-
-    ## 서브유저 정보 헤더에서 받아오기
 
     def get(self, request, format=None, **kwargs):
         vertical_genre = self.kwargs['genre_key']
+        sub_user = self.request.META['HTTP_SUBUSERID']
 
         genre_list = [
             '한국',
@@ -389,24 +402,30 @@ class MovieListByGenre(APIView):
             else:
                 horizontal_q = Q(genre__name__icontains=genre)
                 if vertical_genre == '외국':
-                    queryset = Movie.objects.exclude(genre__name__icontains='한국').filter(horizontal_q)
+                    queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
+                        .exclude(genre__name__icontains='한국').filter(horizontal_q).distinct()
 
                 else:
                     if genre == '외국':
-                        queryset = Movie.objects.exclude(genre__name__icontains='한국').filter(vertical_q)
+                        queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
+                            .exclude(genre__name__icontains='한국').filter(vertical_q).distinct()
                     else:
-                        queryset = Movie.objects.filter(vertical_q).filter(horizontal_q)
+                        queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
+                            .filter(vertical_q).filter(horizontal_q).distinct()
 
                 if queryset.count() < 3:
                     continue
-                serializer = MovieListByGenreSerializer(queryset.distinct()[:20], many=True)
+                serializer = MovieListByGenreSerializer(queryset, many=True)
                 context[f'{genre}'] = serializer.data
-        if vertical_genre == '외국':
-            vertical_queryset = Movie.objects.exclude(genre__name__icontains='한국')
-        else:
-            vertical_queryset = Movie.objects.filter(vertical_q)
 
-        vertical_serializer = MovieListByGenreSerializer(vertical_queryset.distinct(), many=True)
+        if vertical_genre == '외국':
+            vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2) \
+                .exclude(genre__name__icontains='한국').distinct()
+        else:
+            vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2) \
+                .filter(vertical_q).distinct()
+
+        vertical_serializer = MovieListByGenreSerializer(vertical_queryset.order_by('?'), many=True)
         context[f'{vertical_genre}'] = vertical_serializer.data
 
         return Response(context)
@@ -466,20 +485,20 @@ class CreateLike(APIView):
         sub_user_id = request.META['HTTP_SUBUSERID']
         like_dislike = request.META['HTTP_like']
 
-        profile_user= SubUser.objects.get(id=sub_user_id)
-        movie= Movie.objects.get(id=movie_id)
+        profile_user = SubUser.objects.get(id=sub_user_id)
+        movie = Movie.objects.get(id=movie_id)
 
         obj, created = LikeDisLikeMarked.objects.update_or_create(
             movie__name='괴물',
             sub_user__name='HDS1',
             defaults={'movie': Movie.objects.get(name=movie.name),
-                'sub_user': SubUser.objects.get(id=profile_user.name),
-                'like_or_dislike': like_dislike,
-                'marked': False,
-                'created': timezone.now(),
-                'updated': timezone.now(),
-                'movie_id': movie_id,
-                'sub_user_id': sub_user_id})
+                      'sub_user': SubUser.objects.get(id=profile_user.name),
+                      'like_or_dislike': like_dislike,
+                      'marked': False,
+                      'created': timezone.now(),
+                      'updated': timezone.now(),
+                      'movie_id': movie_id,
+                      'sub_user_id': sub_user_id})
 
         # if request.user.is_authenticated:
         #     if
@@ -493,3 +512,13 @@ class CreateLike(APIView):
         # else:
         # movie.likes.add(sub_user)
         # return JsonResponse({'data': 'add'})
+
+
+class BrandNewMovieList(generics.ListAPIView):
+    serializer_class = MovieListByGenreSerializer
+
+    def get_queryset(self):
+        sub_user = self.request.META['HTTP_SUBUSERID']
+        queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2).order_by('-created')[:10]
+
+        return queryset

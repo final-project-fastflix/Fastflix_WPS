@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.models import ProfileImage
 from .serializer import *
 
 
@@ -291,3 +292,24 @@ class Login(APIView):
 
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class ChangeProfileImageList(APIView):
+
+    def get(self, request, format=None, **kwargs):
+        category_list = ProfileImage.objects.filter(category='logo')
+
+        ret = {}
+
+        for category in category_list:
+            ret[f'{category.name}'] = ChangeProfileImageSerializer(category).data
+            profile_images = ProfileImage.objects.filter(category=category.name)
+            print(ret)
+            ret[f'{category.name}'].update(ChangeProfileImageSerializer(profile_images, many=True).data)
+            print(ret)
+
+        return Response(ret)
+
+
+
+
