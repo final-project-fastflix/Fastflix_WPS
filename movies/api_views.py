@@ -19,7 +19,6 @@ class MovieList(generics.ListAPIView):
             - horizontal_image_path : 영화 가로 이미지 경로
             - vetical_image : 영화 세로 이미지(추후 변경예정)
 
-
     """
 
     queryset = Movie.objects.all()
