@@ -1,10 +1,7 @@
 from django.http import JsonResponse
 from django.views import View
 
-from .models import *
-
-
-# Create your views here.
+from movies.models import Movie
 
 
 class CreateLike(View):
@@ -20,3 +17,4 @@ class CreateLike(View):
                 else:
                     movie.likes.add(sub_user)
                     return JsonResponse({'data': 'add'})
+

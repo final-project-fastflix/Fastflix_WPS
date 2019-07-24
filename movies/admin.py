@@ -13,6 +13,7 @@ admin.site.register(Degree)
 
 
 class MovieAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'degree',  ]
     search_fields = ['name', 'genre__name', 'degree__name', ]
 
 
@@ -24,4 +25,4 @@ class MovieContinueAdmin(admin.ModelAdmin):
     list_display_links = ['id', 'movie']
 
 
-admin.site.register(MovieContinue,MovieContinueAdmin)
+admin.site.register(MovieContinue, MovieContinueAdmin)
