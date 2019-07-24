@@ -58,6 +58,8 @@ class Movie(models.Model):
     feature = models.ManyToManyField(Feature, related_name='movie')
     author = models.ManyToManyField(Author, related_name='movie', blank=True)
     degree = models.ForeignKey(Degree, on_delete=models.SET_NULL, related_name='movie_degree', null=True)
+    degree_path = models.TextField(blank=True)
+
     genre = models.ManyToManyField(Genre, related_name='movie')
 
     production_date = models.CharField(max_length=10, blank=True)
@@ -69,9 +71,10 @@ class Movie(models.Model):
 
     logo_image_path = models.TextField(default=None, blank=True, null=True)
     horizontal_image_path = models.TextField(default=None, blank=True, null=True)
-    vertical_image = models.ImageField(upload_to=f'media/movie/{name}/horizontal')
+    vertical_image = models.TextField(default=None, blank=True, null=True)
     circle_image = models.ImageField(upload_to=f'media/movie/{name}/circle', null=True, blank=True)
     big_image_path = models.TextField(default=None, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
@@ -83,5 +86,5 @@ class MovieContinue(models.Model):
     to_be_continue = models.CharField(max_length=20)
 
     def __str__(self):
-        return f'{self.movie_id} {self.sub_user_id} {self.to_be_continue}'
+        return f'{self.movie} {self.sub_user} {self.to_be_continue}'
 

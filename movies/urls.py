@@ -23,7 +23,7 @@ urlpatterns = [
     path('genre/list/', GenreList.as_view(), name='genre_list'),
 
     # 장르별 영화 목록
-    path('list_by_genre/<genre_key>/<int:sub_user_id>/', MovieListByGenre.as_view(), name='MovieListByGenre'),
+    path('list_by_genre/<genre_key>/', MovieListByGenre.as_view(), name='MovieListByGenre'),
 
     # 프로필 계정별 찜 목록
     path('my_list/', MarkedList.as_view(), name="preference_list"),
@@ -39,7 +39,11 @@ urlpatterns = [
     # 프로필계정 생성후 좋아하는 콘텐츠 선택하기
     path('profiles/setup/', RecommendMovieAfterCreateSubUser.as_view(), name='profiles_setup'),
 
+    # 가장 최근에 등록된 영화 리스트
+    path('brand_new/', BrandNewMovieList.as_view()),
+
     # 카테고리별로 영화 요청
     path('genre/<kind>/list/', MovieListFirstGenre.as_view(), name='genre_movie'),
+
 ]
 
