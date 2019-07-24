@@ -39,12 +39,11 @@ urlpatterns = [
     # 프로필계정 생성후 좋아하는 콘텐츠 선택하기
     path('profiles/setup/', RecommendMovieAfterCreateSubUser.as_view(), name='profiles_setup'),
 
-<<<<<<< HEAD
-    path('genre/<kind>/list/', ListByMovieGenre.as_view()),
+    # 가장 최근에 등록된 영화 리스트
     path('brand_new/', BrandNewMovieList.as_view()),
-=======
+
     # 카테고리별로 영화 요청
     path('genre/<kind>/list/', MovieListFirstGenre.as_view(), name='genre_movie'),
->>>>>>> 71415c6dffe4e93ad0a48601d04850c1dbaf9835
+
 ]
 

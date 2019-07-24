@@ -72,6 +72,7 @@ class Movie(models.Model):
     vertical_image = models.TextField(default=None, null=True, blank=True)
     circle_image = models.ImageField(upload_to=f'media/movie/{name}/circle', null=True, blank=True)
     big_image_path = models.TextField(default=None, null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
