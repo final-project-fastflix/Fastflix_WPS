@@ -39,7 +39,7 @@ class Feature(models.Model):
 
 
 class Degree(models.Model):
-    name = models.CharField(max_length=10)
+    name = models.CharField(max_length=30)
     degree_image_path = models.TextField(blank=True)
 
     def __str__(self):
@@ -58,7 +58,6 @@ class Movie(models.Model):
     feature = models.ManyToManyField(Feature, related_name='movie')
     author = models.ManyToManyField(Author, related_name='movie', blank=True)
     degree = models.ForeignKey(Degree, on_delete=models.SET_NULL, related_name='movie_degree', null=True)
-    degree_path = models.TextField(blank=True)
     genre = models.ManyToManyField(Genre, related_name='movie')
 
     production_date = models.CharField(max_length=10, blank=True)

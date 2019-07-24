@@ -22,9 +22,9 @@ class HomePageSerializer(serializers.ModelSerializer):
         sub_user_id = self.context['sub_user_id']
 
         home_page_list = {'메인 영화': serializers_data}
-        special_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은 것', '여름과 관련 영화',
-                        '디즈니 영화', '미친듯이 웃을 수 있는 영화', '영어공부하기 좋은 영화', ]
-        home_page_list.update({'특별 장르': special_list})
+        # special_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은 것', '여름과 관련 영화',
+        #                 '디즈니 영화', '미친듯이 웃을 수 있는 영화', '영어공부하기 좋은 영화', ]
+        # home_page_list.update({'특별 장르': special_list})
 
         """
         재생중인 목록, 
