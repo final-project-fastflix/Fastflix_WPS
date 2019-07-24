@@ -1,7 +1,8 @@
 from django.urls import path
 
 from .api_view import *
-from .views import save_data1
+from .views import *
+
 
 app_name = 'accounts'
 
@@ -11,6 +12,5 @@ urlpatterns = [
     path('login/', Login.as_view(), name='login'),
     # path('like_or_dislike/<int:sub_user_id>/<int:movie_id>/', LikeOrDislike.as_view(), name='like_or_dislike'),
     path('sub_user_list/', SubUserList.as_view(), name='ret_sub_user'),
-    path('save/', save_data1),
-
+    path('change_profile/', ChangeProfileImageList.as_view(),),
 ]

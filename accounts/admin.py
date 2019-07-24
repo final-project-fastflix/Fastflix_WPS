@@ -30,3 +30,5 @@ class LikeDisLikeMaredAdmin(admin.ModelAdmin):
 
 
 admin.site.register(LikeDisLikeMarked, LikeDisLikeMaredAdmin)
+
+admin.site.register(ProfileImage)

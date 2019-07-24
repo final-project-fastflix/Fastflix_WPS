@@ -103,7 +103,7 @@ class GenreSelectBefore(generics.ListAPIView):
     def get_serializer_context(self):
         sub_user_id = self.request.META['HTTP_SUBUSERID']
         print(sub_user_id)
-        genre_list = ['한국 영화', '외국 영화', '어린이', '가족', '액션', '스릴러', 'SF',
+        genre_list = ['한국 영화', '외국 영화', '어린이', '액션', '스릴러', 'SF',
                       '판타지', '범죄', '호러', '다큐멘터리', '로맨스', '코미디', '애니', '오리지널']
         context = super().get_serializer_context()
         context['genre_list'] = genre_list
@@ -361,29 +361,22 @@ class FollowUpMovies(generics.ListAPIView):
 
 # 장르별 영화 리스트
 class MovieListByGenre(APIView):
-    """
-        SADFSDFDFSDFSDFD
-
-        ---
-            ASFSDFDSFFDS
-
-    """
-
-    ## 서브유저 정보 헤더에서 받아오기
 
     """
         영화 페이지에서 장르를 선택하면 보여줄 영화리스트 url 입니다.
 
         ---
-            - 요청할때 /movies/list_by_genre/{genre_key}/{sub_user_id}/ 으로 요청하시면 됩니다.
+            - 요청할때 /movies/list_by_genre/'genre_key'/ 로 요청하시면 됩니다.
 
-                - Ex) /movies/list_by_genre/액션/1/
-                - Ex) /movies/list_by_genre/외국/5/
+                - Ex) /movies/list_by_genre/액션/
+                - Ex) /movies/list_by_genre/외국/
 
             genre_key 종류
 
-            '한국','미국','어린이','액션','스릴러','sf','판타지',
-            '범죄','호러','다큐','로맨스','코미디','애니','외국',
+            '한국', '미국', '어린이', '액션', '스릴러', 'sf', '판타지',
+            '범죄', '호러', '다큐', '로맨스', '코미디', '애니', '외국',
+
+            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
 
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
@@ -395,7 +388,7 @@ class MovieListByGenre(APIView):
 
     def get(self, request, format=None, **kwargs):
         vertical_genre = self.kwargs['genre_key']
-        sub_user = self.kwargs['sub_user_id']
+        sub_user = self.request.META['HTTP_SUBUSERID']
 
         genre_list = [
             '한국',
@@ -436,7 +429,7 @@ class MovieListByGenre(APIView):
 
                 if queryset.count() < 3:
                     continue
-                serializer = MovieListByGenreSerializer(queryset.distinct()[:20], many=True)
+                serializer = MovieListByGenreSerializer(queryset.distinct()[:18], many=True)
                 context[f'{genre}'] = serializer.data
         if vertical_genre == '외국':
             vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2)\

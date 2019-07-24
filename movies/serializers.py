@@ -76,11 +76,11 @@ class GenreSelectBeforeSerializer(serializers.ModelSerializer):
         # 장르별 영화 목록을 가져와 dict 으로 만듬
         for genre in genre_list:
             if genre == '외국 영화':
-                movie_list = Movie.objects.exclude(genre__name__icontains='한국 영화', like__sub_user=sub_user_id,
-                                                   like__like_or_dislike=2)[:20]
+                movie_list = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2)\
+                    .exclude(genre__name__icontains='한국 영화').distinct()[:18]
             else:
                 movie_list = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2) \
-                                 .filter(genre__name__icontains=genre)[:20]
+                                 .filter(genre__name__icontains=genre).distinct()[:18]
             movie_list_serializer = MovieSerializer(movie_list, many=True)
             genre_movie_list[genre] = movie_list_serializer.data
         return {'메인 영화': serializer_data, '장르별 영화리스트': genre_movie_list}

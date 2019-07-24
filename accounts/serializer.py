@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 
-from .models import User, SubUser
+from .models import User, SubUser, ProfileImage
 
 
 # 계정을 만드는 시리얼라이저
@@ -54,3 +54,9 @@ class UserLoginSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'password', ]
+
+
+class ChangeProfileImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProfileImage
+        fields = ['name', 'image_path']

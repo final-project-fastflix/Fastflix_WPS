@@ -23,7 +23,7 @@ urlpatterns = [
     path('genre/list/', GenreList.as_view(), name='genre_list'),
 
     # 장르별 영화 목록
-    path('list_by_genre/<genre_key>/<int:sub_user_id>/', MovieListByGenre.as_view(), name='MovieListByGenre'),
+    path('list_by_genre/<genre_key>/', MovieListByGenre.as_view(), name='MovieListByGenre'),
 
     # 프로필 계정별 찜 목록
     path('my_list/', MarkedList.as_view(), name="preference_list"),
