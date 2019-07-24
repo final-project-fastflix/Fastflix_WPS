@@ -1,9 +1,11 @@
+from datetime import timezone
+
 from django.db.models import Max, Q
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import SubUser
+from accounts.models import SubUser, LikeDisLikeMarked
 from .serializers import *
 
 
@@ -457,24 +459,37 @@ class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
 
         return queryset
 
-#
-# class CreateLike(APIView):
-#     def get(self, request, *args, **kwargs):
-#         movie_id = request.META['HTTP_movieid']
-#         sub_user_id = request.META['HTTP_subuserid']
-#
-#         profile_user_name = SubUser.objects.get(id=sub_user_id).get().name
-#
-#
-#
-#         if request.user.is_authenticated:
-#             if 'movie_id' in kwargs['movie_id']:
-#                 parent_user = request.user
-#                 sub_user = parent_user.sub_user.all().filter(logined=True).get()
-#                 movie = Movie.objects.get(pk=kwargs['movie_id'])
-#                 if sub_user in movie.likes.all():
-#                     movie.likes.remove(sub_user)
-#                     return JsonResponse({'data': 'remove'})
-#                 else:
-#                     movie.likes.add(sub_user)
-#                     return JsonResponse({'data': 'add'})
+
+class CreateLike(APIView):
+    def get(self, request, *args, **kwargs):
+        movie_id = request.META['HTTP_MOVIEID']
+        sub_user_id = request.META['HTTP_SUBUSERID']
+        like_dislike = request.META['HTTP_like']
+
+        profile_user= SubUser.objects.get(id=sub_user_id)
+        movie= Movie.objects.get(id=movie_id)
+
+        obj, created = LikeDisLikeMarked.objects.update_or_create(
+            movie__name='괴물',
+            sub_user__name='HDS1',
+            defaults={'movie': Movie.objects.get(name=movie.name),
+                'sub_user': SubUser.objects.get(id=profile_user.name),
+                'like_or_dislike': like_dislike,
+                'marked': False,
+                'created': timezone.now(),
+                'updated': timezone.now(),
+                'movie_id': movie_id,
+                'sub_user_id': sub_user_id})
+
+        # if request.user.is_authenticated:
+        #     if
+        # 'movie_id' in kwargs['movie_id']:
+        # parent_user = request.user
+        # sub_user = parent_user.sub_user.all().filter(logined=True).get()
+        # movie = Movie.objects.get(pk=kwargs['movie_id'])
+        # if sub_user in movie.likes.all():
+        #     movie.likes.remove(sub_user)
+        # return JsonResponse({'data': 'remove'})
+        # else:
+        # movie.likes.add(sub_user)
+        # return JsonResponse({'data': 'add'})
