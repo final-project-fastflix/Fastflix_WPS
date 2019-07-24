@@ -3,6 +3,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.models import SubUser
 from .serializers import *
 
 
@@ -484,3 +485,25 @@ class BrandNewMovieList(generics.ListAPIView):
         queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2).order_by('-created')[:10]
 
         return queryset
+
+#
+# class CreateLike(APIView):
+#     def get(self, request, *args, **kwargs):
+#         movie_id = request.META['HTTP_movieid']
+#         sub_user_id = request.META['HTTP_subuserid']
+#
+#         profile_user_name = SubUser.objects.get(id=sub_user_id).get().name
+#
+#
+#
+#         if request.user.is_authenticated:
+#             if 'movie_id' in kwargs['movie_id']:
+#                 parent_user = request.user
+#                 sub_user = parent_user.sub_user.all().filter(logined=True).get()
+#                 movie = Movie.objects.get(pk=kwargs['movie_id'])
+#                 if sub_user in movie.likes.all():
+#                     movie.likes.remove(sub_user)
+#                     return JsonResponse({'data': 'remove'})
+#                 else:
+#                     movie.likes.add(sub_user)
+#                     return JsonResponse({'data': 'add'})
