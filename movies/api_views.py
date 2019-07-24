@@ -101,7 +101,7 @@ class GenreSelectBefore(generics.ListAPIView):
 
     def get_serializer_context(self):
         sub_user_id = self.request.META['HTTP_SUBUSERID']
-        print(sub_user_id)
+
         genre_list = ['한국 영화', '외국 영화', '어린이', '가족', '액션', '스릴러', 'SF',
                       '판타지', '범죄', '호러', '다큐멘터리', '로맨스', '코미디', '애니', '오리지널']
         context = super().get_serializer_context()

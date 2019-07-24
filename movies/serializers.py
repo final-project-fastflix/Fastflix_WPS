@@ -90,7 +90,7 @@ class GenreSelectBeforeSerializer(serializers.ModelSerializer):
                                  .filter(genre__name__icontains=genre)[:20]
             movie_list_serializer = MovieSerializer(movie_list, many=True)
             genre_movie_list[genre] = movie_list_serializer.data
-        return {'메인 영화': serializer_data, '장르별 영화리스트': genre_movie_list}
+        return {'메인 영화': serializer_data, '장르리스트': genre_list, '장르별 영화리스트': genre_movie_list}
 
 
 # IOS전용 미리보기 시리얼라이저
