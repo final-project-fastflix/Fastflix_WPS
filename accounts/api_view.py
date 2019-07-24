@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.models import ProfileImage
 from .serializer import *
 
 
@@ -52,7 +53,7 @@ class SubUserCreate(APIView):
                 - name : 프로필이름
                 - kid : 어린이인지? (true/false)
 
-            성공할 경우 return 값은 처음 입력한 프로필의 ID 값 을 리턴합니다.
+            성공할 경우 계정에 생성된 모든 프로필 계정 목록을 반환합니
             ※ 프로필 이름이 이미 등록되어 있는경우 'error' : 0을 리턴합니다
 
             요청시 아래와 같이 요청해주시면 됩니다.
@@ -62,17 +63,56 @@ class SubUserCreate(APIView):
 
                 만약 여러개의 데이터를 넣고싶으신 경우 아래와 같이 보내주시면 됩니다.
 
-                요청시 :
+                요청1 :
                 {
                     "name": ["이름1", "이름2", "이름3", "이름4"]
-                    "kid": ["false", "true", "false", "false"]
+                    "kid": [false, true, false, false]
+                }
+
+
+                요청2 :
+                {
+                    "name": ["이름1"]
+                    "kid": [false]
                 }
 
 
                 리턴값:
-                {
-                    "id": 이름1의 ID값
-                }
+
+              {
+                "sub_user_list": [
+                    {
+                        "id": 1,
+                        "name": "HDS1",
+                        "kid": false,
+                        "parent_user": 2
+                    },
+                    {
+                        "id": 2,
+                        "name": "HDS2",
+                        "kid": false,
+                        "parent_user": 2
+                    },
+                    {
+                        "id": 5,
+                        "name": "HDS3",
+                        "kid": true,
+                        "parent_user": 2
+                    },
+                    {
+                        "id": 6,
+                        "name": "HDS4",
+                        "kid": false,
+                        "parent_user": 2
+                    },
+                    {
+                        "id": 7,
+                        "name": "HDS5",
+                        "kid": true,
+                        "parent_user": 2
+                    }
+                ]
+              }
 
                     name : 프로필이름
                     kid : true/false
@@ -100,7 +140,7 @@ class SubUserCreate(APIView):
         for sub_user in sub_user_list:
             sub_user_name_list.append(sub_user.name)
 
-        # 입력한 username이 여러개인 경우
+        # 입력한 username이 여러개인 경우(맨 처음 회원가입 하였을때)
         if isinstance(username, list):
 
             for index in range(len(username)):
@@ -114,9 +154,12 @@ class SubUserCreate(APIView):
                 if serializer.is_valid():
                     serializer.save(parent_user=request.user)
 
-            return JsonResponse(data={'id': SubUser.objects.get(name=username[0]).id}, status=status.HTTP_200_OK)
+                sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
+                sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
 
-        # 1개 인 경우
+            return JsonResponse(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
+
+        # 입력된 username이 1개 인 경우(일반적인 경우)
         else:
             if username in sub_user_name_list:
                 return JsonResponse(data={'error': False}, status=status.HTTP_403_FORBIDDEN)
@@ -127,7 +170,10 @@ class SubUserCreate(APIView):
             if serializer.is_valid():
                 serializer.save(parent_user=request.user)
 
-            return JsonResponse(data={'id': SubUser.objects.get(name=username).id}, status=status.HTTP_200_OK)
+                sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
+                sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
+
+            return JsonResponse(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
 
 
 class SubUserList(generics.ListAPIView):
@@ -164,10 +210,47 @@ class Login(APIView):
         ```
         바디에 넣어서 보내주시면 됩니다
 
-        id : 가입시 Email
+        id : 가입시 Email입니다
         pw : 비밀번호
 
-        로그인 완료시 해당 계정의 토큰이 반환됩니다
+        로그인 완료시 해당 계정의 토큰과 계정의 프로필계정 목록을 반환합니다
+
+        리턴값 :
+
+            {
+                "sub_user_list": [
+                    {
+                        "id": 1,
+                        "name": "HDS1",
+                        "kid": false,
+                        "parent_user": 2
+                    },
+                    {
+                        "id": 2,
+                        "name": "HDS2",
+                        "kid": false,
+                        "parent_user": 2
+                    },
+                    {
+                        "id": 5,
+                        "name": "HDS3",
+                        "kid": true,
+                        "parent_user": 2
+                    },
+                    {
+                        "id": 6,
+                        "name": "HDS4",
+                        "kid": false,
+                        "parent_user": 2
+                    },
+                    {
+                        "id": 7,
+                        "name": "HDS5",
+                        "kid": true,
+                        "parent_user": 2
+                    }
+                ]
+            }
         ```
     """
     # 로그인은 인증을 받지 않아도 접속가능
@@ -198,7 +281,10 @@ class Login(APIView):
                 user_id = User.objects.get(username=username).id
                 token = Token.objects.get(user_id=user_id).key
 
-                context = {'token': token}
+                sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
+                sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
+
+                context = {'token': token, 'sub_user_list': sub_user_list_serializer.data}
 
                 return JsonResponse(context, status=status.HTTP_200_OK)
             else:
@@ -206,3 +292,24 @@ class Login(APIView):
 
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class ChangeProfileImageList(APIView):
+
+    def get(self, request, format=None, **kwargs):
+        category_list = ProfileImage.objects.filter(category='logo')
+
+        ret = {}
+
+        for category in category_list:
+            ret[f'{category.name}'] = ChangeProfileImageSerializer(category).data
+            profile_images = ProfileImage.objects.filter(category=category.name)
+            print(ret)
+            ret[f'{category.name}'].update(ChangeProfileImageSerializer(profile_images, many=True).data)
+            print(ret)
+
+        return Response(ret)
+
+
+
+
