@@ -599,10 +599,10 @@ class BrandNewMovieList(generics.ListAPIView):
 
         return queryset
 
+
 class BigSizeVideo(generics.RetrieveAPIView):
     serializer_class = None
 
     def get_queryset(self):
         queryset = Movie.objects.filter(video_file=True)
         return queryset
-
