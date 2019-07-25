@@ -131,17 +131,26 @@ class SubUserCreate(APIView):
 
         # 바디 형
         username = request.data.get('name')
-
         kids = request.data.get('kid')
+
+        is_exist = [False, False, False, False, False]
+        basic_image_list = ProfileImage.objects.filter(category='basic')
+        sub_user_img_path_list = []
+
 
         # 이름을 비교하기 위한 리스트
         # 기존 프로필 계정 목록에서 이름만 가져온 리스트
         sub_user_name_list = []
+
+        index = 0
         for sub_user in sub_user_list:
             sub_user_name_list.append(sub_user.name)
+            sub_user_img_path_list.append(sub_user.profile_image_path)
+            name_index = ProfileImage.objects.get(image_path=sub_user_img_path_list[index]).name[-1]
+            is_exist[int(name_index)-1] = True
+            index += 1
 
-        basic_image_list = ProfileImage.objects.filter(category='basic')
-        adjust = [False, False, False, False, False]
+        print(is_exist)
 
         # 입력한 username이 여러개인 경우(맨 처음 회원가입 하였을때)
         if isinstance(username, list):
@@ -152,10 +161,16 @@ class SubUserCreate(APIView):
                     return JsonResponse(data={'error': False}, status=status.HTTP_403_FORBIDDEN)
 
                 serializer = SubUserCreateSerializer(
-                    data={'name': username[index], 'kid': kids[index]}
+                    data={
+                        'name': username[index],
+                        'kid': kids[index],
+                    }
                 )
                 if serializer.is_valid():
-                    serializer.save(parent_user=request.user)
+                    serializer.save(
+                        parent_user=request.user,
+                        profile_image_path=basic_image_list[index].image_path,
+                    )
 
                 sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
                 sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
@@ -164,6 +179,7 @@ class SubUserCreate(APIView):
 
         # 입력된 username이 1개 인 경우(일반적인 경우)
         else:
+
             if username in sub_user_name_list:
                 return JsonResponse(data={'error': False}, status=status.HTTP_403_FORBIDDEN)
 
@@ -171,7 +187,9 @@ class SubUserCreate(APIView):
                 data={'name': username, 'kid': kids}
             )
             if serializer.is_valid():
-                serializer.save(parent_user=request.user)
+                serializer.save(parent_user=request.user,
+                                profile_image_path=basic_image_list[is_exist.index(False)].image_path
+                                )
 
                 sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
                 sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
