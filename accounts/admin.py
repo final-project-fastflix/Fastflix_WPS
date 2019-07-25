@@ -22,13 +22,19 @@ class UserAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 
 
-class LikeDisLikeMaredAdmin(admin.ModelAdmin):
+class LikeDisLikeMarkedAdmin(admin.ModelAdmin):
     list_display_links = ['movie', ]
     list_editable = ['like_or_dislike', 'marked', ]
-    list_display = ['sub_user', 'movie', 'movie_id','like_or_dislike',
+    list_display = ['sub_user', 'movie', 'movie_id', 'like_or_dislike',
                     'marked', 'created', 'updated', ]
 
 
-admin.site.register(LikeDisLikeMarked, LikeDisLikeMaredAdmin)
+admin.site.register(LikeDisLikeMarked, LikeDisLikeMarkedAdmin)
 
-admin.site.register(ProfileImage)
+
+class ProfileImageAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'category', 'image_path', ]
+    list_display_links = ['id', 'name', ]
+
+
+admin.site.register(ProfileImage, ProfileImageAdmin)
