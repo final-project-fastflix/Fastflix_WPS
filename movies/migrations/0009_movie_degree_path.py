@@ -9,10 +9,10 @@ class Migration(migrations.Migration):
         ('movies', '0008_remove_movie_degree_path'),
     ]
 
-    operations = [
-        migrations.AddField(
-            model_name='movie',
-            name='degree_path',
-            field=models.TextField(blank=True),
-        ),
-    ]
+    # operations = [
+    #     migrations.AddField(
+    #         model_name='movie',
+    #         name='degree_path',
+    #         field=models.TextField(blank=True),
+    #     ),
+    # ]
