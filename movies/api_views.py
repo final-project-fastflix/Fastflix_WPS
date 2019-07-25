@@ -522,3 +522,11 @@ class BrandNewMovieList(generics.ListAPIView):
         queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2).order_by('-created')[:10]
 
         return queryset
+
+class BigSizeVideo(generics.RetrieveAPIView):
+    serializer_class = None
+
+    def get_queryset(self):
+        queryset = Movie.objects.filter(video_file=True)
+        return queryset
+

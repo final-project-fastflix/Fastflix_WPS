@@ -37,8 +37,6 @@ class HomePageSerializer(serializers.ModelSerializer):
        
         """
 
-
-
         # 재생중인 목록 불러오기
         # play_list = Movie.objects.filter(movie_continue__sub_user=sub_user_id).order_by('-like__updated')
         # play_list_serializer = MovieSerializer(play_list, many=True)
@@ -83,8 +81,8 @@ class GenreSelectBeforeSerializer(serializers.ModelSerializer):
         # 장르별 영화 목록을 가져와 dict 으로 만듬
         for genre in genre_list:
             if genre == '외국 영화':
-                movie_list = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2)\
-                    .exclude(genre__name__icontains='한국 영화').distinct()[:18]
+                movie_list = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2) \
+                                 .exclude(genre__name__icontains='한국 영화').distinct()[:18]
             else:
                 movie_list = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2) \
                                  .filter(genre__name__icontains=genre).distinct()[:18]
@@ -231,3 +229,12 @@ class MovieListByGenreSerializer(serializers.ModelSerializer):
             'horizontal_image_path',
             'vertical_image',
         )
+
+
+class BigSizeVideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ['id',
+                  'name',
+                  'video_file',
+                  ]
