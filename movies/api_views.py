@@ -5,7 +5,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import SubUser, LikeDisLikeMarked
+from accounts.models import SubUser
 from .serializers import *
 
 
@@ -481,9 +481,28 @@ class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
 
 # 좋아요 목록에 추가하기
 class AddLike(APIView):
-    def get(self, request, *args, **kwargs):
-        movie_id = request.META['HTTP_MOVIEID']
-        sub_user_id = request.META['HTTP_SUBUSERID']
+    """
+        좋아요 목록에 추가하는 API뷰 입니다
+
+        ---
+            Header
+                Authorization: Token 토큰값
+
+            Body
+                movieid : 영화의 ID
+                subuserid : 서브유저의 ID
+
+            를 넣어서 POST로 요청해 주세요
+
+
+            리턴값
+                좋아요 등록 성공 OR 좋아요 취소 성공
+
+
+    """
+    def post(self, request, *args, **kwargs):
+        movie_id = request.data.get('movieid')
+        sub_user_id = request.data.get('subuserid')
 
         sub_user = SubUser.objects.get(id=sub_user_id)
         movie = Movie.objects.get(id=movie_id)
@@ -505,7 +524,7 @@ class AddLike(APIView):
             movie.like_count = F('like_count') - 1
             movie.save()
             obj.save()
-            return JsonResponse({'response': "좋아요 제거 성공"}, status=201)
+            return JsonResponse({'response': "좋아요 취소 성공"}, status=201)
 
         if created or obj.like_or_dislike != 1:
             obj.like_or_dislike = 1
@@ -517,9 +536,29 @@ class AddLike(APIView):
 
 # 싫어요 목록에 추가하기
 class AddDisLike(APIView):
-    def get(self, request, *args, **kwargs):
-        movie_id = request.META['HTTP_MOVIEID']
-        sub_user_id = request.META['HTTP_SUBUSERID']
+    """
+        싫어 목록에 추가하는 API뷰 입니다
+
+        ---
+            Header
+                Authorization: Token 토큰값
+
+            Body
+                movieid : 영화의 ID
+                subuserid : 서브유저의 ID
+
+            를 넣어서 POST로 요청해 주세요
+
+
+            리턴값
+                싫어요 등록 성공 OR 싫어요 취소 성공
+
+
+    """
+
+    def post(self, request, *args, **kwargs):
+        movie_id = request.data.get('movieid')
+        sub_user_id = request.data.get('subuserid')
 
         sub_user = SubUser.objects.get(id=sub_user_id)
         movie = Movie.objects.get(id=movie_id)
@@ -541,7 +580,7 @@ class AddDisLike(APIView):
             movie.like_count = F('like_count') + 1
             movie.save()
             obj.save()
-            return JsonResponse({'response': "싫어요 제거 성공"}, status=201)
+            return JsonResponse({'response': "싫어요 취소 성공"}, status=201)
 
         if created or obj.like_or_dislike != 2:
             obj.like_or_dislike = 2
@@ -553,11 +592,29 @@ class AddDisLike(APIView):
 
 # 찜 목록에 추가하기
 class MyList(APIView):
-    def get(self, request, *args, **kwargs):
-        movie_id = request.META['HTTP_MOVIEID']
-        sub_user_id = request.META['HTTP_SUBUSERID']
-        print(movie_id)
-        print(sub_user_id)
+    """
+        찜 목록에 추가하는 API뷰 입니다
+
+        ---
+            Header
+                Authorization: Token 토큰값
+
+            Body
+                movieid : 영화의 ID
+                subuserid : 서브유저의 ID
+
+            를 넣어서 POST로 요청해 주세요
+
+
+            리턴값
+                찜목록 추가 성공 OR 찜목록 제거 성공
+
+
+    """
+
+    def post(self, request, *args, **kwargs):
+        movie_id = request.data.get('movieid')
+        sub_user_id = request.data.get('subuserid')
 
         sub_user = SubUser.objects.get(id=sub_user_id)
         movie = Movie.objects.get(id=movie_id)
@@ -602,7 +659,6 @@ class BrandNewMovieList(generics.ListAPIView):
 
 
 class BigSizeVideo(generics.RetrieveAPIView):
-
     """
         절찬 스트리밍중 (동영상 하나) url 입니다.
 
