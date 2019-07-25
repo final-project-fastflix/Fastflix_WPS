@@ -32,9 +32,11 @@ class SubUserListSerializer(serializers.ModelSerializer):
         exclude = ['profile_image_path']
 
     def get_profile_info(self, obj):
-        context = {'image_id': obj.id, 'profile_image_path': obj.profile_image_path}
+        profile_image = ProfileImage.objects.get(image_path=obj.profile_image_path)
+        context = {'image_id': profile_image.id, 'profile_image_path': obj.profile_image_path}
 
         return context
+
 
 # 서브유저를 만드는 시리얼라이저
 class SubUserCreateSerializer(serializers.ModelSerializer):
