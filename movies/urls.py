@@ -53,5 +53,8 @@ urlpatterns = [
 
     # 찜목록 추가, 제거
     path('add_delete_my_list/', MyList.as_view(), name='my_list'),
+
+    # 절찬스트리밍 중
+    path('big_size_video/', BigSizeVideo.as_view(), name='big_size_video'),
 ]
 

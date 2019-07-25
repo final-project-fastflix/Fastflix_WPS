@@ -599,3 +599,35 @@ class BrandNewMovieList(generics.ListAPIView):
         queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2).order_by('-created')[:10]
 
         return queryset
+
+
+class BigSizeVideo(generics.RetrieveAPIView):
+
+    """
+        절찬 스트리밍중 (동영상 하나) url 입니다.
+
+        ---
+            - 요청할때 /movies/big_size_video/ 로 요청하시면 됩니다.
+
+            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
+
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - video_file : 비디오파일 경로
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - marked : 내가 찜한 콘텐츠 인지 여부 (True or False)
+    """
+
+    serializer_class = BigSizeVideoSerializer
+
+    def get_object(self):
+        movie_id = 354
+        obj = Movie.objects.get(pk=movie_id)
+        return obj
+
+    def get_serializer_context(self):
+        sub_user_id = self.request.META['HTTP_SUBUSERID']
+        context = super().get_serializer_context()
+        context['sub_user_id'] = sub_user_id
+        return context

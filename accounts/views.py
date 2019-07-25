@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from django.views import View
 
+from accounts.models import ProfileImage
 from movies.models import *
 
 
@@ -14,3 +15,4 @@ class LikeOrDislike(View):
         else:
             movie.likes.add(sub_user)
             return JsonResponse({'data': 'add'})
+
