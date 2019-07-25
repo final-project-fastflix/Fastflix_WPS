@@ -66,6 +66,7 @@ class Movie(models.Model):
     synopsis = models.TextField(blank=True)
     running_time = models.CharField(max_length=10)
     view_count = models.PositiveIntegerField(default=0)
+    like_count = models.PositiveIntegerField(default=0)
 
     logo_image_path = models.TextField(default=None, blank=True, null=True)
     horizontal_image_path = models.TextField(default=None, blank=True, null=True)
