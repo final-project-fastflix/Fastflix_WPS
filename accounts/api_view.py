@@ -140,6 +140,9 @@ class SubUserCreate(APIView):
         for sub_user in sub_user_list:
             sub_user_name_list.append(sub_user.name)
 
+        basic_image_list = ProfileImage.objects.filter(category='basic')
+        adjust = [False, False, False, False, False]
+
         # 입력한 username이 여러개인 경우(맨 처음 회원가입 하였을때)
         if isinstance(username, list):
 
