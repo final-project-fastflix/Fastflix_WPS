@@ -118,7 +118,7 @@ class MovieListSerializer(serializers.ModelSerializer):
 class MovieDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = '__all__'
+        exclude = ['view_count', 'like_count']
         depth = 2
 
     def to_representation(self, instance):
@@ -139,8 +139,13 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         match_rate = random.randint(70, 97)
 
         # 영화정보의 러닝타임( x시간 x분 형식)과 유저가 이전에 재생을 멈춘시간을 xx분 형식으로 변환해서 남은시간과 총시간을 반환
-        runningtime = instance.running_time.split('시간 ')
-        total_minute = int(runningtime[0]) * 60 + int(runningtime[1][:-1])
+
+        runningtime = instance.running_time
+        if '시간 ' in runningtime:
+            runningtime = runningtime.split('시간 ')
+            total_minute = int(runningtime[0]) * 60 + int(runningtime[1][:-1])
+        else:
+            total_minute = int(runningtime[:-1])
 
         if instance.movie_continue.filter(sub_user_id=sub_user_id):
             to_be_continue = instance.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue
