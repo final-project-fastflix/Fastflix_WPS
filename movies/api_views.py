@@ -503,12 +503,14 @@ class AddLike(APIView):
         if obj.like_or_dislike == 1:
             obj.like_or_dislike = 0
             movie.like_count = F('like_count') - 1
+            movie.save()
             obj.save()
             return JsonResponse({'response': "좋아요 제거 성공"}, status=201)
 
         if created or obj.like_or_dislike != 1:
             obj.like_or_dislike = 1
             movie.like_count = F('like_count') + 1
+            movie.save()
             obj.save()
         return JsonResponse({'response': "좋아요 등록 성공"}, status=201)
 
@@ -536,12 +538,15 @@ class AddDisLike(APIView):
 
         if obj.like_or_dislike == 2:
             obj.like_or_dislike = 0
+            movie.like_count = F('like_count') + 1
+            movie.save()
             obj.save()
             return JsonResponse({'response': "싫어요 제거 성공"}, status=201)
 
         if created or obj.like_or_dislike != 2:
             obj.like_or_dislike = 2
             movie.like_count = F('like_count') - 1
+            movie.save()
             obj.save()
         return JsonResponse({'response': "싫어요 등록 성공"}, status=201)
 
