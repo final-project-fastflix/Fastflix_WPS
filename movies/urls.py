@@ -56,5 +56,8 @@ urlpatterns = [
 
     # 절찬스트리밍 중
     path('big_size_video/', BigSizeVideo.as_view(), name='big_size_video'),
+
+    # 좋아요 가장 많은 영화
+    path('most_likes/', MostLikesMoives.as_view(), name='most_likes_movies'),
 ]
 

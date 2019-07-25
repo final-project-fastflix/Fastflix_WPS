@@ -323,10 +323,7 @@ class FollowUpMovies(generics.ListAPIView):
         메인화면에서 보여줄 시청 중인 영화리스트 url 입니다.
 
         ---
-            - 요청할때 /movie/followup/'sub_user_id 값' 으로 요청하시면 됩니다.
-
-                - Ex) /movie/followup/1
-                - Ex) /movie/followup/25
+            - 요청할때 /movie/followup/ 으로 요청하시면 됩니다.
 
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
@@ -591,7 +588,25 @@ class MyList(APIView):
                 return JsonResponse({'response': "찜목록 추가 성공"}, status=201)
 
 
+# 최신 등록 영화 10개
 class BrandNewMovieList(generics.ListAPIView):
+    """
+            최신 등록 영화 url 입니다.
+
+        ---
+            - 요청할때 /movies/brand_new/ 로 요청하시면 됩니다.
+
+            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
+
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - sample_video_file : 미리보기 비디오파일 경로
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지 경로
+
+    """
+
     serializer_class = MovieListByGenreSerializer
 
     def get_queryset(self):
@@ -601,8 +616,8 @@ class BrandNewMovieList(generics.ListAPIView):
         return queryset
 
 
+# 절찬 스트리밍 중
 class BigSizeVideo(generics.RetrieveAPIView):
-
     """
         절찬 스트리밍중 (동영상 하나) url 입니다.
 
@@ -631,3 +646,15 @@ class BigSizeVideo(generics.RetrieveAPIView):
         context = super().get_serializer_context()
         context['sub_user_id'] = sub_user_id
         return context
+
+
+# 좋아요 상위 10개
+class MostLikesMoives(generics.ListAPIView):
+    serializer_class = MovieListByGenreSerializer
+
+    def get_queryset(self):
+        sub_user_id = self.request.META['HTTP_SUBUSERID']
+        queryset = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2).order_by(
+            '-like_count')[:10]
+
+        return queryset
