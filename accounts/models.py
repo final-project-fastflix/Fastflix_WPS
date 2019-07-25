@@ -1,8 +1,8 @@
 # Create your models here.
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
-
 from django.db import models
+
 from movies.models import Movie
 
 
@@ -56,4 +56,3 @@ class ProfileImage(models.Model):
 
     def __str__(self):
         return f'{self.category} - {self.name}'
-

@@ -1,6 +1,6 @@
-from datetime import timezone
-
 from django.db.models import Max, Q
+from django.http import JsonResponse
+from django.utils import timezone
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -479,26 +479,31 @@ class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
         return queryset
 
 
-class CreateLike(APIView):
+# 좋아요 목록에 추가하기
+class AddLike(APIView):
     def get(self, request, *args, **kwargs):
         movie_id = request.META['HTTP_MOVIEID']
         sub_user_id = request.META['HTTP_SUBUSERID']
-        like_dislike = request.META['HTTP_like']
 
-        profile_user = SubUser.objects.get(id=sub_user_id)
+        sub_user = SubUser.objects.get(id=sub_user_id)
         movie = Movie.objects.get(id=movie_id)
 
         obj, created = LikeDisLikeMarked.objects.update_or_create(
-            movie__name='괴물',
-            sub_user__name='HDS1',
+            movie__name=movie.name,
+            sub_user__name=sub_user.name,
             defaults={'movie': Movie.objects.get(name=movie.name),
-                      'sub_user': SubUser.objects.get(id=profile_user.name),
-                      'like_or_dislike': like_dislike,
-                      'marked': False,
-                      'created': timezone.now(),
+                      'sub_user': SubUser.objects.get(id=sub_user.id),
+                      'like_or_dislike': 1,
+                      # 'marked': False,
+                      # 'created': timezone.now(),
                       'updated': timezone.now(),
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
+
+        if created:
+            obj.like_or_dislike = 1
+            obj.save()
+        return JsonResponse({'response': "좋아요 등록 성공"}, status=201)
 
         # if request.user.is_authenticated:
         #     if
@@ -512,6 +517,77 @@ class CreateLike(APIView):
         # else:
         # movie.likes.add(sub_user)
         # return JsonResponse({'data': 'add'})
+
+
+# 싫어요 목록에 추가하기
+class AddDisLike(APIView):
+    def get(self, request, *args, **kwargs):
+        movie_id = request.META['HTTP_MOVIEID']
+        sub_user_id = request.META['HTTP_SUBUSERID']
+
+        sub_user = SubUser.objects.get(id=sub_user_id)
+        movie = Movie.objects.get(id=movie_id)
+
+        obj, created = LikeDisLikeMarked.objects.update_or_create(
+            movie__name=movie.name,
+            sub_user__name=sub_user.name,
+            defaults={'movie': Movie.objects.get(name=movie.name),
+                      'sub_user': SubUser.objects.get(id=sub_user.id),
+                      'like_or_dislike': 2,
+                      # 'marked': False,
+                      # 'created': timezone.now(),
+                      'updated': timezone.now(),
+                      'movie_id': movie_id,
+                      'sub_user_id': sub_user_id})
+
+        print(created)
+        if created:
+            obj.like_or_dislike = 2
+            obj.save()
+        return JsonResponse({'response': "싫어요 등록 성공"}, status=201)
+
+
+# 찜 목록에 추가하기
+class MyList(APIView):
+    def get(self, request, *args, **kwargs):
+        movie_id = request.META['HTTP_MOVIEID']
+        sub_user_id = request.META['HTTP_SUBUSERID']
+        print(movie_id)
+        print(sub_user_id)
+
+        sub_user = SubUser.objects.get(id=sub_user_id)
+        movie = Movie.objects.get(id=movie_id)
+
+        obj, created = LikeDisLikeMarked.objects.update_or_create(
+            movie__name=movie.name,
+            sub_user__name=sub_user.name,
+            defaults={'movie': Movie.objects.get(name=movie.name),
+                      'sub_user': SubUser.objects.get(id=sub_user.id),
+                      # 'like_or_dislike': 0,
+                      # 'marked': True,
+                      # 'created': timezone.now(),
+                      'updated': timezone.now(),
+                      'movie_id': movie_id,
+                      'sub_user_id': sub_user_id})
+
+        print(created)
+        if created:
+            obj.marked = True
+            obj.save()
+            return JsonResponse({'response': "찜목록 추가 성공"}, status=201)
+
+        # 이미 좋아요나 싫어요 표시를 하여 목록에 있음
+        else:
+            print('created가 false임')
+            print(obj.marked)
+            if obj.marked:
+                obj.marked = False
+                obj.save()
+                return JsonResponse({'response': "찜목록 제거 성공"}, status=201)
+            else:
+                obj.marked = True
+                obj.save()
+                return JsonResponse({'response': "찜목록 추가 성공"}, status=201)
 
 
 class BrandNewMovieList(generics.ListAPIView):

@@ -58,7 +58,6 @@ class Movie(models.Model):
     feature = models.ManyToManyField(Feature, related_name='movie')
     author = models.ManyToManyField(Author, related_name='movie', blank=True)
     degree = models.ForeignKey(Degree, on_delete=models.SET_NULL, related_name='movie_degree', null=True)
-
     genre = models.ManyToManyField(Genre, related_name='movie')
 
     production_date = models.CharField(max_length=10, blank=True)
@@ -67,6 +66,7 @@ class Movie(models.Model):
     synopsis = models.TextField(blank=True)
     running_time = models.CharField(max_length=10)
     view_count = models.PositiveIntegerField(default=0)
+    like_count = models.PositiveIntegerField(default=0)
 
     logo_image_path = models.TextField(default=None, blank=True, null=True)
     horizontal_image_path = models.TextField(default=None, blank=True, null=True)
