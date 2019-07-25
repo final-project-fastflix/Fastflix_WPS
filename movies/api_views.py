@@ -650,6 +650,23 @@ class BigSizeVideo(generics.RetrieveAPIView):
 
 # 좋아요 상위 10개
 class MostLikesMoives(generics.ListAPIView):
+    """
+            좋아요 상위 10개 영화 url 입니다.
+
+        ---
+            - 요청할때 /movies/most_likes/ 로 요청하시면 됩니다.
+
+            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
+
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - sample_video_file : 미리보기 비디오파일 경로
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지 경로
+
+    """
+
     serializer_class = MovieListByGenreSerializer
 
     def get_queryset(self):
