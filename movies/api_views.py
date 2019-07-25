@@ -1,4 +1,4 @@
-from django.db.models import Max, Q
+from django.db.models import Max, Q, F
 from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import generics
@@ -493,30 +493,24 @@ class AddLike(APIView):
             sub_user__name=sub_user.name,
             defaults={'movie': Movie.objects.get(name=movie.name),
                       'sub_user': SubUser.objects.get(id=sub_user.id),
-                      'like_or_dislike': 1,
+                      # 'like_or_dislike': 1,
                       # 'marked': False,
                       # 'created': timezone.now(),
                       'updated': timezone.now(),
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
 
-        if created:
+        if obj.like_or_dislike == 1:
+            obj.like_or_dislike = 0
+            movie.like_count = F('like_count') - 1
+            obj.save()
+            return JsonResponse({'response': "좋아요 제거 성공"}, status=201)
+
+        if created or obj.like_or_dislike != 1:
             obj.like_or_dislike = 1
+            movie.like_count = F('like_count') + 1
             obj.save()
         return JsonResponse({'response': "좋아요 등록 성공"}, status=201)
-
-        # if request.user.is_authenticated:
-        #     if
-        # 'movie_id' in kwargs['movie_id']:
-        # parent_user = request.user
-        # sub_user = parent_user.sub_user.all().filter(logined=True).get()
-        # movie = Movie.objects.get(pk=kwargs['movie_id'])
-        # if sub_user in movie.likes.all():
-        #     movie.likes.remove(sub_user)
-        # return JsonResponse({'data': 'remove'})
-        # else:
-        # movie.likes.add(sub_user)
-        # return JsonResponse({'data': 'add'})
 
 
 # 싫어요 목록에 추가하기
@@ -533,16 +527,21 @@ class AddDisLike(APIView):
             sub_user__name=sub_user.name,
             defaults={'movie': Movie.objects.get(name=movie.name),
                       'sub_user': SubUser.objects.get(id=sub_user.id),
-                      'like_or_dislike': 2,
+                      # 'like_or_dislike': 2,
                       # 'marked': False,
                       # 'created': timezone.now(),
                       'updated': timezone.now(),
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
 
-        print(created)
-        if created:
+        if obj.like_or_dislike == 2:
+            obj.like_or_dislike = 0
+            obj.save()
+            return JsonResponse({'response': "싫어요 제거 성공"}, status=201)
+
+        if created or obj.like_or_dislike != 2:
             obj.like_or_dislike = 2
+            movie.like_count = F('like_count') - 1
             obj.save()
         return JsonResponse({'response': "싫어요 등록 성공"}, status=201)
 
@@ -570,7 +569,6 @@ class MyList(APIView):
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
 
-        print(created)
         if created:
             obj.marked = True
             obj.save()
@@ -578,8 +576,6 @@ class MyList(APIView):
 
         # 이미 좋아요나 싫어요 표시를 하여 목록에 있음
         else:
-            print('created가 false임')
-            print(obj.marked)
             if obj.marked:
                 obj.marked = False
                 obj.save()
