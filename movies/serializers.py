@@ -118,7 +118,7 @@ class MovieListSerializer(serializers.ModelSerializer):
 class MovieDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        exclude = ['view_count', 'like_count']
+        exclude = ['view_count', 'like_count', 'created']
         depth = 2
 
     def to_representation(self, instance):
