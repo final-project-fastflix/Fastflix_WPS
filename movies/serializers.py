@@ -2,6 +2,7 @@ import random
 
 from rest_framework import serializers
 
+from accounts.models import LikeDisLikeMarked
 from .models import Movie, Genre, MovieContinue
 
 
@@ -237,4 +238,23 @@ class BigSizeVideoSerializer(serializers.ModelSerializer):
         fields = ['id',
                   'name',
                   'video_file',
+                  'horizontal_image_path',
+                  'logo_image_path',
                   ]
+
+    def to_representation(self, instance):
+        serializer_data = super().to_representation(instance)
+        sub_user_id = self.context['sub_user_id']
+        try:
+            marked_status = instance.like.filter(sub_user_id=sub_user_id)[0].marked
+        except IndexError:
+            marked_status = False
+
+        print(marked_status)
+        serializer_data['marked'] = marked_status
+
+        return serializer_data
+
+
+
+
