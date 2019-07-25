@@ -8,7 +8,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import ProfileImage
 from .serializer import *
 
 
@@ -137,7 +136,6 @@ class SubUserCreate(APIView):
         basic_image_list = ProfileImage.objects.filter(category='basic')
         sub_user_img_path_list = []
 
-
         # 이름을 비교하기 위한 리스트
         # 기존 프로필 계정 목록에서 이름만 가져온 리스트
         sub_user_name_list = []
@@ -147,7 +145,7 @@ class SubUserCreate(APIView):
             sub_user_name_list.append(sub_user.name)
             sub_user_img_path_list.append(sub_user.profile_image_path)
             name_index = ProfileImage.objects.get(image_path=sub_user_img_path_list[index]).name[-1]
-            is_exist[int(name_index)-1] = True
+            is_exist[int(name_index) - 1] = True
             index += 1
 
         print(is_exist)
@@ -331,7 +329,3 @@ class ChangeProfileImageList(APIView):
             print(ret)
 
         return Response(ret)
-
-
-
-

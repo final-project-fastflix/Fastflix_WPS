@@ -24,10 +24,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 # 프로필 계정 목록을 보여주는 시리얼라이저
 class SubUserListSerializer(serializers.ModelSerializer):
+    profile_info = serializers.SerializerMethodField()
+
     class Meta:
         model = SubUser
-        fields = '__all__'
+        # fields = '__all__'
+        exclude = ['profile_image_path']
 
+    def get_profile_info(self, obj):
+        context = {'image_id': obj.id, 'profile_image_path': obj.profile_image_path}
+
+        return context
 
 # 서브유저를 만드는 시리얼라이저
 class SubUserCreateSerializer(serializers.ModelSerializer):
