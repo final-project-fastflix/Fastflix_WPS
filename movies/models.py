@@ -49,7 +49,7 @@ class Degree(models.Model):
 class Movie(models.Model):
     name = models.CharField(max_length=50)
 
-    video_file = models.FileField(upload_to=f'media/movie/{name}/video', blank=True, null=True)
+    video_file = models.CharField(max_length=100, blank=True, null=True)
     sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
     vertical_sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
 
@@ -58,8 +58,6 @@ class Movie(models.Model):
     feature = models.ManyToManyField(Feature, related_name='movie')
     author = models.ManyToManyField(Author, related_name='movie', blank=True)
     degree = models.ForeignKey(Degree, on_delete=models.SET_NULL, related_name='movie_degree', null=True)
-    # degree_path = models.TextField(blank=True)
-
     genre = models.ManyToManyField(Genre, related_name='movie')
 
     production_date = models.CharField(max_length=10, blank=True)
