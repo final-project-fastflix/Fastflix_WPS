@@ -30,6 +30,7 @@ def upload_images(request):
 
     return HttpResponse({})
 
+
 def add_f_category(request):
     images = ProfileImage.objects.all()
 
@@ -38,4 +39,3 @@ def add_f_category(request):
         category_obj = ProfileImageCategory.objects.get_or_create(name=category_name)[0]
         image.f_category = category_obj
         image.save()
-

@@ -400,20 +400,21 @@ class MovieListByGenre(APIView):
                 horizontal_q = Q(genre__name__icontains=genre)
                 if vertical_genre == '외국':
                     queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
-                        .exclude(genre__name__icontains='한국').filter(horizontal_q).distinct()
+                        .exclude(genre__name__icontains='한국').filter(horizontal_q)
 
                 else:
                     if genre == '외국':
                         queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
-                            .exclude(genre__name__icontains='한국').filter(vertical_q).distinct()
+                            .exclude(genre__name__icontains='한국').filter(vertical_q)
                     else:
                         queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
-                            .filter(vertical_q).filter(horizontal_q).distinct()
+                            .filter(vertical_q).filter(horizontal_q)
 
                 if queryset.count() < 3:
                     continue
-                serializer = MovieListByGenreSerializer(queryset, many=True)
-                context[f'{genre}'] = serializer.data
+                serializer_data = MovieListByGenreSerializer(queryset.distinct(), many=True).data
+                random.shuffle(serializer_data)
+                context[f'{genre}'] = serializer_data
 
         if vertical_genre == '외국':
             vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2) \
@@ -422,8 +423,9 @@ class MovieListByGenre(APIView):
             vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2) \
                 .filter(vertical_q).distinct()
 
-        vertical_serializer = MovieListByGenreSerializer(vertical_queryset.order_by('?'), many=True)
-        context[f'{vertical_genre}'] = vertical_serializer.data
+        vertical_serializer_data = MovieListByGenreSerializer(vertical_queryset.order_by('?'), many=True).data
+        random.shuffle(vertical_serializer_data)
+        context[f'{vertical_genre}'] = vertical_serializer_data
 
         return Response(context)
 
