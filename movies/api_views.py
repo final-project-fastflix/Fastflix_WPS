@@ -660,7 +660,7 @@ class BrandNewMovieList(generics.ListAPIView):
             최신 등록 영화 url 입니다.
 
         ---
-            - 요청할때 /movies/brand_new/ 로 요청하시면 됩니다.
+            - /movies/brand_new/ 로 요청하시면 됩니다.
 
             - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
 
@@ -688,7 +688,7 @@ class BigSizeVideo(generics.RetrieveAPIView):
         절찬 스트리밍중 (동영상 하나) url 입니다.
 
         ---
-            - 요청할때 /movies/big_size_video/ 로 요청하시면 됩니다.
+            - /movies/big_size_video/ 로 요청하시면 됩니다.
 
             - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
 
@@ -720,7 +720,7 @@ class MostLikesMoives(generics.ListAPIView):
             좋아요 상위 10개 영화 url 입니다.
 
         ---
-            - 요청할때 /movies/most_likes/ 로 요청하시면 됩니다.
+            - /movies/most_likes/ 로 요청하시면 됩니다.
 
             - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
 
@@ -744,6 +744,22 @@ class MostLikesMoives(generics.ListAPIView):
 
 
 class SavePausedVideoTime(APIView):
+    """
+            비디오 재생시간 저장 url 입니다.
+
+        ---
+            - /movies/paused_time/ 로 요청하시면 됩니다.
+
+            - body에
+                sub_user_id : 서브유저 id (int)
+                movie_id    : 저장할 영화 id (int)
+                paused_time : "00:00:00" (str) 형식의 저장할 시간
+
+                을 넣어주셔야 합니다.
+
+                저장에 성공했을 경우
+                {'saved' : True} 가 반환됩니다.
+    """
     def post(self, *args, **kwargs):
         paused_time = self.request.data.get('paused_time')
         sub_user_id = self.request.data.get('sub_user_id')
