@@ -457,25 +457,31 @@ class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
                 ]
 
     """
+
     serializer_class = MovieSerializer
 
     def get_queryset(self):
-        # 등록된 영화의 최대 ID값을 구함
-        max_id = Movie.objects.all().aggregate(max_id=Max("id"))['max_id']
-        # queryset를 아래에서 사용하기 위해 미리 1개를 뽑아놓음
-        queryset = Movie.objects.filter(pk=random.randint(1, max_id))
-
-        # queryset의 갯수가 60개 이상일때 까지
-        while queryset.count() <= 60:
-            # 영화의 ID값 중에 하나를 골라옴
-            pk = random.randint(1, max_id)
-            # ID값에 해당하는 영화를 가져옴
-            movie = Movie.objects.filter(pk=pk)
-            if movie:
-                # 쿼리셋에 붙임
-                queryset |= movie
+        queryset = Movie.objects.all().order_by('?')[:60]
 
         return queryset
+
+    # def get_queryset(self):
+    #     # 등록된 영화의 최대 ID값을 구함
+    #     max_id = Movie.objects.all().aggregate(max_id=Max("id"))['max_id']
+    #     # queryset를 아래에서 사용하기 위해 미리 1개를 뽑아놓음
+    #     queryset = Movie.objects.filter(pk=random.randint(1, max_id))
+    #
+    #     # queryset의 갯수가 60개 이상일때 까지
+    #     while queryset.count() <= 60:
+    #         # 영화의 ID값 중에 하나를 골라옴
+    #         pk = random.randint(1, max_id)
+    #         # ID값에 해당하는 영화를 가져옴
+    #         movie = Movie.objects.filter(pk=pk)
+    #         if movie:
+    #             # 쿼리셋에 붙임
+    #             queryset |= movie
+    #
+    #     return queryset
 
 
 # 좋아요 목록에 추가하기
