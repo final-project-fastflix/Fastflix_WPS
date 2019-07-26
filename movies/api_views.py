@@ -324,7 +324,7 @@ class FollowUpMovies(generics.ListAPIView):
 
         ---
             - 요청할때 /movie/followup/ 으로 요청하시면 됩니다.
-
+            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
                 - video_file : 비디오파일

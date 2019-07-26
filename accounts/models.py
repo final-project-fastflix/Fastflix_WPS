@@ -42,17 +42,23 @@ class LikeDisLikeMarked(models.Model):
 
     def __str__(self):
         return f'{self.movie} ' \
-            f'{self.sub_user} ' \
-            f'{self.like_or_dislike} ' \
-            f'{self.marked} ' \
-            f'{self.created} ' \
-            f'{self.updated}'
+               f'{self.sub_user} ' \
+               f'{self.like_or_dislike} ' \
+               f'{self.marked} ' \
+               f'{self.created} ' \
+               f'{self.updated}'
+
+
+class ProfileImageCategory(models.Model):
+    name = models.CharField(max_length=20)
 
 
 class ProfileImage(models.Model):
     name = models.CharField(max_length=20, blank=True, null=True)
     category = models.CharField(max_length=50, null=True)
     image_path = models.TextField(null=True)
+    f_category = models.ForeignKey(ProfileImageCategory, on_delete=models.SET_NULL, related_name='profile_images',
+                                   null=True)
 
     def __str__(self):
         return f'{self.category} - {self.name}'
