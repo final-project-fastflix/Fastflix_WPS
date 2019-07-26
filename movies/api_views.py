@@ -505,6 +505,7 @@ class AddLike(APIView):
 
 
     """
+
     def post(self, request, *args, **kwargs):
         movie_id = request.data.get('movieid')
         sub_user_id = request.data.get('subuserid')
@@ -740,3 +741,19 @@ class MostLikesMoives(generics.ListAPIView):
             '-like_count')[:10]
 
         return queryset
+
+
+class SavePausedVideoTime(APIView):
+    def post(self, *args, **kwargs):
+        paused_time = self.request.data.get('paused_time')
+        sub_user_id = self.request.data.get('sub_user_id')
+        movie_id = self.request.data.get('movie_id')
+
+        movie_obj = Movie.objects.get(pk=movie_id)
+        sub_user_obj = SubUser.objects.get(pk=sub_user_id)
+
+        movie = MovieContinue.objects.get_or_create(movie=movie_obj, sub_user=sub_user_obj)[0]
+        movie.to_be_continue = paused_time
+        movie.save()
+
+        return Response({'saved': True})
