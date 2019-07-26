@@ -1,6 +1,6 @@
 from django.urls import path
 
-from accounts.views import upload_images
+from accounts.views import upload_images, add_f_category
 from .api_view import *
 
 app_name = 'accounts'
@@ -12,5 +12,5 @@ urlpatterns = [
     # path('like_or_dislike/<int:sub_user_id>/<int:movie_id>/', LikeOrDislike.as_view(), name='like_or_dislike'),
     path('sub_user_list/', SubUserList.as_view(), name='ret_sub_user'),
     path('change_profile/', ChangeProfileImageList.as_view(), ),
-    path('add/', upload_images,),
+    path('add/', add_f_category,),
 ]

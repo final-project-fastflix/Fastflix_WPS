@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.models import ProfileImageCategory
 from .serializer import *
 
 
@@ -319,22 +320,31 @@ class ChangeProfileImageList(APIView):
                 프로필사진 변경을 위한 캐릭터사진 리스트 입니다.
 
             ---
-                section : {
-                        name : 섹션이름,
-                        image_path : 섹션 로고 이미지 주소
-                }
 
-                section_characters : {
-                        name : 캐릭터이름
-                        image_path : 캐릭터 이미지 주소
-                }
+                /accounts/change_profile/  로 요청하시면 됩니다.
+
+                1. 로고 전부
+                2. section에 해당하는 캐릭터들
 
                 의 순서로 데이터가 전달됩니다.
 
+                느린 로딩이 예상됩니다.
+
     """
 
-    # 6000ms
     def get(self, request, format=None, **kwargs):
+        # 500ms
+        category_list = ProfileImageCategory.objects.all()
+
+        ret = {}
+
+        for category in category_list:
+            char_images = category.profile_images.all()
+            ret[f'{category.name}'] = ChangeProfileImageSerializer(char_images, many=True).data
+
+        return Response(ret)
+
+        # 6000ms
         # category_list = ProfileImage.objects.filter(category='logo')
         #
         # ret = {}
@@ -348,7 +358,7 @@ class ChangeProfileImageList(APIView):
         #
         # return Response(ret)
 
-    # def get(self, request, **kwargs):
+        # def get(self, request, **kwargs):
         # 800ms
         # category_list = ['대표 아이콘', '기묘한 이야기', '블랙 미러', '종이의 집', '보스 베이비: 돌아온 보스', '루시퍼', '옥자', '오렌지 이즈 더 뉴 블랙',
         #                  '라바 아일랜드', '하우스 오브 카드', '로스트 인 스페이스', '언브레이커블 키미슈미트', '브라이트', '퀴어 아이', '어그레시브 레츠코', '우리의 지구',
@@ -358,20 +368,19 @@ class ChangeProfileImageList(APIView):
         #                  '스카이랜더 아카데미', '모타운 마법 뮤지컬']
 
         # 850ms
-        category_list = ['대표 아이콘']
-        categories = ProfileImage.objects.filter(category='logo')
-        for category in categories:
-            category_list.append(category.name)
-
-        ret = {}
-
-        for category in category_list:
-            ret[f'{category}_logo'] = ChangeProfileImageSerializer(
-                ProfileImage.objects.filter(category='logo', name=category), many=True).data
-
-            ret[f'{category}_characters'] = ChangeProfileImageSerializer(
-                ProfileImage.objects.filter(category=category), many=True).data
-        return Response(ret)
+        # category_list = ['대표 아이콘']
+        # categories = ProfileImage.objects.filter(category='logo')
+        # for category in categories:
+        #     category_list.append(category.name)
+        #
+        # ret = {}
+        #
+        # for category in category_list:
+        #     ret[f'{category}_logo'] = ChangeProfileImageSerializer(
+        #         ProfileImage.objects.filter(category='logo', name=category), many=True).data
+        #
+        #     ret[f'{category}_characters'] = ChangeProfileImageSerializer(
+        #         ProfileImage.objects.filter(category=category), many=True).data
 
 
 def add_default(request):

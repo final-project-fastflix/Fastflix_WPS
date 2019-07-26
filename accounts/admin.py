@@ -33,8 +33,10 @@ admin.site.register(LikeDisLikeMarked, LikeDisLikeMarkedAdmin)
 
 
 class ProfileImageAdmin(admin.ModelAdmin):
-    list_display = ['id', 'name', 'category', 'image_path', ]
+    list_display = ['id', 'name', 'category', 'image_path', 'f_category']
     list_display_links = ['id', 'name', ]
 
 
 admin.site.register(ProfileImage, ProfileImageAdmin)
+
+admin.site.register(ProfileImageCategory)
