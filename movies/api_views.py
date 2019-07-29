@@ -400,20 +400,21 @@ class MovieListByGenre(APIView):
                 horizontal_q = Q(genre__name__icontains=genre)
                 if vertical_genre == '외국':
                     queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
-                        .exclude(genre__name__icontains='한국').filter(horizontal_q).distinct()
+                        .exclude(genre__name__icontains='한국').filter(horizontal_q)
 
                 else:
                     if genre == '외국':
                         queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
-                            .exclude(genre__name__icontains='한국').filter(vertical_q).distinct()
+                            .exclude(genre__name__icontains='한국').filter(vertical_q)
                     else:
                         queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2) \
-                            .filter(vertical_q).filter(horizontal_q).distinct()
+                            .filter(vertical_q).filter(horizontal_q)
 
                 if queryset.count() < 3:
                     continue
-                serializer = MovieListByGenreSerializer(queryset, many=True)
-                context[f'{genre}'] = serializer.data
+                serializer_data = MovieListByGenreSerializer(queryset.distinct(), many=True).data
+                random.shuffle(serializer_data)
+                context[f'{genre}'] = serializer_data
 
         if vertical_genre == '외국':
             vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2) \
@@ -422,8 +423,9 @@ class MovieListByGenre(APIView):
             vertical_queryset = Movie.objects.exclude(like__sub_user=1, like__like_or_dislike=2) \
                 .filter(vertical_q).distinct()
 
-        vertical_serializer = MovieListByGenreSerializer(vertical_queryset.order_by('?'), many=True)
-        context[f'{vertical_genre}'] = vertical_serializer.data
+        vertical_serializer_data = MovieListByGenreSerializer(vertical_queryset.order_by('?'), many=True).data
+        random.shuffle(vertical_serializer_data)
+        context[f'{vertical_genre}'] = vertical_serializer_data
 
         return Response(context)
 
@@ -455,25 +457,31 @@ class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
                 ]
 
     """
+
     serializer_class = MovieSerializer
 
     def get_queryset(self):
-        # 등록된 영화의 최대 ID값을 구함
-        max_id = Movie.objects.all().aggregate(max_id=Max("id"))['max_id']
-        # queryset를 아래에서 사용하기 위해 미리 1개를 뽑아놓음
-        queryset = Movie.objects.filter(pk=random.randint(1, max_id))
-
-        # queryset의 갯수가 60개 이상일때 까지
-        while queryset.count() <= 60:
-            # 영화의 ID값 중에 하나를 골라옴
-            pk = random.randint(1, max_id)
-            # ID값에 해당하는 영화를 가져옴
-            movie = Movie.objects.filter(pk=pk)
-            if movie:
-                # 쿼리셋에 붙임
-                queryset |= movie
+        queryset = Movie.objects.all().order_by('?')[:60]
 
         return queryset
+
+    # def get_queryset(self):
+    #     # 등록된 영화의 최대 ID값을 구함
+    #     max_id = Movie.objects.all().aggregate(max_id=Max("id"))['max_id']
+    #     # queryset를 아래에서 사용하기 위해 미리 1개를 뽑아놓음
+    #     queryset = Movie.objects.filter(pk=random.randint(1, max_id))
+    #
+    #     # queryset의 갯수가 60개 이상일때 까지
+    #     while queryset.count() <= 60:
+    #         # 영화의 ID값 중에 하나를 골라옴
+    #         pk = random.randint(1, max_id)
+    #         # ID값에 해당하는 영화를 가져옴
+    #         movie = Movie.objects.filter(pk=pk)
+    #         if movie:
+    #             # 쿼리셋에 붙임
+    #             queryset |= movie
+    #
+    #     return queryset
 
 
 # 좋아요 목록에 추가하기
@@ -497,6 +505,7 @@ class AddLike(APIView):
 
 
     """
+
     def post(self, request, *args, **kwargs):
         movie_id = request.data.get('movieid')
         sub_user_id = request.data.get('subuserid')
@@ -651,7 +660,7 @@ class BrandNewMovieList(generics.ListAPIView):
             최신 등록 영화 url 입니다.
 
         ---
-            - 요청할때 /movies/brand_new/ 로 요청하시면 됩니다.
+            - /movies/brand_new/ 로 요청하시면 됩니다.
 
             - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
 
@@ -679,7 +688,7 @@ class BigSizeVideo(generics.RetrieveAPIView):
         절찬 스트리밍중 (동영상 하나) url 입니다.
 
         ---
-            - 요청할때 /movies/big_size_video/ 로 요청하시면 됩니다.
+            - /movies/big_size_video/ 로 요청하시면 됩니다.
 
             - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
 
@@ -711,7 +720,7 @@ class MostLikesMoives(generics.ListAPIView):
             좋아요 상위 10개 영화 url 입니다.
 
         ---
-            - 요청할때 /movies/most_likes/ 로 요청하시면 됩니다.
+            - /movies/most_likes/ 로 요청하시면 됩니다.
 
             - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
 
@@ -732,3 +741,35 @@ class MostLikesMoives(generics.ListAPIView):
             '-like_count')[:10]
 
         return queryset
+
+
+class SavePausedVideoTime(APIView):
+    """
+            비디오 재생시간 저장 url 입니다.
+
+        ---
+            - /movies/paused_time/ 로 요청하시면 됩니다.
+
+            - body에
+                sub_user_id : 서브유저 id (int)
+                movie_id    : 저장할 영화 id (int)
+                paused_time : "00:00:00" (str) 형식의 저장할 시간
+
+                을 넣어주셔야 합니다.
+
+                저장에 성공했을 경우
+                {'saved' : True} 가 반환됩니다.
+    """
+    def post(self, *args, **kwargs):
+        paused_time = self.request.data.get('paused_time')
+        sub_user_id = self.request.data.get('sub_user_id')
+        movie_id = self.request.data.get('movie_id')
+
+        movie_obj = Movie.objects.get(pk=movie_id)
+        sub_user_obj = SubUser.objects.get(pk=sub_user_id)
+
+        movie = MovieContinue.objects.get_or_create(movie=movie_obj, sub_user=sub_user_obj)[0]
+        movie.to_be_continue = paused_time
+        movie.save()
+
+        return Response({'saved': True})

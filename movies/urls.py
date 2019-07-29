@@ -59,5 +59,8 @@ urlpatterns = [
 
     # 좋아요 가장 많은 영화
     path('most_likes/', MostLikesMoives.as_view(), name='most_likes_movies'),
+
+    # 유저가 일시정지한 비디오시간 저장
+    path('paused_time/', SavePausedVideoTime.as_view(), name='paused_time'),
 ]
 

@@ -13,7 +13,7 @@ admin.site.register(Degree)
 
 
 class MovieAdmin(admin.ModelAdmin):
-    list_display = ['vertical_image', 'name', 'degree',  ]
+    list_display = ['id', 'name', 'degree', ]
     search_fields = ['name', 'genre__name', 'degree__name', ]
 
 
