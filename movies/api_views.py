@@ -760,6 +760,7 @@ class SavePausedVideoTime(APIView):
                 저장에 성공했을 경우
                 {'saved' : True} 가 반환됩니다.
     """
+
     def post(self, *args, **kwargs):
         paused_time = self.request.data.get('paused_time')
         sub_user_id = self.request.data.get('sub_user_id')
@@ -773,3 +774,12 @@ class SavePausedVideoTime(APIView):
         movie.save()
 
         return Response({'saved': True})
+
+
+class MatchRate(APIView):
+    sub_user_id = 8
+    sub_user = SubUser.objects.get(pk=sub_user_id)
+    marked_obj = sub_user.like.filter(marked=True)
+
+
+
