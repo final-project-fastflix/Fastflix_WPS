@@ -223,7 +223,6 @@ class SubUserList(generics.ListAPIView):
 
 # 로그인 API뷰
 class Login(APIView):
-    print('sadfjadksdla')
     """
         로그인 API 입니다
 

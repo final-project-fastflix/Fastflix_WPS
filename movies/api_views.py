@@ -773,3 +773,34 @@ class SavePausedVideoTime(APIView):
         movie.save()
 
         return Response({'saved': True})
+
+
+class Search(APIView):
+    def get(self, *agrs, **kwargs):
+        search_key = self.request.GET.get('search_key', None)
+
+        if search_key:
+            search_key = search_key.replace(" ", "")
+            space = '\s*'
+            re_search_key = space.join(search_key)
+
+            print(re_search_key)
+            first_movies = Movie.objects.filter(name__startswith=re_search_key)
+            print(first_movies)
+            movies_name = Movie.objects.filter(name__iregex=re_search_key)
+            # first_movies = movies_name.
+            movie_genre = Movie.objects.prefetch_related('genre').filter(genre__name__iregex=re_search_key)
+            print(movie_genre)
+            movie_actor = Movie.objects.prefetch_related('actors').filter(actors__name__iregex=re_search_key)
+            print(movie_actor)
+
+            queryset = (first_movies | movies_name | movie_genre | movie_actor).distinct()
+
+            queryset_serializer = MovieSerializer(queryset, many=True)
+
+            return JsonResponse({'movie_list': queryset_serializer.data}, status=201)
+        else:
+            return JsonResponse({'search_error': False}, status=403)
+
+
+

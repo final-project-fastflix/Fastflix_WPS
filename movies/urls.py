@@ -62,5 +62,8 @@ urlpatterns = [
 
     # 유저가 일시정지한 비디오시간 저장
     path('paused_time/', SavePausedVideoTime.as_view(), name='paused_time'),
+
+    # 영화 검색기능
+    path('search/', Search.as_view(), name='search'),
 ]
 
