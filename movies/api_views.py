@@ -785,10 +785,10 @@ class Search(APIView):
             re_search_key = space.join(search_key)
 
             print(re_search_key)
-            first_movies = Movie.objects.filter(name__startswith=re_search_key)
+            first_movies = Movie.objects.filter(name__iregex=re_search_key)
             print(first_movies)
             movies_name = Movie.objects.filter(name__iregex=re_search_key)
-            # first_movies = movies_name.
+
             movie_genre = Movie.objects.prefetch_related('genre').filter(genre__name__iregex=re_search_key)
             print(movie_genre)
             movie_actor = Movie.objects.prefetch_related('actors').filter(actors__name__iregex=re_search_key)
