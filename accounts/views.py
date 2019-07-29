@@ -4,8 +4,6 @@ from django.views import View
 from accounts.models import ProfileImage, ProfileImageCategory
 from movies.models import *
 
-from openpyxl import load_workbook
-
 
 class LikeOrDislike(View):
     def post(self, request, *args, **kwargs):
@@ -17,18 +15,6 @@ class LikeOrDislike(View):
         else:
             movie.likes.add(sub_user)
             return JsonResponse({'data': 'add'})
-
-
-def upload_images(request):
-    wb2 = load_workbook('fast_flix.xlsx')
-    ws = wb2.active
-    for row in ws.values:
-        obj = Movie.objects.get(pk=row[0])
-        obj.vertical_image = row[2]
-        obj.save()
-        print(row[0])
-
-    return HttpResponse({})
 
 
 def add_f_category(request):

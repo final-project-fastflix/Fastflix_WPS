@@ -1,6 +1,6 @@
 from django.urls import path
 
-from accounts.views import upload_images, add_f_category
+from accounts.views import add_f_category
 from .api_view import *
 
 app_name = 'accounts'
