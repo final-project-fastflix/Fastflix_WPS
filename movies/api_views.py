@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import re
 
 from accounts.models import SubUser
 from .serializers import *
@@ -781,19 +782,14 @@ class Search(APIView):
         search_key = self.request.GET.get('search_key', None)
 
         if search_key:
-            search_key = search_key.replace(" ", "")
-            space = '\s*'
-            re_search_key = space.join(search_key)
+            re_search_key = re.sub(r'[\W]{1,}', '', search_key)
+            first_movies = Movie.objects.filter(name__startswith=re_search_key)
 
-            print(re_search_key)
-            first_movies = Movie.objects.filter(name__iregex=re_search_key)
-            print(first_movies)
-            movies_name = Movie.objects.filter(name__iregex=re_search_key)
+            movies_name = Movie.objects.filter(name__icontains=re_search_key)
 
             movie_genre = Movie.objects.prefetch_related('genre').filter(genre__name__iregex=re_search_key)
-            print(movie_genre)
+
             movie_actor = Movie.objects.prefetch_related('actors').filter(actors__name__iregex=re_search_key)
-            print(movie_actor)
 
             queryset = (first_movies | movies_name | movie_genre | movie_actor).distinct()
 
