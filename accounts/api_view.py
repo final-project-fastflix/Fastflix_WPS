@@ -390,3 +390,4 @@ def add_default(request):
         obj.save()
 
     return HttpResponse({})
+
