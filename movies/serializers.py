@@ -245,7 +245,11 @@ class BigSizeVideoSerializer(serializers.ModelSerializer):
                   'video_file',
                   'horizontal_image_path',
                   'logo_image_path',
+                  'synopsis',
+                  'big_image_path',
+                  'degree',
                   ]
+        depth = 1
 
     def to_representation(self, instance):
         serializer_data = super().to_representation(instance)
@@ -259,7 +263,3 @@ class BigSizeVideoSerializer(serializers.ModelSerializer):
         serializer_data['marked'] = marked_status
 
         return serializer_data
-
-
-
-
