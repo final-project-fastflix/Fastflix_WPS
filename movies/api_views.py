@@ -43,6 +43,10 @@ class HomePage(generics.ListAPIView):
             - subuserid : 프로필계정의 ID
 
             를 입력해 주세요 (subuserid는 언더바(_)가 없습니다)
+
+            맨마지막에 찜 여부인
+                marked : true or false 가 있습니다
+
     """
 
     serializer_class = HomePageSerializer
@@ -81,13 +85,10 @@ class GenreSelectBefore(generics.ListAPIView):
 
             를 입력해 주세요 (subuserid는 언더바(_)가 없습니다)
 
-
            맨 처음 나오는 영화 1개는 맨위에 크게 등록되는 영화 입니다
 
-            - id : 영화의 id
-            - name : 영화의 이름
-            - horizontal_image_path : 가로 이미지의 path
-            - vertical_image : 세로 이미지 파일
+           맨마지막에 찜 여부인
+               marked : true or false 가 있습니다
 
     """
     serializer_class = GenreSelectBeforeSerializer
@@ -745,6 +746,18 @@ class SavePausedVideoTime(APIView):
 
 
 class Search(APIView):
+    """
+        검색 API View 입니다
+
+        ---
+
+        리턴값 :
+            contents -> 영화 검색시 최상단에 나오는 '다음과 관련된 콘텐츠'입니다
+            first_movie -> 내가 원하는 영화 입니다(*제일먼저 출력해주세요!*)
+            other_movie -> 내가 원하는 영화와 관련된 장르의 영화입니다
+
+
+    """
     def get(self, *agrs, **kwargs):
         search_key = self.request.GET.get('search_key', None)
         print(search_key)

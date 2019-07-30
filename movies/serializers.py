@@ -19,10 +19,18 @@ class HomePageSerializer(serializers.ModelSerializer):
         depth = 1
 
     def to_representation(self, instance):
-        serializers_data = super().to_representation(instance)
+        serializer_data = super().to_representation(instance)
         sub_user_id = self.context['sub_user_id']
 
-        home_page_list = {'메인 영화': serializers_data}
+        queryset = LikeDisLikeMarked.objects.filter(movie=instance.id, sub_user=sub_user_id)
+
+        if queryset:
+            marked = queryset.get().marked
+        else:
+            marked = False
+        serializer_data['marked'] = marked
+
+        home_page_list = {'메인 영화': serializer_data}
         # special_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은 것', '여름과 관련 영화',
         #                 '디즈니 영화', '미친듯이 웃을 수 있는 영화', '영어공부하기 좋은 영화', ]
         # home_page_list.update({'특별 장르': special_list})
@@ -74,6 +82,14 @@ class GenreSelectBeforeSerializer(serializers.ModelSerializer):
         serializer_data = super().to_representation(instance)
 
         sub_user_id = self.context['sub_user_id']
+
+        queryset = LikeDisLikeMarked.objects.filter(movie=instance.id, sub_user=sub_user_id)
+
+        if queryset:
+            marked = queryset.get().marked
+        else:
+            marked = False
+        serializer_data['marked'] = marked
 
         # 지정해둔 영화 장르를 넘겨받은 context에서 가져옴
         genre_list = self.context['genre_list']
