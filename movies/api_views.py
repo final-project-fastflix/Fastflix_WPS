@@ -490,7 +490,7 @@ class AddLike(APIView):
             movie.like_count = F('like_count') - 1
             movie.save()
             obj.save()
-            return JsonResponse({'response': True}, status=201)
+            return JsonResponse({'response': False}, status=201)
 
         if created or obj.like_or_dislike != 1:
             obj.like_or_dislike = 1
@@ -546,7 +546,7 @@ class AddDisLike(APIView):
             movie.like_count = F('like_count') + 1
             movie.save()
             obj.save()
-            return JsonResponse({'response': True}, status=201)
+            return JsonResponse({'response': False}, status=201)
 
         if created or obj.like_or_dislike != 2:
             obj.like_or_dislike = 2
