@@ -82,7 +82,7 @@ class Movie(models.Model):
 class MovieContinue(models.Model):
     movie = models.ForeignKey(Movie, related_name='movie_continue', on_delete=models.CASCADE)
     sub_user = models.ForeignKey('accounts.SubUser', related_name='movie_continue', on_delete=models.CASCADE)
-    to_be_continue = models.CharField(max_length=20)
+    to_be_continue = models.PositiveIntegerField(default=0)
 
     def __str__(self):
         return f'{self.movie} {self.sub_user} {self.to_be_continue}'
