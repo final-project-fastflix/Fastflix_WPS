@@ -808,7 +808,3 @@ class MatchRate(APIView):
     sub_user_id = 8
     sub_user = SubUser.objects.get(pk=sub_user_id)
     marked_obj = sub_user.like.filter(marked=True)
-
-
-
-slack과 github연동 테스트
