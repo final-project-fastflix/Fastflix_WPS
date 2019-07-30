@@ -572,7 +572,8 @@ class MyList(APIView):
 
 
             리턴값
-                찜목록 추가 성공 OR 찜목록 제거 성공
+                marked : True (찜 목록에 등록된 상태)
+                         False (찜 목록에 등록되지 않은 상태)
 
 
     """
@@ -599,18 +600,20 @@ class MyList(APIView):
         if created:
             obj.marked = True
             obj.save()
-            return JsonResponse({'response': True}, status=201)
+
+            return JsonResponse({'marked': True}, status=201)
 
         # 이미 좋아요나 싫어요 표시를 하여 목록에 있음
         else:
             if obj.marked:
                 obj.marked = False
                 obj.save()
-                return JsonResponse({'response': True}, status=201)
+
+                return JsonResponse({'marked': False}, status=201)
             else:
                 obj.marked = True
                 obj.save()
-                return JsonResponse({'response': True}, status=201)
+                return JsonResponse({'marked': True}, status=201)
 
 
 # 최신 등록 영화 10개
@@ -657,6 +660,12 @@ class BigSizeVideo(generics.RetrieveAPIView):
                 - logo_image_path : 로고 이미지의 경로
                 - horizontal_image_path : 가로 이미지 경로
                 - marked : 내가 찜한 콘텐츠 인지 여부 (True or False)
+                - synopsis : 영화 줄거리
+                - big_image_path : big size image path
+                - degree : {
+                        name : 관람등급 텍스트
+                        degree_image_path : 관람등급 이미지 경로
+                }
     """
 
     serializer_class = BigSizeVideoSerializer
@@ -712,7 +721,7 @@ class SavePausedVideoTime(APIView):
             - body에
                 sub_user_id : 서브유저 id (int)
                 movie_id    : 저장할 영화 id (int)
-                paused_time : "00:00:00" (str) 형식의 저장할 시간
+                paused_time : 유저가 시청한 초단위 시간 (int)
 
                 을 넣어주셔야 합니다.
 
@@ -765,7 +774,7 @@ class Search(APIView):
             count = queryset.count()
             # 검색 결과가 60개가 안될경우
             if count <= 59:
-                require_count = 60-count
+                require_count = 60 - count
                 if first_show:
                     # 내가 찾고자 하는 영화중에 있으면 그것과 관련된 장르의 영화를 보여줌
                     genre = first_show[0].genre.all()[0].name
