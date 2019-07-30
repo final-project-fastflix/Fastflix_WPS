@@ -738,26 +738,50 @@ class SavePausedVideoTime(APIView):
 class Search(APIView):
     def get(self, *agrs, **kwargs):
         search_key = self.request.GET.get('search_key', None)
-
+        print(search_key)
         if search_key:
 
             # 주어진 문자열에서 문자와 숫자를 제외한 문자(특수문자)를 삭제함
             re_search_key = re.sub(r'[\W]+', '', search_key)
-            first_movies = Movie.objects.filter(name__startswith=re_search_key)
 
+            # 영화이름중 검색어가 포함된 영화 목록
             movies_name = Movie.objects.filter(name__icontains=re_search_key)
 
-            movie_genre = Movie.objects.prefetch_related('genre').filter(genre__name__iregex=re_search_key)
+            # 영화 장르중 검색어가 포함된 영화 목록
+            movie_genre = Movie.objects.prefetch_related('genre').filter(genre__name__icontains=re_search_key)
 
-            movie_actor = Movie.objects.prefetch_related('actors').filter(actors__name__iregex=re_search_key)
+            # 배우들 중 검색어가 포함된 영화 목록
+            movie_actor = Movie.objects.prefetch_related('actors').filter(actors__name__icontains=re_search_key)
 
-            queryset = (first_movies | movie_genre | movie_actor).distinct().order_by()
+            # 검색어로 시작하는 영화(내가 찾고자 하는 영화라고 예상함)를 맨 처음 보여주기 위함
+            temp1 = Movie.objects.filter(name__startswith=re_search_key)
+            first_show = temp1.union(movie_actor)
+
+            first_movies_serializer = MovieSerializer(first_show, many=True)
+
+            # 내가 찾고자 하는 영화를 보여주고 난뒤 나머지 영화를 보여줌
+            queryset = (movies_name | movie_genre | movie_actor).difference(first_show).distinct()
+
+            count = queryset.count()
+            # 검색 결과가 60개가 안될경우
+            if count <= 59:
+                require_count = 60-count
+                if first_show:
+                    # 내가 찾고자 하는 영화중에 있으면 그것과 관련된 장르의 영화를 보여줌
+                    genre = first_show[0].genre.all()[0].name
+                else:
+                    # 없다면 임의로 나온 영화중 관련된 장르의 영화를 보여줌
+                    genre = queryset[0].genre.all()[0].name
+                new_list = Movie.objects.filter(genre__name=genre)[:require_count]
+                queryset = queryset.union(new_list).difference(first_show)
 
             queryset_serializer = MovieSerializer(queryset, many=True)
 
             # 다음과 관련된 콘텐츠 최대 10개
             # 관련된 영화 이름
-            movie_name = first_movies[:5]
+            movie_name = first_show[:5]
+            # 관련된 장르 이름
+            genre_name = Genre.objects.filter(name__icontains=re_search_key)[:5]
             # 관련된 영화배우 이름
             actor_name = Actor.objects.filter(name__startswith=re_search_key)[:5]
 
@@ -766,8 +790,13 @@ class Search(APIView):
                 contents.append(movie.name)
             for actor in actor_name:
                 contents.append(actor.name)
+            for genre in genre_name:
+                contents.append(genre.name)
 
-            return JsonResponse({'contents': contents, 'movie_list': queryset_serializer.data}, status=201)
+            return JsonResponse({'contents': contents,
+                                 'first_movie': first_movies_serializer.data,
+                                 'other_movie': queryset_serializer.data,
+                                 }, status=201)
         else:
             return JsonResponse({'search_error': False}, status=403)
 
