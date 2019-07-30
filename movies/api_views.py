@@ -320,6 +320,12 @@ class FollowUpMovies(generics.ListAPIView):
         queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
         return queryset
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        sub_user_id = self.request.META['HTTP_SUBUSERID']
+        context['sub_user_id'] = sub_user_id
+        return context
+
 
 # 장르별 영화 리스트
 class MovieListByGenre(APIView):
@@ -711,6 +717,7 @@ class MostLikesMoives(generics.ListAPIView):
 
         return queryset
 
+
 # 플레이어 재생시간 저장
 class SavePausedVideoTime(APIView):
     """
@@ -758,6 +765,7 @@ class Search(APIView):
 
 
     """
+
     def get(self, *agrs, **kwargs):
         search_key = self.request.GET.get('search_key', None)
         print(search_key)

@@ -231,6 +231,14 @@ class MovieContinueMovieSerializer(serializers.ModelSerializer):
             'vertical_image',
         )
 
+    def to_representation(self, instance):
+        serializer_data = super().to_representation(instance)
+        sub_user_id = self.context['sub_user_id']
+
+
+
+
+
 
 class MovieContinueSerializer(serializers.ModelSerializer):
     movie = MovieContinueMovieSerializer()
