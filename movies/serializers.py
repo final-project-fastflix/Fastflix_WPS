@@ -149,12 +149,11 @@ class MovieDetailSerializer(serializers.ModelSerializer):
 
         if instance.movie_continue.filter(sub_user_id=sub_user_id):
             to_be_continue = instance.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue
-            time_list = instance.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue.split(':')
-            spent_time = int(time_list[0]) * 60 + int(time_list[1])
-            remaining_time = total_minute - spent_time
+            cur_minute = to_be_continue//60
+            remaining_time = total_minute - cur_minute
         else:
-            to_be_continue = None
-            remaining_time = None
+            to_be_continue = 0
+            remaining_time = total_minute
 
         # 저장가능 영화인지 확인
         can_i_store = int(instance.production_date) < 2015
