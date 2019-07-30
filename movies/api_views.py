@@ -301,7 +301,7 @@ class FollowUpMovies(generics.ListAPIView):
         메인화면에서 보여줄 시청 중인 영화리스트 url 입니다.
 
         ---
-            - 요청할때 /movie/followup/ 으로 요청하시면 됩니다.
+            - 요청할때 /movies/followup/ 으로 요청하시면 됩니다.
             - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
@@ -717,7 +717,7 @@ class MostLikesMoives(generics.ListAPIView):
 
         return queryset
 
-
+# 플레이어 재생시간 저장
 class SavePausedVideoTime(APIView):
     """
             비디오 재생시간 저장 url 입니다.

@@ -165,7 +165,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
 
         if instance.movie_continue.filter(sub_user_id=sub_user_id):
             to_be_continue = instance.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue
-            cur_minute = to_be_continue//60
+            cur_minute = to_be_continue // 60
             remaining_time = total_minute - cur_minute
         else:
             to_be_continue = 0
@@ -215,7 +215,8 @@ class GenreListSerializer(serializers.ModelSerializer):
 class MovieOfMovieContinueSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ('id', 'name', 'video_file', 'logo_image_path', 'horizontal_image_path', 'vertical_image')
+        fields = (
+            'id', 'name', 'video_file', 'logo_image_path', 'horizontal_image_path', 'vertical_image', 'running_time')
 
 
 class MovieContinueMovieSerializer(serializers.ModelSerializer):
