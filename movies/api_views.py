@@ -461,7 +461,8 @@ class AddLike(APIView):
 
 
             리턴값
-                좋아요 등록 성공 OR 좋아요 취소 성공
+                좋아요 등록 성공 : True
+                좋아요 취소 성공 : False
 
 
     """
@@ -485,6 +486,7 @@ class AddLike(APIView):
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
 
+        # 좋아요 목록에 있으면 취소
         if obj.like_or_dislike == 1:
             obj.like_or_dislike = 0
             movie.like_count = F('like_count') - 1
@@ -492,6 +494,7 @@ class AddLike(APIView):
             obj.save()
             return JsonResponse({'response': False}, status=201)
 
+        # 싫어요 or 좋아요 등록이 안되어있으면 추가
         if created or obj.like_or_dislike != 1:
             obj.like_or_dislike = 1
             movie.like_count = F('like_count') + 1
@@ -517,7 +520,8 @@ class AddDisLike(APIView):
 
 
             리턴값
-                싫어요 등록 성공 OR 싫어요 취소 성공
+                싫어요 등록 성공 : True
+                싫어요 취소 성공 : False
 
 
     """
@@ -541,6 +545,7 @@ class AddDisLike(APIView):
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
 
+        # 싫어요 등록이 되어있으면 취소
         if obj.like_or_dislike == 2:
             obj.like_or_dislike = 0
             movie.like_count = F('like_count') + 1
@@ -548,6 +553,7 @@ class AddDisLike(APIView):
             obj.save()
             return JsonResponse({'response': False}, status=201)
 
+        # 좋아요 or 등록이 안되어 있으면 싫어요 등록
         if created or obj.like_or_dislike != 2:
             obj.like_or_dislike = 2
             movie.like_count = F('like_count') - 1
