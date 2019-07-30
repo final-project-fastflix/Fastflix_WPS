@@ -16,9 +16,6 @@ urlpatterns = [
     # 전체 영화 목록
     path('all/', MovieList.as_view(), name='movie_all_list'),
 
-    # 영화 등록 API
-    # path('create/', MovieCerate.as_view(), name='create'),
-
     # 장르 전체 목록
     path('genre/list/', GenreList.as_view(), name='genre_list'),
 

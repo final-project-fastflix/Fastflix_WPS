@@ -1,12 +1,14 @@
+import re
+
 from django.db.models import Max, Q, F
 from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
-import re
 
 from accounts.models import SubUser
+from movies.models import Actor
 from .serializers import *
 
 
@@ -139,32 +141,6 @@ class PreviewCellList(generics.ListAPIView):
         queryset = Movie.objects.all().order_by('?')[:10]
 
         return queryset
-
-
-# 영화 등록
-# class MovieCerate(generics.CreateAPIView):
-#     """
-#         영화 등록 API 입니다
-#
-#         ---
-#             - name : 영화 이름
-#             - production_date : 영화 개봉 날짜
-#             - uploaded_date : 영화 등록(업로드) 날짜
-#             - synopsis : 영화 줄거리
-#             - running_time : 영화 러닝타임
-#             - view_count : 영화 조회수
-#             - logo_image_path : 영화 로고 이미지 경로
-#             - horizontal_image_path : 영화 가로 이미지 경로
-#             - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
-#             - directors : 영화 감독
-#             - actors : 배우
-#             - feature : 영화 특징(Ex.흥미진진)
-#             - author : 각본가
-#             - genre : 장르
-#
-#     """
-#     queryset = Movie.objects.all()
-#     serializer_class = MovieSerializer
 
 
 # 영화 장르 리스트
@@ -466,24 +442,6 @@ class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
 
         return queryset
 
-    # def get_queryset(self):
-    #     # 등록된 영화의 최대 ID값을 구함
-    #     max_id = Movie.objects.all().aggregate(max_id=Max("id"))['max_id']
-    #     # queryset를 아래에서 사용하기 위해 미리 1개를 뽑아놓음
-    #     queryset = Movie.objects.filter(pk=random.randint(1, max_id))
-    #
-    #     # queryset의 갯수가 60개 이상일때 까지
-    #     while queryset.count() <= 60:
-    #         # 영화의 ID값 중에 하나를 골라옴
-    #         pk = random.randint(1, max_id)
-    #         # ID값에 해당하는 영화를 가져옴
-    #         movie = Movie.objects.filter(pk=pk)
-    #         if movie:
-    #             # 쿼리셋에 붙임
-    #             queryset |= movie
-    #
-    #     return queryset
-
 
 # 좋아요 목록에 추가하기
 class AddLike(APIView):
@@ -531,14 +489,14 @@ class AddLike(APIView):
             movie.like_count = F('like_count') - 1
             movie.save()
             obj.save()
-            return JsonResponse({'response': "좋아요 취소 성공"}, status=201)
+            return JsonResponse({'response': True}, status=201)
 
         if created or obj.like_or_dislike != 1:
             obj.like_or_dislike = 1
             movie.like_count = F('like_count') + 1
             movie.save()
             obj.save()
-        return JsonResponse({'response': "좋아요 등록 성공"}, status=201)
+        return JsonResponse({'response': True}, status=201)
 
 
 # 싫어요 목록에 추가하기
@@ -587,14 +545,14 @@ class AddDisLike(APIView):
             movie.like_count = F('like_count') + 1
             movie.save()
             obj.save()
-            return JsonResponse({'response': "싫어요 취소 성공"}, status=201)
+            return JsonResponse({'response': True}, status=201)
 
         if created or obj.like_or_dislike != 2:
             obj.like_or_dislike = 2
             movie.like_count = F('like_count') - 1
             movie.save()
             obj.save()
-        return JsonResponse({'response': "싫어요 등록 성공"}, status=201)
+        return JsonResponse({'response': True}, status=201)
 
 
 # 찜 목록에 추가하기
@@ -641,18 +599,18 @@ class MyList(APIView):
         if created:
             obj.marked = True
             obj.save()
-            return JsonResponse({'response': "찜목록 추가 성공"}, status=201)
+            return JsonResponse({'response': True}, status=201)
 
         # 이미 좋아요나 싫어요 표시를 하여 목록에 있음
         else:
             if obj.marked:
                 obj.marked = False
                 obj.save()
-                return JsonResponse({'response': "찜목록 제거 성공"}, status=201)
+                return JsonResponse({'response': True}, status=201)
             else:
                 obj.marked = True
                 obj.save()
-                return JsonResponse({'response': "찜목록 추가 성공"}, status=201)
+                return JsonResponse({'response': True}, status=201)
 
 
 # 최신 등록 영화 10개
@@ -782,7 +740,9 @@ class Search(APIView):
         search_key = self.request.GET.get('search_key', None)
 
         if search_key:
-            re_search_key = re.sub(r'[\W]{1,}', '', search_key)
+
+            # 주어진 문자열에서 문자와 숫자를 제외한 문자(특수문자)를 삭제함
+            re_search_key = re.sub(r'[\W]+', '', search_key)
             first_movies = Movie.objects.filter(name__startswith=re_search_key)
 
             movies_name = Movie.objects.filter(name__icontains=re_search_key)
@@ -791,11 +751,23 @@ class Search(APIView):
 
             movie_actor = Movie.objects.prefetch_related('actors').filter(actors__name__iregex=re_search_key)
 
-            queryset = (first_movies | movies_name | movie_genre | movie_actor).distinct()
+            queryset = (first_movies | movie_genre | movie_actor).distinct().order_by()
 
             queryset_serializer = MovieSerializer(queryset, many=True)
 
-            return JsonResponse({'movie_list': queryset_serializer.data}, status=201)
+            # 다음과 관련된 콘텐츠 최대 10개
+            # 관련된 영화 이름
+            movie_name = first_movies[:5]
+            # 관련된 영화배우 이름
+            actor_name = Actor.objects.filter(name__startswith=re_search_key)[:5]
+
+            contents = []
+            for movie in movie_name:
+                contents.append(movie.name)
+            for actor in actor_name:
+                contents.append(actor.name)
+
+            return JsonResponse({'contents': contents, 'movie_list': queryset_serializer.data}, status=201)
         else:
             return JsonResponse({'search_error': False}, status=403)
 
@@ -804,7 +776,3 @@ class MatchRate(APIView):
     sub_user_id = 8
     sub_user = SubUser.objects.get(pk=sub_user_id)
     marked_obj = sub_user.like.filter(marked=True)
-
-
-
-
