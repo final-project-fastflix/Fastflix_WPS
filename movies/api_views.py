@@ -309,7 +309,10 @@ class FollowUpMovies(generics.ListAPIView):
                 - logo_image_path : 로고 이미지의 경로
                 - horizontal_image_path : 가로 이미지 경로
                 - vertical_image : 세로 이미지(차후 변경 예정)
+                - real_running_time : 영상의 실제 총 러닝타임
                 - to_be_continue : 유저가 재생을 멈춘시간
+                - progress_bar : 영상 진행률
+
     """
 
     # queryset = Movie.objects.all()
@@ -318,7 +321,7 @@ class FollowUpMovies(generics.ListAPIView):
     def get_queryset(self):
         sub_user_id = self.request.META['HTTP_SUBUSERID']
         queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
-        return queryset
+        return queryset.order_by('-updated')
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
