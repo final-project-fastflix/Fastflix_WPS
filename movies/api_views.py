@@ -698,6 +698,12 @@ class BigSizeVideo(generics.RetrieveAPIView):
                 - logo_image_path : 로고 이미지의 경로
                 - horizontal_image_path : 가로 이미지 경로
                 - marked : 내가 찜한 콘텐츠 인지 여부 (True or False)
+                - synopsis : 영화 줄거리
+                - big_image_path : big size image path
+                - degree : {
+                        name : 관람등급 텍스트
+                        degree_image_path : 관람등급 이미지 경로
+                }
     """
 
     serializer_class = BigSizeVideoSerializer
@@ -753,7 +759,7 @@ class SavePausedVideoTime(APIView):
             - body에
                 sub_user_id : 서브유저 id (int)
                 movie_id    : 저장할 영화 id (int)
-                paused_time : "00:00:00" (str) 형식의 저장할 시간
+                paused_time : 유저가 시청한 초단위 시간 (int)
 
                 을 넣어주셔야 합니다.
 
