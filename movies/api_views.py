@@ -613,7 +613,8 @@ class MyList(APIView):
 
 
             리턴값
-                찜목록 추가 성공 OR 찜목록 제거 성공
+                marked : True (찜 목록에 등록된 상태)
+                         False (찜 목록에 등록되지 않은 상태)
 
 
     """
@@ -640,18 +641,18 @@ class MyList(APIView):
         if created:
             obj.marked = True
             obj.save()
-            return JsonResponse({'response': "찜목록 추가 성공"}, status=201)
+            return JsonResponse({'marked': True}, status=201)
 
         # 이미 좋아요나 싫어요 표시를 하여 목록에 있음
         else:
             if obj.marked:
                 obj.marked = False
                 obj.save()
-                return JsonResponse({'response': "찜목록 제거 성공"}, status=201)
+                return JsonResponse({'marked': False}, status=201)
             else:
                 obj.marked = True
                 obj.save()
-                return JsonResponse({'response': "찜목록 추가 성공"}, status=201)
+                return JsonResponse({'marked': True}, status=201)
 
 
 # 최신 등록 영화 10개
