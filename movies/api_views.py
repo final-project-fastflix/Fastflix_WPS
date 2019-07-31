@@ -6,6 +6,7 @@ from django.utils import timezone
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import status
 
 from accounts.models import SubUser
 from movies.models import Actor
@@ -470,7 +471,8 @@ class AddLike(APIView):
 
 
             리턴값
-                좋아요 등록 성공 OR 좋아요 취소 성공
+                좋아요 등록 성공 : True
+                좋아요 취소 성공 : False
 
 
     """
@@ -494,19 +496,21 @@ class AddLike(APIView):
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
 
+        # 좋아요 목록에 있으면 취소
         if obj.like_or_dislike == 1:
             obj.like_or_dislike = 0
             movie.like_count = F('like_count') - 1
             movie.save()
             obj.save()
-            return JsonResponse({'response': False}, status=201)
+            return JsonResponse({'response': False}, status=status.HTTP_202_ACCEPTED)
 
+        # 싫어요 or 좋아요 등록이 안되어있으면 추가
         if created or obj.like_or_dislike != 1:
             obj.like_or_dislike = 1
             movie.like_count = F('like_count') + 1
             movie.save()
             obj.save()
-        return JsonResponse({'response': True}, status=201)
+        return JsonResponse({'response': True}, status=status.HTTP_201_CREATED)
 
 
 # 싫어요 목록에 추가하기
@@ -526,7 +530,8 @@ class AddDisLike(APIView):
 
 
             리턴값
-                싫어요 등록 성공 OR 싫어요 취소 성공
+                싫어요 등록 성공 : True
+                싫어요 취소 성공 : False
 
 
     """
@@ -550,19 +555,21 @@ class AddDisLike(APIView):
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
 
+        # 싫어요 등록이 되어있으면 취소
         if obj.like_or_dislike == 2:
             obj.like_or_dislike = 0
             movie.like_count = F('like_count') + 1
             movie.save()
             obj.save()
-            return JsonResponse({'response': False}, status=201)
+            return JsonResponse({'response': False}, status=status.HTTP_202_ACCEPTED)
 
+        # 좋아요 or 등록이 안되어 있으면 싫어요 등록
         if created or obj.like_or_dislike != 2:
             obj.like_or_dislike = 2
             movie.like_count = F('like_count') - 1
             movie.save()
             obj.save()
-        return JsonResponse({'response': True}, status=201)
+        return JsonResponse({'response': True}, status=status.HTTP_201_CREATED)
 
 
 # 찜 목록에 추가하기
@@ -611,7 +618,7 @@ class MyList(APIView):
             obj.marked = True
             obj.save()
 
-            return JsonResponse({'marked': True}, status=201)
+            return JsonResponse({'marked': True}, status=status.HTTP_200_OK)
 
         # 이미 좋아요나 싫어요 표시를 하여 목록에 있음
         else:
@@ -619,11 +626,11 @@ class MyList(APIView):
                 obj.marked = False
                 obj.save()
 
-                return JsonResponse({'marked': False}, status=201)
+                return JsonResponse({'marked': False}, status=status.HTTP_200_OK)
             else:
                 obj.marked = True
                 obj.save()
-                return JsonResponse({'marked': True}, status=201)
+                return JsonResponse({'marked': True}, status=status.HTTP_200_OK)
 
 
 # 최신 등록 영화 10개
@@ -766,6 +773,8 @@ class Search(APIView):
             first_movie -> 내가 원하는 영화 입니다(*제일먼저 출력해주세요!*)
             other_movie -> 내가 원하는 영화와 관련된 장르의 영화입니다
 
+            아무런 영화가 존재하지 않을시 search: False가 리턴됩니다
+
 
     """
 
@@ -794,6 +803,12 @@ class Search(APIView):
 
             # 내가 찾고자 하는 영화를 보여주고 난뒤 나머지 영화를 보여줌
             queryset = (movies_name | movie_genre | movie_actor).difference(first_show).distinct()
+
+            print(first_show.exists())
+            print(queryset)
+
+            if not first_show.exists() and not queryset.exists():
+                return JsonResponse({'search': False}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
             count = queryset.count()
             # 검색 결과가 60개가 안될경우
@@ -829,9 +844,9 @@ class Search(APIView):
             return JsonResponse({'contents': contents,
                                  'first_movie': first_movies_serializer.data,
                                  'other_movie': queryset_serializer.data,
-                                 }, status=201)
+                                 }, status=status.HTTP_202_ACCEPTED)
         else:
-            return JsonResponse({'search_error': False}, status=403)
+            return JsonResponse({'search_error': False}, status=status.HTTP_204_NO_CONTENT)
 
 
 class MatchRate(APIView):

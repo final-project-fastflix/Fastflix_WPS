@@ -51,6 +51,35 @@ class SubUserCreateSerializer(serializers.ModelSerializer):
         return sub_user
 
 
+# 프로필 계정을 수정하는 시리얼라이저
+class SubUserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubUser
+        exclude = ['parent_user']
+
+    def update(self, instance, validated_data):
+        parent_user_id = instance.parent_user.id
+        is_exist_user = SubUser.objects.filter(parent_user=parent_user_id, name=validated_data['name']).exists()
+
+        if is_exist_user:
+            return False
+
+        else:
+            for attr, value in validated_data.items():
+                print(attr, value)
+                if value:
+                    setattr(instance, attr, value)
+            instance.save()
+
+            return instance
+
+
+# 프로필 계정을 삭제하는 시리얼라이저
+class SubUserDeleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubUser
+
+
 # 토큰을 얻는 시리얼라이저
 class GetTokenSerializer(serializers.ModelSerializer):
     class Meta:
