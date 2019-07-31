@@ -255,7 +255,7 @@ class SubUserModify(APIView):
     serializer_class = SubUserUpdateSerializer
 
     def get_object(self):
-        sub_user_id = self.request.POST.get('sub_user_id')
+        sub_user_id = self.request.data.get('sub_user_id')
         return SubUser.objects.get(id=sub_user_id)
 
     def patch(self, request, *args, **kwargs):
