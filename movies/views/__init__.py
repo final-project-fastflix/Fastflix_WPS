@@ -30,4 +30,3 @@ def update_real(request):
             total_minute = int(runningtime[:-1])
         movie.real_running_time = total_minute * 60
         movie.save()
-
