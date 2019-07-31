@@ -149,7 +149,6 @@ class SubUserCreate(APIView):
             is_exist[int(name_index) - 1] = True
             index += 1
 
-
         # 입력한 username이 여러개인 경우(맨 처음 회원가입 하였을때)
         if isinstance(username, list):
 
@@ -218,6 +217,82 @@ class SubUserList(generics.ListAPIView):
         queryset = SubUser.objects.filter(parent_user_id=self.request.user.id)
 
         return queryset
+
+
+class SubUserModify(APIView):
+    """
+        기존 프로필계정의 정보를 변경하는 API뷰 입니다
+            Header에 Authrization: Token 토큰값
+            Body에 원하는 정보
+                Ex) name : '변경하고싶은 이름'
+                    kid : true/false
+                    profile_image_path : '프로필 이미지 path'
+                중 변경하고자 하는 것만 넣어서 보내주시면 됩니다.
+                Ex) name만 보내주거나 name, kid 를 보내주시거나 등등
+
+            리턴값:
+                response: False -> 수정 실패
+                response: True -> 수정 성공
+
+        ---
+
+
+    """
+
+    serializer_class = SubUserUpdateSerializer
+
+    def get_object(self):
+        sub_user_id = self.request.POST.get('sub_user_id')
+        return SubUser.objects.get(id=sub_user_id)
+
+    def patch(self, request, *args, **kwargs):
+        sub_user = self.get_object()
+        serializer = SubUserUpdateSerializer(instance=sub_user, data=request.data, partial=True)
+
+        if not serializer:
+            return JsonResponse({'response': False}, status=status.HTTP_400_BAD_REQUEST)
+
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse({'response': True}, status=status.HTTP_200_OK)
+        return JsonResponse({'response': False}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 프로필 계정을 삭제하는 API
+class SubUserDelete(APIView):
+    """
+        기존 프로필계정을 삭제하는 API뷰 입니다
+            Header에
+                Authrization: Token 토큰값
+                subuserid : 프로필 계정의 ID
+            넣어서 보내주세요 (subuserid는 _(언더바)가 없습니다)
+
+            리턴값:
+                response: False -> 삭제 실패
+                response: True -> 삭제 성공
+
+        ---
+
+
+    """
+    serializer_class = SubUserDeleteSerializer
+
+    def delete(self, request, *agrs, **kwargs):
+        sub_user_id = request.META['HTTP_SUBUSERID']
+        sub_user = SubUser.objects.get(id=sub_user_id)
+        # 자신이 가지고 있는 프로필계정만 삭제가능
+        print(request.user)
+        is_exist_sub_user_list = SubUser.objects.filter(parent_user=request.user).exists()
+
+        if is_exist_sub_user_list:
+            sub_user_list = SubUser.objects.filter(parent_user=request.user)
+            if sub_user in sub_user_list:
+                sub_user.delete()
+                return JsonResponse({'response': True}, status=status.HTTP_204_NO_CONTENT)
+            else:
+                return JsonResponse({'response': False}, status=status.HTTP_400_BAD_REQUEST)
+
+        return JsonResponse({'response': False}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 로그인 API뷰
@@ -386,4 +461,3 @@ def add_default(request):
         obj.save()
 
     return HttpResponse({})
-
