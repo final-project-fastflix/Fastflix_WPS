@@ -762,6 +762,8 @@ class Search(APIView):
             first_movie -> 내가 원하는 영화 입니다(*제일먼저 출력해주세요!*)
             other_movie -> 내가 원하는 영화와 관련된 장르의 영화입니다
 
+            아무런 영화가 존재하지 않을시 search: False가 리턴됩니다
+
 
     """
     def get(self, *agrs, **kwargs):
@@ -789,6 +791,12 @@ class Search(APIView):
 
             # 내가 찾고자 하는 영화를 보여주고 난뒤 나머지 영화를 보여줌
             queryset = (movies_name | movie_genre | movie_actor).difference(first_show).distinct()
+
+            print(first_show.exists())
+            print(queryset)
+
+            if not first_show.exists() and not queryset.exists():
+                return JsonResponse({'search': False}, status=403)
 
             count = queryset.count()
             # 검색 결과가 60개가 안될경우

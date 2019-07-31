@@ -149,7 +149,6 @@ class SubUserCreate(APIView):
             is_exist[int(name_index) - 1] = True
             index += 1
 
-        print(is_exist)
 
         # 입력한 username이 여러개인 경우(맨 처음 회원가입 하였을때)
         if isinstance(username, list):
