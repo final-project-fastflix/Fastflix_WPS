@@ -137,6 +137,7 @@ class SubUserCreate(APIView):
         # 바디 형
         username = request.data.get('name')
         kids = request.data.get('kid')
+        print('이름', username)
 
         is_exist = [False, False, False, False, False]
         basic_image_list = ProfileImage.objects.filter(category='basic')
@@ -174,10 +175,12 @@ class SubUserCreate(APIView):
                         profile_image_path=basic_image_list[index].image_path,
                     )
 
-                sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
-                sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
+                    sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
+                    sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
 
-            return Response(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
+                    return Response(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
+
+                return Response(data={'error': False}, status=status.HTTP_400_BAD_REQUEST)
 
         # 입력된 username이 1개 인 경우(일반적인 경우)
         else:
@@ -188,6 +191,7 @@ class SubUserCreate(APIView):
             serializer = SubUserCreateSerializer(
                 data={'name': username, 'kid': kids}
             )
+
             if serializer.is_valid():
                 serializer.save(parent_user=request.user,
                                 profile_image_path=basic_image_list[is_exist.index(False)].image_path
@@ -195,8 +199,9 @@ class SubUserCreate(APIView):
 
                 sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
                 sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
+                return Response(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
 
-            return Response(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
+            return Response(data={'error': False}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SubUserList(generics.ListAPIView):
