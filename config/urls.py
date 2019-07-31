@@ -21,6 +21,8 @@ from drf_yasg.views import get_schema_view
 # 스웨거 API 문서
 from rest_framework.permissions import AllowAny
 
+from config import settings
+
 schema_url_v1_patterns = [
     path('movies/', include('movies.urls', namespace='movies_api')),
     path('accounts/', include('accounts.urls', namespace='accounts_api')),
@@ -57,3 +59,13 @@ urlpatterns = [
     # docs/v1/로 접속하면 API 목록이 한눈에 들어오는 API 문서가 나옴 깔-끔함
     path('docs/v1/', schema_view_v1.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+
+        # For django versions before 2.0:
+        # url(r'^__debug__/', include(debug_toolbar.urls)),
+
+    ] + urlpatterns

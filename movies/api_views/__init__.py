@@ -9,8 +9,7 @@ from rest_framework.views import APIView
 
 from accounts.models import SubUser
 from movies.models import Actor
-from .serializers import *
-from .views import obj_create
+from ..serializers import *
 
 
 # Create your views here.
@@ -839,7 +838,65 @@ class Search(APIView):
         else:
             return Response({'search_error': False}, status=status.HTTP_204_NO_CONTENT)
 
-# class MatchRate(APIView):
-#     sub_user_id = 8
-#     sub_user = SubUser.objects.get(id=sub_user_id)
-#     marked_obj = sub_user.like.filter(marked=True)
+
+class MatchRate(APIView):
+
+    def get(self, *args, **kwargs):
+        sub_user = SubUser.objects.get(pk=67)
+        marked_objs = LikeDisLikeMarked.objects.select_related(
+            'movie',
+        ).prefetch_related(
+            'movie__actors',
+            'movie__directors',
+            'movie__genre',
+        ).filter(marked=True, sub_user=sub_user)
+        # marked_objs = LikeDisLikeMarked.objects.filter(marked=True, sub_user=sub_user)
+        # Movie.objects.all().prefetch_related('actors', 'directors', 'genre')
+        movie_names = []
+        target = Movie.objects.get(pk=354)
+        target_movie_name = target.name[:2]
+        target_actors = target.actors.all()
+        target_actors_list = [actor.name for actor in target_actors]
+        target_directors = target.directors.all()
+        target_directors_list = [director.name for director in target_directors]
+        target_genres = target.genre.all()
+        target_genres_list = [genre.name for genre in target_genres]
+
+        for actor in target_actors:
+            target_actors_list.append(actor)
+
+        marked_movie_names = []
+        marked_movie_actors_name = []
+        marked_movie_directors_name = []
+        marked_movie_genre_name = []
+
+        for obj in marked_objs:
+            marked_movie_names.append(obj.movie.name)
+
+            marked_actors = obj.movie.actors.all()
+            for actor in marked_actors:
+                marked_movie_actors_name.append(actor.name)
+
+            marked_directors = obj.movie.directors.all()
+            for director in marked_directors:
+                marked_movie_directors_name.append(director.name)
+
+            marked_genres = obj.movie.genre.all()
+            for genre in marked_genres:
+                marked_movie_genre_name.append(genre.name)
+
+        for t_actor in target_actors_list:
+            actor_match_count = marked_movie_actors_name.count(t_actor)
+
+        for t_director in target_directors_list:
+            director_match_count = marked_movie_directors_name.count(t_director)
+
+        for t_genre in target_genres_list:
+            genre_match_count = marked_movie_genre_name.count(t_genre)
+
+        name_match_count = 0
+        for m_movie_name in marked_movie_names:
+            if target_movie_name in m_movie_name:
+                name_match_count += 1
+
+        return Response({})
