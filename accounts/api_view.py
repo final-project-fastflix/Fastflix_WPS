@@ -139,7 +139,7 @@ class SubUserCreate(APIView):
         kids = request.data.get('kid')
 
         is_exist = [False, False, False, False, False]
-        basic_image_list = ProfileImage.objects.filter(category='basic')
+        basic_image_list = ProfileImage.objects.filter(category='basic').order_by('pk')
         sub_user_img_path_list = []
 
         # 이름을 비교하기 위한 리스트
@@ -151,13 +151,12 @@ class SubUserCreate(APIView):
             sub_user_name_list.append(sub_user.name)
             sub_user_img_path_list.append(sub_user.profile_image_path)
             name_index = ProfileImage.objects.get(image_path=sub_user_img_path_list[index]).name[-1]
-            is_exist[int(name_index) - 1] = True
+            if name_index.isnumeric():
+                is_exist[int(name_index) - 1] = True
             index += 1
 
         # 입력한 username이 여러개인 경우(맨 처음 회원가입 하였을때)
         if isinstance(username, list):
-            print(username)
-            print(sub_user_name_list)
             for index in range(len(username)):
 
                 if username[index] in sub_user_name_list:
@@ -184,9 +183,8 @@ class SubUserCreate(APIView):
 
         # 입력된 username이 1개 인 경우(일반적인 경우)
         else:
-
             if username in sub_user_name_list:
-                return Response(data={'error': False}, status=status.HTTP_403_FORBIDDEN)
+                return Response(data={'error': False}, status=status.HTTP_400_BAD_REQUEST)
 
             serializer = SubUserCreateSerializer(
                 data={'name': username, 'kid': kids}
