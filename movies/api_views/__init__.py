@@ -1,12 +1,11 @@
 import re
 
 from django.db.models import Max, Q, F
-from django.http import JsonResponse
 from django.utils import timezone
 from rest_framework import generics
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import status
 
 from accounts.models import SubUser
 from movies.models import Actor
@@ -21,10 +20,15 @@ class MovieList(generics.ListAPIView):
         전체 영화 목록입니다
 
         ---
-            - id : 영화의 고유 ID
-            - name : 영화의 이름
-            - horizontal_image_path : 영화 가로 이미지 경로
-            - vetical_image : 영화 세로 이미지(추후 변경예정)
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요!
+
+            리턴값:
+                - id : 영화의 고유 ID
+                - name : 영화의 이름
+                - horizontal_image_path : 영화 가로 이미지 경로
+                - vetical_image : 영화 세로 이미지(추후 변경예정)
 
     """
 
@@ -125,6 +129,11 @@ class PreviewCellList(generics.ListAPIView):
         ---
 
         ```
+
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요!
+
             GET 으로 요청 하시면 됩니다
 
             리턴값 :
@@ -152,16 +161,14 @@ class GenreList(generics.ListAPIView):
 
         ---
 
-            헤더에
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요!
 
-            - Authorization : Token 토큰 값
+            리턴값:
+                - id : 영화 장르 ID
+                - name : 영화 장르
 
-            를 입력해 주세요
-
-
-            - id : 영화 장르 ID
-            - name : 영화 장르
-    
     """
 
     queryset = Genre.objects.all()
@@ -173,13 +180,17 @@ class MovieListFirstGenre(generics.ListAPIView):
     """
         장르별 영화 리스트 입니다
 
-
         ---
+            Header에
+                Authorization : Token 토큰값
+                subuserid : 서브유저 ID
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
 
             - 요청할때 movie/genre/'카테고리 명'/list/로 요청하시면 됩니다
                 - Ex) movie/genre/액션/list/
                 - Ex) movie/genre/스릴러/list/
 
+            리턴값:
                 - name : 영화 이름
                 - logo_image_path : 로고 이미지의 경로
                 - horizontal_image_path : 가로 이미지 경로
@@ -209,17 +220,17 @@ class MarkedList(generics.ListAPIView):
 
         ---
 
-            헤더에
-            - Authorization : Token 토큰 값
-            - subuserid : 프로필계정의 ID
-
-            를 입력해 주세요 (subuserid는 언더바(_)가 없습니다)
+            Header에
+                Authorization : Token 토큰값
+                subuserid : 서브유저 ID
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
 
 
             - 요청할때 "/movies/my_list" 로 요청하시면 됩니다
 
                 - Ex) /movies/my_list/
 
+            리턴값:
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
                 - horizontal_image_path : 가로 이미지 경로
@@ -242,21 +253,17 @@ class MovieDetail(generics.RetrieveAPIView):
 
         ---
 
-            헤더에
-
-            - Authorization : Token 토큰 값
-            - subuserid : 프로필계정의 ID
-
-            를 입력해 주세요 (subuserid는 언더바(_)가 없습니다)
-
-
-
+            Header에
+                Authorization : Token 토큰값
+                subuserid : 서브유저 ID
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
 
             - 요청할때 "/movie/'영화 ID값'" 으로 요청하시면 됩니다.
 
                 - Ex) /movie/2
                 - Ex) /movie/7
 
+            리턴값:
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
                 - video_file : 비디오파일
@@ -302,8 +309,15 @@ class FollowUpMovies(generics.ListAPIView):
         메인화면에서 보여줄 시청 중인 영화리스트 url 입니다.
 
         ---
+
+            Header에
+                Authorization : Token 토큰값
+                subuserid : 서브유저 ID
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
+
             - 요청할때 /movies/followup/ 으로 요청하시면 됩니다.
-            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
+
+            리턴값:
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
                 - video_file : 비디오파일
@@ -337,6 +351,12 @@ class MovieListByGenre(APIView):
         영화 페이지에서 장르를 선택하면 보여줄 영화리스트 url 입니다.
 
         ---
+
+            Header에
+                Authorization : Token 토큰값
+                subuserid : 서브유저 ID
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
+
             - 요청할때 /movies/list_by_genre/'genre_key'/ 로 요청하시면 됩니다.
 
                 - Ex) /movies/list_by_genre/액션/
@@ -347,8 +367,7 @@ class MovieListByGenre(APIView):
             '한국', '미국', '어린이', '액션', '스릴러', 'sf', '판타지',
             '범죄', '호러', '다큐', '로맨스', '코미디', '애니', '외국',
 
-            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
-
+            리턴값:
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
                 - sample_video_file : 미리보기 비디오파일
@@ -418,20 +437,16 @@ class MovieListByGenre(APIView):
         return Response(context)
 
 
-# 프로필 생성후 좋아하는 영화 3개 선택하기(무작위 50개) -> 성능 개선 필요
+# 프로필 생성후 좋아하는 영화 3개 선택하기(무작위 60개)
 class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
     """
         프로필계정 가입후 좋아하는 영화 목록3개 선택하기입니다. 영화 60개를 리턴합니다.
 
         ---
 
-            너무 느려서 성능 개선이 필수입니다
-
-            header에
-
-                Authorization: Token "토큰값"
-
-            을 넣어주세요
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요!
 
             리턴값:
                 [
@@ -469,11 +484,9 @@ class AddLike(APIView):
 
             를 넣어서 POST로 요청해 주세요
 
-
             리턴값
                 좋아요 등록 성공 : True
                 좋아요 취소 성공 : False
-
 
     """
 
@@ -489,9 +502,6 @@ class AddLike(APIView):
             sub_user__name=sub_user.name,
             defaults={'movie': Movie.objects.get(name=movie.name),
                       'sub_user': SubUser.objects.get(id=sub_user.id),
-                      # 'like_or_dislike': 1,
-                      # 'marked': False,
-                      # 'created': timezone.now(),
                       'updated': timezone.now(),
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
@@ -502,7 +512,7 @@ class AddLike(APIView):
             movie.like_count = F('like_count') - 1
             movie.save()
             obj.save()
-            return JsonResponse({'response': False}, status=status.HTTP_202_ACCEPTED)
+            return Response({'response': False}, status=status.HTTP_202_ACCEPTED)
 
         # 싫어요 or 좋아요 등록이 안되어있으면 추가
         if created or obj.like_or_dislike != 1:
@@ -510,7 +520,7 @@ class AddLike(APIView):
             movie.like_count = F('like_count') + 1
             movie.save()
             obj.save()
-        return JsonResponse({'response': True}, status=status.HTTP_201_CREATED)
+        return Response({'response': True}, status=status.HTTP_201_CREATED)
 
 
 # 싫어요 목록에 추가하기
@@ -548,9 +558,6 @@ class AddDisLike(APIView):
             sub_user__name=sub_user.name,
             defaults={'movie': Movie.objects.get(name=movie.name),
                       'sub_user': SubUser.objects.get(id=sub_user.id),
-                      # 'like_or_dislike': 2,
-                      # 'marked': False,
-                      # 'created': timezone.now(),
                       'updated': timezone.now(),
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
@@ -561,7 +568,7 @@ class AddDisLike(APIView):
             movie.like_count = F('like_count') + 1
             movie.save()
             obj.save()
-            return JsonResponse({'response': False}, status=status.HTTP_202_ACCEPTED)
+            return Response({'response': False}, status=status.HTTP_202_ACCEPTED)
 
         # 좋아요 or 등록이 안되어 있으면 싫어요 등록
         if created or obj.like_or_dislike != 2:
@@ -569,7 +576,7 @@ class AddDisLike(APIView):
             movie.like_count = F('like_count') - 1
             movie.save()
             obj.save()
-        return JsonResponse({'response': True}, status=status.HTTP_201_CREATED)
+        return Response({'response': True}, status=status.HTTP_201_CREATED)
 
 
 # 찜 목록에 추가하기
@@ -607,9 +614,6 @@ class MyList(APIView):
             sub_user__name=sub_user.name,
             defaults={'movie': Movie.objects.get(name=movie.name),
                       'sub_user': SubUser.objects.get(id=sub_user.id),
-                      # 'like_or_dislike': 0,
-                      # 'marked': True,
-                      # 'created': timezone.now(),
                       'updated': timezone.now(),
                       'movie_id': movie_id,
                       'sub_user_id': sub_user_id})
@@ -618,7 +622,7 @@ class MyList(APIView):
             obj.marked = True
             obj.save()
 
-            return JsonResponse({'marked': True}, status=status.HTTP_200_OK)
+            return Response({'marked': True}, status=status.HTTP_200_OK)
 
         # 이미 좋아요나 싫어요 표시를 하여 목록에 있음
         else:
@@ -626,11 +630,11 @@ class MyList(APIView):
                 obj.marked = False
                 obj.save()
 
-                return JsonResponse({'marked': False}, status=status.HTTP_200_OK)
+                return Response({'marked': False}, status=status.HTTP_200_OK)
             else:
                 obj.marked = True
                 obj.save()
-                return JsonResponse({'marked': True}, status=status.HTTP_200_OK)
+                return Response({'marked': True}, status=status.HTTP_200_OK)
 
 
 # 최신 등록 영화 10개
@@ -641,8 +645,12 @@ class BrandNewMovieList(generics.ListAPIView):
         ---
             - /movies/brand_new/ 로 요청하시면 됩니다.
 
-            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
+            Header에
+                Authorization : Token 토큰값
+                subuserid : 서브유저 ID
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
 
+            리턴값:
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
                 - sample_video_file : 미리보기 비디오파일 경로
@@ -669,8 +677,12 @@ class BigSizeVideo(generics.RetrieveAPIView):
         ---
             - /movies/big_size_video/ 로 요청하시면 됩니다.
 
-            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
+            Header에
+                Authorization : Token 토큰값
+                subuserid : 서브유저 ID
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
 
+            리턴값:
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
                 - video_file : 비디오파일 경로
@@ -705,10 +717,15 @@ class MostLikesMoives(generics.ListAPIView):
             좋아요 상위 10개 영화 url 입니다.
 
         ---
+
+            Header에
+                Authorization : Token 토큰값
+                subuserid : 서브유저 ID
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
+
             - /movies/most_likes/ 로 요청하시면 됩니다.
 
-            - 헤더에 subuserid : 서브유저 id 값(int)  을 넣어주셔야 합니다.
-
+            리턴값:
                 - id : 영화의 고유 ID 값
                 - name : 영화 이름
                 - sample_video_file : 미리보기 비디오파일 경로
@@ -736,7 +753,11 @@ class SavePausedVideoTime(APIView):
         ---
             - /movies/paused_time/ 로 요청하시면 됩니다.
 
-            - body에
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요!
+
+            Body에
                 sub_user_id : 서브유저 id (int)
                 movie_id    : 저장할 영화 id (int)
                 paused_time : 유저가 시청한 초단위 시간 (int)
@@ -768,10 +789,15 @@ class Search(APIView):
 
         ---
 
-        리턴값 :
-            contents -> 영화 검색시 최상단에 나오는 '다음과 관련된 콘텐츠'입니다
-            first_movie -> 내가 원하는 영화 입니다(*제일먼저 출력해주세요!*)
-            other_movie -> 내가 원하는 영화와 관련된 장르의 영화입니다
+            Header에
+                Authorization : Token 토큰값
+                subuserid : 서브유저 ID
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
+
+            리턴값 :
+                contents -> 영화 검색시 최상단에 나오는 '다음과 관련된 콘텐츠'입니다
+                first_movie -> 내가 원하는 영화 입니다(*제일먼저 출력해주세요!*)
+                other_movie -> 내가 원하는 영화와 관련된 장르의 영화입니다
 
             아무런 영화가 존재하지 않을시 search: False가 리턴됩니다
 
@@ -808,7 +834,7 @@ class Search(APIView):
             print(queryset)
 
             if not first_show.exists() and not queryset.exists():
-                return JsonResponse({'search': False}, status=status.HTTP_406_NOT_ACCEPTABLE)
+                return Response({'search': False}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
             count = queryset.count()
             # 검색 결과가 60개가 안될경우
@@ -841,12 +867,12 @@ class Search(APIView):
             for genre in genre_name:
                 contents.append(genre.name)
 
-            return JsonResponse({'contents': contents,
-                                 'first_movie': first_movies_serializer.data,
-                                 'other_movie': queryset_serializer.data,
-                                 }, status=status.HTTP_202_ACCEPTED)
+            return Response({'contents': contents,
+                             'first_movie': first_movies_serializer.data,
+                             'other_movie': queryset_serializer.data,
+                             }, status=status.HTTP_202_ACCEPTED)
         else:
-            return JsonResponse({'search_error': False}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'search_error': False}, status=status.HTTP_204_NO_CONTENT)
 
 
 class MatchRate(APIView):

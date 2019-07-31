@@ -1,22 +1,7 @@
-from django.http import JsonResponse
-from django.views import View
+from django.utils import timezone
 
+from accounts.models import SubUser, LikeDisLikeMarked
 from movies.models import Movie
-
-
-class CreateLike(View):
-    def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            if 'movie_id' in kwargs['movie_id']:
-                parent_user = request.user
-                sub_user = parent_user.sub_user.all().filter(logined=True).get()
-                movie = Movie.objects.get(pk=kwargs['movie_id'])
-                if sub_user in movie.likes.all():
-                    movie.likes.remove(sub_user)
-                    return JsonResponse({'data': 'remove'})
-                else:
-                    movie.likes.add(sub_user)
-                    return JsonResponse({'data': 'add'})
 
 
 def update_real(request):
@@ -30,3 +15,19 @@ def update_real(request):
             total_minute = int(runningtime[:-1])
         movie.real_running_time = total_minute * 60
         movie.save()
+
+
+#TODO 코드 중복 해결할때 사용 할 함수
+
+# def obj_create(sub_user_id, movie_id):
+#     sub_user = SubUser.objects.get(id=sub_user_id)
+#     movie = Movie.objects.get(id=movie_id)
+#
+#     obj, created = LikeDisLikeMarked.objects.update_or_create(
+#         movie__name=movie.name,
+#         sub_user__name=sub_user.name,
+#         defaults={'movie': Movie.objects.get(name=movie.name),
+#                   'sub_user': SubUser.objects.get(id=sub_user.id),
+#                   'updated': timezone.now(),
+#                   'movie_id': movie_id,
+#                   'sub_user_id': sub_user_id})

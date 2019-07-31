@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -46,9 +46,14 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class SubUserCreate(APIView):
     """
-                서브계정(프로필계정)을 만드는 API입니다
+            서브계정(프로필계정)을 만드는 API입니다
 
             ---
+
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요!
+
 
                 - name : 프로필이름
                 - kid : 어린이인지? (true/false)
@@ -126,8 +131,8 @@ class SubUserCreate(APIView):
         sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
 
         if len(sub_user_list) >= 5:
-            return JsonResponse(data={'error': '프로필을 더이상 만들 수 없습니다.'},
-                                status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response(data={'error': '프로필을 더이상 만들 수 없습니다.'},
+                            status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # 바디 형
         username = request.data.get('name')
@@ -155,7 +160,7 @@ class SubUserCreate(APIView):
             for index in range(len(username)):
 
                 if username[index] in sub_user_name_list:
-                    return JsonResponse(data={'error': False}, status=status.HTTP_403_FORBIDDEN)
+                    return Response(data={'error': False}, status=status.HTTP_403_FORBIDDEN)
 
                 serializer = SubUserCreateSerializer(
                     data={
@@ -172,13 +177,13 @@ class SubUserCreate(APIView):
                 sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
                 sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
 
-            return JsonResponse(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
+            return Response(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
 
         # 입력된 username이 1개 인 경우(일반적인 경우)
         else:
 
             if username in sub_user_name_list:
-                return JsonResponse(data={'error': False}, status=status.HTTP_403_FORBIDDEN)
+                return Response(data={'error': False}, status=status.HTTP_403_FORBIDDEN)
 
             serializer = SubUserCreateSerializer(
                 data={'name': username, 'kid': kids}
@@ -191,22 +196,27 @@ class SubUserCreate(APIView):
                 sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
                 sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
 
-            return JsonResponse(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
+            return Response(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
 
 
 class SubUserList(generics.ListAPIView):
     """
-                계정에 속한 모든 프로필을 보여주는 API입니다
+        계정에 속한 모든 프로필을 보여주는 API입니다
 
-            ---
+        ---
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
 
+            리턴값:
                 - name : 프로필이름
                 - kid : 어린이인지? (true/false)
 
             return 값은 계정에 속한 모든 프로필을 리턴합니다
 
             ```
-                해당 URL로 헤더에 Authorization : Token '토큰값' 을 넣어주세요
+                해당 URL로 Header에
+                    Authorization : Token '토큰값' 을 넣어주세요
 
             ```
         """
@@ -225,8 +235,11 @@ class SubUserModify(APIView):
         기존 프로필계정의 정보를 변경하는 API뷰 입니다
 
         ---
-            Header에 Authrization: Token 토큰값
-            Body에 원하는 정보
+            Header에
+                Authrization: Token 토큰값
+            Body에
+                sub_user_id 와 함께 변경하고자 하는 정보를 넣어주세요
+                    *sub_user_id 필수 !!*
                 Ex) name : '변경하고싶은 이름'
                     kid : true/false
                     profile_image_path : '프로필 이미지 path'
@@ -236,8 +249,6 @@ class SubUserModify(APIView):
             리턴값:
                 response: False -> 수정 실패
                 response: True -> 수정 성공
-
-
 
     """
 
@@ -251,13 +262,10 @@ class SubUserModify(APIView):
         sub_user = self.get_object()
         serializer = SubUserUpdateSerializer(instance=sub_user, data=request.data, partial=True)
 
-        if not serializer:
-            return JsonResponse({'response': False}, status=status.HTTP_400_BAD_REQUEST)
-
         if serializer.is_valid():
             serializer.save()
-            return JsonResponse({'response': True}, status=status.HTTP_200_OK)
-        return JsonResponse({'response': False}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'response': True}, status=status.HTTP_200_OK)
+        return Response({'response': False}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 프로필 계정을 삭제하는 API
@@ -293,11 +301,11 @@ class SubUserDelete(APIView):
             sub_user_list = SubUser.objects.filter(parent_user=request.user)
             if sub_user in sub_user_list:
                 sub_user.delete()
-                return JsonResponse({'response': True}, status=status.HTTP_204_NO_CONTENT)
+                return Response({'response': True}, status=status.HTTP_204_NO_CONTENT)
             else:
-                return JsonResponse({'response': False}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'response': False}, status=status.HTTP_400_BAD_REQUEST)
 
-        return JsonResponse({'response': False}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'response': False}, status=status.HTTP_400_BAD_REQUEST)
 
 
 # 로그인 API뷰
@@ -307,12 +315,12 @@ class Login(APIView):
 
         ---
         ```
-        바디에 넣어서 보내주시면 됩니다
+            Body에 넣어서 보내주시면 됩니다
 
-        id : 가입시 Email입니다
-        pw : 비밀번호
+                id : 가입시 Email입니다
+                pw : 비밀번호
 
-        로그인 완료시 해당 계정의 토큰과 계정의 프로필계정 목록을 반환합니다
+            로그인 완료시 해당 계정의 토큰과 계정의 프로필계정 목록을 반환합니다
 
         리턴값 :
 
@@ -356,10 +364,6 @@ class Login(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request, *args, **kwargs):
-        # 헤더 형
-        # username = request.META.get('HTTP_ID')
-        # password = request.META.get('HTTP_PW')
-
         # 바디 형1 -> request.POST로도 가능하나 request.data가 좀더 유연한 방식이다
         # username = request.POST.get('id')
         # password = request.POST.get('pw')
@@ -385,7 +389,7 @@ class Login(APIView):
 
                 context = {'token': token, 'sub_user_list': sub_user_list_serializer.data}
 
-                return JsonResponse(context, status=status.HTTP_200_OK)
+                return Response(context, status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -400,6 +404,12 @@ class ChangeProfileImageList(APIView):
             ---
 
                 /accounts/change_profile/  로 요청하시면 됩니다.
+
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요!
+
+
 
                 1. 로고 전부
                 2. section에 해당하는 캐릭터들

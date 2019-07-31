@@ -57,21 +57,23 @@ class SubUserUpdateSerializer(serializers.ModelSerializer):
         model = SubUser
         exclude = ['parent_user']
 
+    def validate_name(self, value):
+        if SubUser.objects.filter(
+            parent_user=self.instance.parent_user,
+            name=value,
+        ).exists():
+
+            raise serializers.ValidationError('이미존재하는 이름입니다')
+        return value
+
     def update(self, instance, validated_data):
-        parent_user_id = instance.parent_user.id
-        is_exist_user = SubUser.objects.filter(parent_user=parent_user_id, name=validated_data['name']).exists()
+        for attr, value in validated_data.items():
+            print(attr, value)
+            if value:
+                setattr(instance, attr, value)
+        instance.save()
 
-        if is_exist_user:
-            return False
-
-        else:
-            for attr, value in validated_data.items():
-                print(attr, value)
-                if value:
-                    setattr(instance, attr, value)
-            instance.save()
-
-            return instance
+        return instance
 
 
 # 프로필 계정을 삭제하는 시리얼라이저
