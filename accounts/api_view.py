@@ -137,7 +137,6 @@ class SubUserCreate(APIView):
         # 바디 형
         username = request.data.get('name')
         kids = request.data.get('kid')
-        print('이름', username)
 
         is_exist = [False, False, False, False, False]
         basic_image_list = ProfileImage.objects.filter(category='basic')
@@ -157,7 +156,8 @@ class SubUserCreate(APIView):
 
         # 입력한 username이 여러개인 경우(맨 처음 회원가입 하였을때)
         if isinstance(username, list):
-
+            print(username)
+            print(sub_user_name_list)
             for index in range(len(username)):
 
                 if username[index] in sub_user_name_list:
@@ -178,9 +178,9 @@ class SubUserCreate(APIView):
                     sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
                     sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
 
-                    return Response(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
+            return Response(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
 
-                return Response(data={'error': False}, status=status.HTTP_400_BAD_REQUEST)
+
 
         # 입력된 username이 1개 인 경우(일반적인 경우)
         else:
