@@ -221,7 +221,10 @@ class SubUserList(generics.ListAPIView):
 
 class SubUserModify(APIView):
     """
+
         기존 프로필계정의 정보를 변경하는 API뷰 입니다
+
+        ---
             Header에 Authrization: Token 토큰값
             Body에 원하는 정보
                 Ex) name : '변경하고싶은 이름'
@@ -234,7 +237,6 @@ class SubUserModify(APIView):
                 response: False -> 수정 실패
                 response: True -> 수정 성공
 
-        ---
 
 
     """
@@ -262,6 +264,9 @@ class SubUserModify(APIView):
 class SubUserDelete(APIView):
     """
         기존 프로필계정을 삭제하는 API뷰 입니다
+
+        ---
+
             Header에
                 Authrization: Token 토큰값
                 subuserid : 프로필 계정의 ID
