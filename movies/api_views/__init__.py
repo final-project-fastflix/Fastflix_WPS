@@ -10,7 +10,7 @@ from rest_framework import status
 
 from accounts.models import SubUser
 from movies.models import Actor
-from .serializers import *
+from ..serializers import *
 
 
 # Create your views here.
@@ -853,11 +853,17 @@ class MatchRate(APIView):
 
     def get(self, *args, **kwargs):
         sub_user = SubUser.objects.get(pk=67)
-        marked_objs = LikeDisLikeMarked.objects.select_related('movie').filter(marked=True, sub_user=sub_user)
+        marked_objs = LikeDisLikeMarked.objects.select_related(
+            'movie',
+        ).prefetch_related(
+            'movie__actors',
+            'movie__directors',
+            'movie__genre',
+        ).filter(marked=True, sub_user=sub_user)
         # marked_objs = LikeDisLikeMarked.objects.filter(marked=True, sub_user=sub_user)
         # Movie.objects.all().prefetch_related('actors', 'directors', 'genre')
         movie_names = []
-        target = Movie.objects.prefetch_related('actors', 'directors', 'genre').get(pk=354)
+        target = Movie.objects.get(pk=354)
         target_movie_name = target.name[:2]
         target_actors = target.actors.all()
         target_actors_list = [actor.name for actor in target_actors]
