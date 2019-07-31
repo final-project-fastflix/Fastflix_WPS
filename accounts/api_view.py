@@ -409,8 +409,7 @@ class ChangeProfileImageList(APIView):
     """
 
     def get(self, request, format=None, **kwargs):
-        # 500ms
-        category_list = ProfileImageCategory.objects.all()
+        category_list = ProfileImageCategory.objects.all().prefetch_related('profile_images')
 
         ret = {}
 
@@ -419,44 +418,6 @@ class ChangeProfileImageList(APIView):
             ret[f'{category.name}'] = ChangeProfileImageSerializer(char_images, many=True).data
 
         return Response(ret)
-
-        # 6000ms
-        # category_list = ProfileImage.objects.filter(category='logo')
-        #
-        # ret = {}
-        # # ret['대표 이미지'] = ProfileImage
-        # for category in category_list:
-        #     ret[f'{category.name}'] = ChangeProfileImageSerializer(category).data
-        #     profile_images = ProfileImage.objects.filter(category=category.name)
-        #     print(ret)
-        #     ret[f'{category.name}_characters'] = ChangeProfileImageSerializer(profile_images, many=True).data
-        #     print(ret)
-        #
-        # return Response(ret)
-
-        # def get(self, request, **kwargs):
-        # 800ms
-        # category_list = ['대표 아이콘', '기묘한 이야기', '블랙 미러', '종이의 집', '보스 베이비: 돌아온 보스', '루시퍼', '옥자', '오렌지 이즈 더 뉴 블랙',
-        #                  '라바 아일랜드', '하우스 오브 카드', '로스트 인 스페이스', '언브레이커블 키미슈미트', '브라이트', '퀴어 아이', '어그레시브 레츠코', '우리의 지구',
-        #                  '파티셰를 잡아라!', '마블 디펜더스', '트롤헌터: 아카디아의 전설	', '레모니 스니켓의 위험한 대결', '원 데이 앳 어 타임', '빤스맨의 위대한 모험',
-        #                  '굿키즈 온 더 블록', '우주의 전사 쉬라', '보잭 홀스 맨', '3 언더: 아카디아의 전설', '빅 마우스', '드래곤 프린스', '친애하는 백인 여러분',
-        #                  '트루와 무지개 왕국', '알렉사 & 케이티', '슈퍼 몬스터', '풀러 하우스', '카르멘 산디에고', '프로젝트 Mc²', '스토리봇에게 물어보세요',
-        #                  '스카이랜더 아카데미', '모타운 마법 뮤지컬']
-
-        # 850ms
-        # category_list = ['대표 아이콘']
-        # categories = ProfileImage.objects.filter(category='logo')
-        # for category in categories:
-        #     category_list.append(category.name)
-        #
-        # ret = {}
-        #
-        # for category in category_list:
-        #     ret[f'{category}_logo'] = ChangeProfileImageSerializer(
-        #         ProfileImage.objects.filter(category='logo', name=category), many=True).data
-        #
-        #     ret[f'{category}_characters'] = ChangeProfileImageSerializer(
-        #         ProfileImage.objects.filter(category=category), many=True).data
 
 
 def add_default(request):
