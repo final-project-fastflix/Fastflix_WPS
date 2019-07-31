@@ -229,6 +229,7 @@ class MovieContinueMovieSerializer(serializers.ModelSerializer):
             'logo_image_path',
             'horizontal_image_path',
             'vertical_image',
+            'real_running_time',
         )
 
 
@@ -238,6 +239,19 @@ class MovieContinueSerializer(serializers.ModelSerializer):
     class Meta:
         model = MovieContinue
         fields = ('movie', 'to_be_continue')
+
+    def to_representation(self, instance):
+        serializer_data = super().to_representation(instance)
+        sub_user_id = self.context['sub_user_id']
+
+        running_second = instance.movie.real_running_time
+        print(running_second)
+        paused_time = instance.to_be_continue
+
+        progress_bar = 100 * paused_time // running_second
+
+        serializer_data['progress_bar'] = progress_bar
+        return serializer_data
 
 
 class MovieListByGenreSerializer(serializers.ModelSerializer):

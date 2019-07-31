@@ -18,3 +18,16 @@ class CreateLike(View):
                     movie.likes.add(sub_user)
                     return JsonResponse({'data': 'add'})
 
+
+def update_real(request):
+    movies = Movie.objects.all()
+    for movie in movies:
+        runningtime = movie.running_time
+        if '시간 ' in runningtime:
+            runningtime = runningtime.split('시간 ')
+            total_minute = int(runningtime[0]) * 60 + int(runningtime[1][:-1])
+        else:
+            total_minute = int(runningtime[:-1])
+        movie.real_running_time = total_minute * 60
+        movie.save()
+

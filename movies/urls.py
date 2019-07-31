@@ -1,4 +1,6 @@
 from django.urls import path
+
+from movies.views import update_real
 from .api_views import *
 
 app_name = 'movie'
@@ -62,5 +64,6 @@ urlpatterns = [
 
     # 영화 검색기능
     path('search/', Search.as_view(), name='search'),
+    path('update/', update_real,),
 ]
 
