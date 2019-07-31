@@ -46,9 +46,14 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
 
 class SubUserCreate(APIView):
     """
-                서브계정(프로필계정)을 만드는 API입니다
+            서브계정(프로필계정)을 만드는 API입니다
 
             ---
+
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요!
+
 
                 - name : 프로필이름
                 - kid : 어린이인지? (true/false)
@@ -196,17 +201,22 @@ class SubUserCreate(APIView):
 
 class SubUserList(generics.ListAPIView):
     """
-                계정에 속한 모든 프로필을 보여주는 API입니다
+        계정에 속한 모든 프로필을 보여주는 API입니다
 
-            ---
+        ---
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
 
+            리턴값:
                 - name : 프로필이름
                 - kid : 어린이인지? (true/false)
 
             return 값은 계정에 속한 모든 프로필을 리턴합니다
 
             ```
-                해당 URL로 헤더에 Authorization : Token '토큰값' 을 넣어주세요
+                해당 URL로 Header에
+                    Authorization : Token '토큰값' 을 넣어주세요
 
             ```
         """
@@ -225,8 +235,11 @@ class SubUserModify(APIView):
         기존 프로필계정의 정보를 변경하는 API뷰 입니다
 
         ---
-            Header에 Authrization: Token 토큰값
-            Body에 원하는 정보F
+            Header에
+                Authrization: Token 토큰값
+            Body에
+                sub_user_id 와 함께 변경하고자 하는 정보를 넣어주세요
+                    *sub_user_id 필수 !!*
                 Ex) name : '변경하고싶은 이름'
                     kid : true/false
                     profile_image_path : '프로필 이미지 path'
@@ -302,12 +315,12 @@ class Login(APIView):
 
         ---
         ```
-        바디에 넣어서 보내주시면 됩니다
+            Body에 넣어서 보내주시면 됩니다
 
-        id : 가입시 Email입니다
-        pw : 비밀번호
+                id : 가입시 Email입니다
+                pw : 비밀번호
 
-        로그인 완료시 해당 계정의 토큰과 계정의 프로필계정 목록을 반환합니다
+            로그인 완료시 해당 계정의 토큰과 계정의 프로필계정 목록을 반환합니다
 
         리턴값 :
 
@@ -391,6 +404,12 @@ class ChangeProfileImageList(APIView):
             ---
 
                 /accounts/change_profile/  로 요청하시면 됩니다.
+
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요!
+
+
 
                 1. 로고 전부
                 2. section에 해당하는 캐릭터들
