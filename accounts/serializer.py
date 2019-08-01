@@ -69,7 +69,7 @@ class SubUserUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             print(attr, value)
-            if value:
+            if value is not None:
                 setattr(instance, attr, value)
         instance.save()
 
