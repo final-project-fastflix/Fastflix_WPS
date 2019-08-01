@@ -58,17 +58,18 @@ class SubUserUpdateSerializer(serializers.ModelSerializer):
         exclude = ['parent_user']
 
     def validate_name(self, value):
-        if SubUser.objects.filter(
+        exist_sub_user = SubUser.objects.filter(
             parent_user=self.instance.parent_user,
             name=value,
-        ).exists():
+        )
 
-            raise serializers.ValidationError('이미존재하는 이름입니다')
+        if exist_sub_user.exists():
+            if self.instance.id != exist_sub_user.get().id:
+                raise serializers.ValidationError('이미존재하는 이름입니다')
         return value
 
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
-            print(attr, value)
             if value is not None:
                 setattr(instance, attr, value)
         instance.save()
