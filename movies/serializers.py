@@ -2,7 +2,7 @@ import random
 
 from rest_framework import serializers
 
-from accounts.models import LikeDisLikeMarked
+from accounts.models import LikeDisLikeMarked, SubUser
 from .models import Movie, Genre, MovieContinue
 
 
@@ -141,12 +141,14 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         serializer_data = super().to_representation(instance)
 
         sub_user_id = self.context['sub_user_id']
-        print(sub_user_id)
-        if instance.like.filter(sub_user=sub_user_id):
+
+        like_dislike_marked = LikeDisLikeMarked.objects.filter(movie=instance, sub_user=sub_user_id)
+
+        if like_dislike_marked:
             # 해당 서브유저의 좋아요 정보에 접근해서 찜목록과 좋아요 여부를 확인
-            like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
-            marked = like_dislike_marked.marked
-            like = like_dislike_marked.like_or_dislike
+            # like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
+            marked = like_dislike_marked[0].marked
+            like = like_dislike_marked[0].like_or_dislike
         else:
             marked = False
             like = 0
@@ -184,15 +186,19 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         # 선택된 영화와 같은 장르를 가진 영화 6개를 골라서 딕셔너리에 추가
         genre = instance.genre.all()[0]
         similar_movies = genre.movie.exclude(pk=instance.id)[:6]
-        similar_movies_serializer = MovieSerializer(similar_movies, many=True)
+        # similar_movies = LikeDisLikeMarked
+        similar_movies_serializer = SimilarMovieSerializer(similar_movies, many=True)
+        print(similar_movies_serializer.data)
 
         # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
-        for i in range(len(similar_movies_serializer.data)):
-            if similar_movies[i].like.filter(sub_user_id=sub_user_id):
-                similar_movies_serializer.data[i]['marked'] = similar_movies[i].like.filter(sub_user_id=sub_user_id)[
-                    0].marked
-            else:
-                similar_movies_serializer.data[i]['marked'] = False
+        sub_user_like_all = LikeDisLikeMarked.objects.select_related('movie').filter(sub_user=sub_user_id)
+
+        for i in range(similar_movies.count()):
+            for like in sub_user_like_all:
+                if like.movie == similar_movies[i]:
+                    similar_movies_serializer.data[i]['marked'] = like.marked
+                else:
+                    similar_movies_serializer.data[i]['marked'] = False
 
         serializer_data['similar_movies'] = similar_movies_serializer.data
         return serializer_data
@@ -291,5 +297,27 @@ class BigSizeVideoSerializer(serializers.ModelSerializer):
 
         print(marked_status)
         serializer_data['marked'] = marked_status
+
+        return serializer_data
+
+
+class SimilarMovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = [
+            'id',
+            'name',
+            'degree',
+            'synopsis',
+            'horizontal_image_path',
+            'vertical_image',
+            'production_date',
+        ]
+        depth = 1
+
+    def to_representation(self, instance):
+        serializer_data = super().to_representation(instance)
+        match_rate = random.randint(70, 97)
+        serializer_data['match_rate'] = match_rate
 
         return serializer_data
