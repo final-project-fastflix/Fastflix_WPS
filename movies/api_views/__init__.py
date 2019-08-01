@@ -298,8 +298,8 @@ class MovieDetail(generics.RetrieveAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        sub_user_id = self.request.META['HTTP_SUBUSERID']
-        # sub_user_id = 100
+        # sub_user_id = self.request.META['HTTP_SUBUSERID']
+        sub_user_id = 100
         context['sub_user_id'] = sub_user_id
         return context
 
