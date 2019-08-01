@@ -53,7 +53,6 @@ class HomePage(generics.ListAPIView):
                 marked : true or false 가 있습니다
 
     """
-
     serializer_class = HomePageSerializer
 
     def get_queryset(self):
@@ -212,6 +211,8 @@ class MovieListFirstGenre(generics.ListAPIView):
         return queryset
 
 
+    r1.intersection(r2)
+
 # 해당 유저의 찜 영화 목록
 # 유저별 찜목록 영화 리스트
 class MarkedList(generics.ListAPIView):
@@ -249,50 +250,53 @@ class MarkedList(generics.ListAPIView):
 # 영화 상세정보 뷰
 class MovieDetail(generics.RetrieveAPIView):
     """
-        영화 디테일 페이지 url 입니다.
+    영화 디테일 페이지 url 입니다.
 
-        ---
+    ---
 
-            Header에
-                Authorization : Token 토큰값
-                subuserid : 서브유저 ID
-            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
+        Header에
+            Authorization : Token 토큰값
+            subuserid : 서브유저 ID
+        을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
 
-            - 요청할때 "/movie/'영화 ID값'" 으로 요청하시면 됩니다.
+        - 요청할때 "/movie/'영화 ID값'" 으로 요청하시면 됩니다.
 
-                - Ex) /movie/2
-                - Ex) /movie/7
+            - Ex) /movie/2
+            - Ex) /movie/7
 
-            리턴값:
-                - id : 영화의 고유 ID 값
-                - name : 영화 이름
-                - video_file : 비디오파일
-                - sample_video_file : 샘플 비디오 파일
-                - production_date : 영화 개봉 날짜
-                - uploaded_date : 영화 등록(업로드) 날짜
-                - synopsis : 영화 줄거리
-                - running_time : 영화 러닝타임
-                - view_count : 영화 조회수
-                - logo_image_path : 로고 이미지의 경로
-                - horizontal_image_path : 가로 이미지 경로
-                - vertical_image : 세로 이미지(차후 변경 예정)
-                - circle_image : 원형 이미지(차후 변경예정)
-                - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
-                - directors : 영화 감독
-                - actors : 배우
-                - feature : 영화 특징(Ex.흥미진진)
-                - author : 각본가
-                - genre : 장르
-                - marked : 유저가 찜한 영화인
-                - like : 유저가 좋아요한 영화인지, 싫어요한 영화인지 (평가안함 = 0 , 좋아요 = 1, 싫어요 = 2)
-                - total_minute : 시간을 분으로 환산한 값
-                - match_rate : 일치율(현재 70~97 랜덤, 추후 업데이트 예정)
-                - to_be_continue : 유저가 재생을 멈춘시간
-                - remaining_time : running_time - to_be_continue
-                - can_i_store : 저장가능 여부
+        리턴값:
+            - id : 영화의 고유 ID 값
+            - name : 영화 이름
+            - video_file : 비디오파일
+            - sample_video_file : 샘플 비디오 파일
+            - production_date : 영화 개봉 날짜
+            - uploaded_date : 영화 등록(업로드) 날짜
+            - synopsis : 영화 줄거리
+            - running_time : 영화 러닝타임(초 단위)
+            - view_count : 영화 조회수
+            - logo_image_path : 로고 이미지의 경로
+            - horizontal_image_path : 가로 이미지 경로
+            - vertical_image : 세로 이미지 경로
+            - circle_image : 원형 이미지(차후 변경예정)
+            - big_image_path : 큰 이미지의 경로
+            - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
+            - directors : 영화 감독
+            - actors : 배우
+            - feature : 영화 특징(Ex.흥미진진)
+            - author : 각본가
+            - genre : 장르
+            - marked : 유저가 이 영화를 찜 했는지 안했는지 (True = 찜O, False = 찜X)
+            - like : 유저가 좋아요한 영화인지, 싫어요한 영화인지 (평가안함 = 0 , 좋아요 = 1, 싫어요 = 2)
+            - total_minute : 시간을 분으로 환산한 값
+            - match_rate : 일치율(현재 70~97 랜덤, 추후 업데이트 예정)
+            - to_be_continue : 유저가 재생을 멈춘시간
+            - remaining_time : running_time - to_be_continue
+            - can_i_store : 저장가능 여부
+            - similar_movies : 해당 영화와 비슷한 영화
 
 
     """
+
     queryset = Movie.objects.all()
     serializer_class = MovieDetailSerializer
 
@@ -791,8 +795,11 @@ class Search(APIView):
 
             Header에
                 Authorization : Token 토큰값
-                subuserid : 서브유저 ID
-            을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
+            을 넣어주세요!
+
+            parameter에
+                search_key : 검색어
+            를 넣어주세요!
 
             리턴값 :
                 contents -> 영화 검색시 최상단에 나오는 '다음과 관련된 콘텐츠'입니다
