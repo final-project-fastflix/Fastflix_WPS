@@ -187,7 +187,8 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         genre = instance.genre.all()[0]
         similar_movies = genre.movie.exclude(pk=instance.id)[:6]
         # similar_movies = LikeDisLikeMarked
-        similar_movies_serializer = MovieSerializer(similar_movies, many=True)
+        similar_movies_serializer = SimilarMovieSerializer(similar_movies, many=True)
+        print(similar_movies_serializer.data)
 
         # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
         sub_user_like_all = LikeDisLikeMarked.objects.select_related('movie').filter(sub_user=sub_user_id)
@@ -198,14 +199,6 @@ class MovieDetailSerializer(serializers.ModelSerializer):
                     similar_movies_serializer.data[i]['marked'] = like.marked
                 else:
                     similar_movies_serializer.data[i]['marked'] = False
-
-        # for i in range(similar_movies.count()):
-        #     a = LikeDisLikeMarked.objects.filter(movie=similar_movies[i], sub_user=sub_user_id)
-        #     if a.exists():
-        #         # if similar_movies[i].like.filter(sub_user_id=sub_user_id):
-        #         similar_movies_serializer.data[i]['marked'] = a[0].marked
-        #     else:
-        #         similar_movies_serializer.data[i]['marked'] = False
 
         serializer_data['similar_movies'] = similar_movies_serializer.data
         return serializer_data
@@ -304,5 +297,27 @@ class BigSizeVideoSerializer(serializers.ModelSerializer):
 
         print(marked_status)
         serializer_data['marked'] = marked_status
+
+        return serializer_data
+
+
+class SimilarMovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = [
+            'id',
+            'name',
+            'degree',
+            'synopsis',
+            'horizontal_image_path',
+            'vertical_image',
+            'production_date',
+        ]
+        depth = 1
+
+    def to_representation(self, instance):
+        serializer_data = super().to_representation(instance)
+        match_rate = random.randint(70, 97)
+        serializer_data['match_rate'] = match_rate
 
         return serializer_data
