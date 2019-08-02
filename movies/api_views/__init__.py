@@ -211,7 +211,7 @@ class MovieListFirstGenre(generics.ListAPIView):
         return queryset
 
 
-    r1.intersection(r2)
+
 
 # 해당 유저의 찜 영화 목록
 # 유저별 찜목록 영화 리스트
