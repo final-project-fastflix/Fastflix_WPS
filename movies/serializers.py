@@ -312,6 +312,7 @@ class SimilarMovieSerializer(serializers.ModelSerializer):
             'horizontal_image_path',
             'vertical_image',
             'production_date',
+            'running_time',
         ]
         depth = 1
 

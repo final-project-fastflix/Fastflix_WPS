@@ -290,6 +290,23 @@ class MovieDetail(generics.RetrieveAPIView):
                 - to_be_continue : 유저가 재생을 멈춘시간
                 - remaining_time : running_time - to_be_continue
                 - can_i_store : 저장가능 여부
+                - similar_movies: :[
+                    {
+                        "id": 439,
+                        "name":
+                        "degree": {
+                            "id": 2,
+                            "name": "청소년은 관람할 수 없는 영화",
+                            "degree_image_path":
+                        },
+                        "synopsis":
+                        "horizontal_image_path":
+                        "vertical_image":
+                        "production_date":
+                        "running_time":
+                        "match_rate":
+                        "marked":
+                    },
 
 
     """
