@@ -7,7 +7,6 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import SubUser
 from movies.models import Actor
 from ..serializers import *
 
@@ -211,8 +210,6 @@ class MovieListFirstGenre(generics.ListAPIView):
         return queryset
 
 
-
-
 # 해당 유저의 찜 영화 목록
 # 유저별 찜목록 영화 리스트
 class MarkedList(generics.ListAPIView):
@@ -302,8 +299,8 @@ class MovieDetail(generics.RetrieveAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        # sub_user_id = self.request.META['HTTP_SUBUSERID']
-        sub_user_id = 100
+        sub_user_id = self.request.META['HTTP_SUBUSERID']
+        # sub_user_id = 100
         context['sub_user_id'] = sub_user_id
         return context
 
@@ -443,10 +440,10 @@ class MovieListByGenre(APIView):
         return Response(context)
 
 
-# 프로필 생성후 좋아하는 영화 3개 선택하기(무작위 60개)
+# 프로필 생성후 좋아하는 영화 3개 선택하기(좋아요 순서)
 class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
     """
-        프로필계정 가입후 좋아하는 영화 목록3개 선택하기입니다. 영화 60개를 리턴합니다.
+        프로필계정 가입후 좋아하는 영화 목록3개 선택하기입니다. 좋아요가 높은 순으로 영화 60개를 리턴합니다.
 
         ---
 
@@ -470,7 +467,7 @@ class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
     serializer_class = MovieSerializer
 
     def get_queryset(self):
-        queryset = Movie.objects.all().order_by('?')[:60]
+        queryset = Movie.objects.all().order_by('-like_count')[:60]
 
         return queryset
 
@@ -945,3 +942,38 @@ class MatchRate(APIView):
                 name_match_count += 1
 
         return Response({})
+
+
+class RecommendSystem(generics.ListAPIView):
+    serializer_class = MovieSerializer
+
+    def get_queryset(self):
+        header_sub_user_id = self.request.META['HTTP_SUBUSERID']
+
+        # 나의 찜/ 좋아요 목록에있는 영화
+        a_movie_list = Movie.objects.filter(Q(like__sub_user=header_sub_user_id), (Q(like__like_or_dislike=1) | Q(like__marked=True)))
+        sub_user_id_list = []
+
+        # 내가 좋아한 영화를 좋아한 프로필유저 리스트
+        for movie in a_movie_list:
+            sub_user_id_list.append(LikeDisLikeMarked.objects.filter(movie=movie).distinct().values('sub_user'))
+
+        remove_id = set()
+        # 프로필 유저의 중복을 제거
+        for sub_user_id in sub_user_id_list:
+            for sub_user in sub_user_id:
+                remove_id.add(sub_user['sub_user'])
+
+        remove_id = list(remove_id)
+
+        # 프로필 유저의 찜/좋아요 목록을 가져옴
+        movie_list = Movie.objects.filter(Q(like__sub_user__in=remove_id),
+                                          (Q(like__like_or_dislike=1) | Q(like__marked=True))).exclude(
+            like__sub_user=header_sub_user_id).distinct()
+
+        # 비주류 영화 하위 5개
+        low_like_movie = Movie.objects.order_by('like_count')[:5]
+        # 프로필 유저의 찜/좋아요 목록과 비주류 영화 하위 5개를 합침
+        queryset = movie_list.union(low_like_movie)
+
+        return queryset
