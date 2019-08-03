@@ -67,5 +67,8 @@ urlpatterns = [
     path('update/', update_real,),
     path('match/', MatchRate.as_view(),),
 
+    # 영화 추천기능
+    path('rcd/', RecommendSystem.as_view(), name='rcd'),
+
 ]
 

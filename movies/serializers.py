@@ -143,7 +143,6 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         sub_user_id = self.context['sub_user_id']
 
         like_dislike_marked = LikeDisLikeMarked.objects.filter(movie=instance, sub_user=sub_user_id)
-
         if like_dislike_marked:
             # 해당 서브유저의 좋아요 정보에 접근해서 찜목록과 좋아요 여부를 확인
             # like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
@@ -188,7 +187,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         similar_movies = genre.movie.exclude(pk=instance.id)[:6]
         # similar_movies = LikeDisLikeMarked
         similar_movies_serializer = SimilarMovieSerializer(similar_movies, many=True)
-        print(similar_movies_serializer.data)
+        # print(similar_movies_serializer.data)
 
         # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
         sub_user_like_all = LikeDisLikeMarked.objects.select_related('movie').filter(sub_user=sub_user_id)
