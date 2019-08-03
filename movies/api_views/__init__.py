@@ -36,7 +36,8 @@ class MovieList(generics.ListAPIView):
     serializer_class = MovieSerializer
 
 
-class HomePage(generics.ListAPIView):
+# class HomePage(generics.ListAPIView):
+class HomePage(generics.RetrieveAPIView):
     """
         맨처음 홈페이지 화면입니다
 
@@ -51,22 +52,26 @@ class HomePage(generics.ListAPIView):
 
             맨마지막에 찜 여부인
                 marked : true or false 가 있습니다
+                ios_main_image : 앱에서 사용할 메인 이미지  가 추가되었습니다.
 
     """
     serializer_class = HomePageSerializer
 
-    def get_queryset(self):
-        # 랜덤하게 영화 1개를 가져오기 위함
-        max_id = Movie.objects.all().aggregate(max_id=Max('id'))['max_id']
-        while True:
-            pk = random.randint(1, max_id)
+    # def get_queryset(self):
+    # 랜덤하게 영화 1개를 가져오기 위함
+    # max_id = Movie.objects.all().aggregate(max_id=Max('id'))['max_id']
+    # while True:
+    #     pk = random.randint(1, max_id)
+    #
+    #     # 랜덤으로 선택한 영화 1편
+    #     queryset = Movie.objects.filter(pk=pk)
+    #     if queryset:
+    #         break
 
-            # 랜덤으로 선택한 영화 1편
-            queryset = Movie.objects.filter(pk=pk)
-            if queryset:
-                break
+    def get_object(self):
+        obj = Movie.objects.exclude(circle_image="").order_by('?')[0]
 
-        return queryset
+        return obj
 
     def get_serializer_context(self):
         sub_user_id = self.request.META['HTTP_SUBUSERID']
@@ -148,7 +153,8 @@ class PreviewCellList(generics.ListAPIView):
     serializer_class = PreviewCellListSerializer
 
     def get_queryset(self):
-        queryset = Movie.objects.all().order_by('?')[:10]
+        # queryset = Movie.objects.all().order_by('?')[:10]
+        queryset = Movie.objects.exclude(circle_image="").order_by('?')
 
         return queryset
 
