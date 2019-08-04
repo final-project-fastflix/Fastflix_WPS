@@ -50,8 +50,8 @@ class Movie(models.Model):
     name = models.CharField(max_length=50)
 
     video_file = models.CharField(max_length=100, blank=True, null=True)
-    sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
-    vertical_sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
+    sample_video_file = models.TextField(default=None, blank=True, null=True)
+    vertical_sample_video_file = models.TextField(default=None, blank=True, null=True)
 
     directors = models.ManyToManyField(Director, related_name='movie')
     actors = models.ManyToManyField(Actor, related_name='movie')
