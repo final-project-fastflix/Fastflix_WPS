@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.models import SubUser
 from movies.models import Actor
 from ..serializers import *
 from collections import Counter
@@ -464,7 +465,8 @@ class MovieListByGenre(APIView):
 # 프로필 생성후 좋아하는 영화 3개 선택하기(좋아요 순서)
 class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
     """
-        프로필계정 가입후 좋아하는 영화 목록3개 선택하기입니다. 좋아요가 높은 순으로 영화 60개를 리턴합니다.
+        프로필계정 가입후 좋아하는 영화 목록3개 선택하기입니다.
+        고정으로 60개를 리턴합니다
 
         ---
 
@@ -488,7 +490,23 @@ class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
     serializer_class = MovieSerializer
 
     def get_queryset(self):
-        queryset = Movie.objects.all().order_by('-like_count')[:60]
+
+        # queryset = Movie.objects.all().order_by('-like_count')[:60]
+        movie_list = [
+            589, 587, 582, 575, 573,
+            572, 569, 567, 561, 557,
+            554, 553, 548, 543, 542,
+            534, 533, 530, 536, 537,
+            517, 519, 510, 508, 509,
+            504, 500, 492, 488, 487,
+            462, 452, 446, 438, 437,
+            436, 435, 433, 429, 428,
+            426, 415, 416, 407, 406,
+            402, 404, 401, 394, 393,
+            390, 360, 355, 356, 354,
+            353, 350, 333, 318, 312,
+        ]
+        queryset = Movie.objects.filter(id__in=movie_list).order_by('-like_count')
 
         return queryset
 
