@@ -939,6 +939,7 @@ class MatchRate(APIView):
         target_directors_count = sum([marked_movie_directors_name_counter.get(name, 0) for name in target_directors])
         target_genres_count = sum([marked_movie_genres_name_counter.get(name, 0) for name in target_genres])
 
+
         match_rate = 10
         return Response({'match_rate': match_rate})
 
