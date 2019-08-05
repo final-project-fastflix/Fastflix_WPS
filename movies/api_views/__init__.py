@@ -195,6 +195,13 @@ class MovieListFirstGenre(generics.ListAPIView):
                 - Ex) movie/genre/액션/list/
                 - Ex) movie/genre/스릴러/list/
 
+            - 우리만의 카테고리 목록
+                ost가 좋은 영화
+                여름과 관련된 영화
+                미치도록 웃긴영화
+                영어 공부하기 좋은 영화
+                디즈니 영화
+
             리턴값:
                 - name : 영화 이름
                 - logo_image_path : 로고 이미지의 경로

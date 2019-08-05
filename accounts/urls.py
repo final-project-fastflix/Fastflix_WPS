@@ -1,6 +1,6 @@
 from django.urls import path
 
-from accounts.views import add_f_category
+from accounts.views import *
 from .api_view import *
 
 app_name = 'accounts'
@@ -13,5 +13,4 @@ urlpatterns = [
     path('change_profile_image/', ChangeProfileImageList.as_view(), ),
     path('change_sub_user/', SubUserModify.as_view(), name='change_sub_user'),
     path('delete_sub_user/', SubUserDelete.as_view(), name='delete_sub_user'),
-    path('add/', add_f_category,),
 ]
