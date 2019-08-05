@@ -1,4 +1,5 @@
 from accounts.models import ProfileImage, ProfileImageCategory
+from movies.models import *
 
 
 def add_f_category(request):

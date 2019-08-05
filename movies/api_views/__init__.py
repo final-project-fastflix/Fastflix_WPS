@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 
 from movies.models import Actor
 from ..serializers import *
+from collections import Counter
 
 
 # Create your views here.
@@ -35,7 +36,8 @@ class MovieList(generics.ListAPIView):
     serializer_class = MovieSerializer
 
 
-class HomePage(generics.ListAPIView):
+# class HomePage(generics.ListAPIView):
+class HomePage(generics.RetrieveAPIView):
     """
         맨처음 홈페이지 화면입니다
 
@@ -50,22 +52,26 @@ class HomePage(generics.ListAPIView):
 
             맨마지막에 찜 여부인
                 marked : true or false 가 있습니다
+                ios_main_image : 앱에서 사용할 메인 이미지  가 추가되었습니다.
 
     """
     serializer_class = HomePageSerializer
 
-    def get_queryset(self):
-        # 랜덤하게 영화 1개를 가져오기 위함
-        max_id = Movie.objects.all().aggregate(max_id=Max('id'))['max_id']
-        while True:
-            pk = random.randint(1, max_id)
+    # def get_queryset(self):
+    # 랜덤하게 영화 1개를 가져오기 위함
+    # max_id = Movie.objects.all().aggregate(max_id=Max('id'))['max_id']
+    # while True:
+    #     pk = random.randint(1, max_id)
+    #
+    #     # 랜덤으로 선택한 영화 1편
+    #     queryset = Movie.objects.filter(pk=pk)
+    #     if queryset:
+    #         break
 
-            # 랜덤으로 선택한 영화 1편
-            queryset = Movie.objects.filter(pk=pk)
-            if queryset:
-                break
+    def get_object(self):
+        obj = Movie.objects.exclude(circle_image="").order_by('?')[0]
 
-        return queryset
+        return obj
 
     def get_serializer_context(self):
         sub_user_id = self.request.META['HTTP_SUBUSERID']
@@ -147,7 +153,8 @@ class PreviewCellList(generics.ListAPIView):
     serializer_class = PreviewCellListSerializer
 
     def get_queryset(self):
-        queryset = Movie.objects.all().order_by('?')[:10]
+        # queryset = Movie.objects.all().order_by('?')[:10]
+        queryset = Movie.objects.exclude(circle_image="").order_by('?')
 
         return queryset
 
@@ -261,36 +268,50 @@ class MovieDetail(generics.RetrieveAPIView):
             - Ex) /movie/2
             - Ex) /movie/7
 
-        리턴값:
-            - id : 영화의 고유 ID 값
-            - name : 영화 이름
-            - video_file : 비디오파일
-            - sample_video_file : 샘플 비디오 파일
-            - production_date : 영화 개봉 날짜
-            - uploaded_date : 영화 등록(업로드) 날짜
-            - synopsis : 영화 줄거리
-            - running_time : 영화 러닝타임(초 단위)
-            - view_count : 영화 조회수
-            - logo_image_path : 로고 이미지의 경로
-            - horizontal_image_path : 가로 이미지 경로
-            - vertical_image : 세로 이미지 경로
-            - circle_image : 원형 이미지(차후 변경예정)
-            - big_image_path : 큰 이미지의 경로
-            - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
-            - directors : 영화 감독
-            - actors : 배우
-            - feature : 영화 특징(Ex.흥미진진)
-            - author : 각본가
-            - genre : 장르
-            - marked : 유저가 이 영화를 찜 했는지 안했는지 (True = 찜O, False = 찜X)
-            - like : 유저가 좋아요한 영화인지, 싫어요한 영화인지 (평가안함 = 0 , 좋아요 = 1, 싫어요 = 2)
-            - total_minute : 시간을 분으로 환산한 값
-            - match_rate : 일치율(현재 70~97 랜덤, 추후 업데이트 예정)
-            - to_be_continue : 유저가 재생을 멈춘시간
-            - remaining_time : running_time - to_be_continue
-            - can_i_store : 저장가능 여부
-            - similar_movies : 해당 영화와 비슷한 영화
-
+            리턴값:
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - video_file : 비디오파일
+                - sample_video_file : 샘플 비디오 파일
+                - production_date : 영화 개봉 날짜
+                - uploaded_date : 영화 등록(업로드) 날짜
+                - synopsis : 영화 줄거리
+                - running_time : 영화 러닝타임
+                - view_count : 영화 조회수
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지(차후 변경 예정)
+                - circle_image : 원형 이미지(차후 변경예정)
+                - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
+                - directors : 영화 감독
+                - actors : 배우
+                - feature : 영화 특징(Ex.흥미진진)
+                - author : 각본가
+                - genre : 장르
+                - marked : 유저가 찜한 영화인
+                - like : 유저가 좋아요한 영화인지, 싫어요한 영화인지 (평가안함 = 0 , 좋아요 = 1, 싫어요 = 2)
+                - total_minute : 시간을 분으로 환산한 값
+                - match_rate : 일치율(현재 70~97 랜덤, 추후 업데이트 예정)
+                - to_be_continue : 유저가 재생을 멈춘시간
+                - remaining_time : running_time - to_be_continue
+                - can_i_store : 저장가능 여부
+                - similar_movies: :[
+                    {
+                        "id": 439,
+                        "name":
+                        "degree": {
+                            "id": 2,
+                            "name": "청소년은 관람할 수 없는 영화",
+                            "degree_image_path":
+                        },
+                        "synopsis":
+                        "horizontal_image_path":
+                        "vertical_image":
+                        "production_date":
+                        "running_time":
+                        "match_rate":
+                        "marked":
+                    },
 
     """
 
@@ -884,7 +905,7 @@ class Search(APIView):
 class MatchRate(APIView):
 
     def get(self, *args, **kwargs):
-        sub_user = SubUser.objects.get(pk=67)
+        sub_user = SubUser.objects.get(pk=100)
         marked_objs = LikeDisLikeMarked.objects.select_related(
             'movie',
         ).prefetch_related(
@@ -892,56 +913,30 @@ class MatchRate(APIView):
             'movie__directors',
             'movie__genre',
         ).filter(marked=True, sub_user=sub_user)
+
+        movie_count = marked_objs.count()
+
+        target = Movie.objects.get(pk=521)
+        target_name = target.name[:2]
+
+        target_actors = target.actors.values_list('name', flat=True)
+        target_directors = target.directors.values_list('name', flat=True)
+        target_genres = target.genre.values_list('name', flat=True)
+
+        marked_movies_name_counter = Counter(marked_objs.values_list('movie__name', flat=True))
+        marked_movie_actors_name_counter = Counter(marked_objs.values_list('movie__actors__name', flat=True))
+        marked_movie_directors_name_counter = Counter(marked_objs.values_list('movie__directors__name', flat=True))
+        marked_movie_genres_name_counter = Counter(marked_objs.values_list('movie__genre__name', flat=True))
+
+        target_actors_count = sum([marked_movie_actors_name_counter.get(name, 0) for name in target_actors])
+        target_directors_count = sum([marked_movie_directors_name_counter.get(name, 0) for name in target_directors])
+        target_genres_count = sum([marked_movie_genres_name_counter.get(name, 0) for name in target_genres])
+
+        match_rate = 10
+        return Response({'match_rate': match_rate})
+
         # marked_objs = LikeDisLikeMarked.objects.filter(marked=True, sub_user=sub_user)
         # Movie.objects.all().prefetch_related('actors', 'directors', 'genre')
-        movie_names = []
-        target = Movie.objects.get(pk=354)
-        target_movie_name = target.name[:2]
-        target_actors = target.actors.all()
-        target_actors_list = [actor.name for actor in target_actors]
-        target_directors = target.directors.all()
-        target_directors_list = [director.name for director in target_directors]
-        target_genres = target.genre.all()
-        target_genres_list = [genre.name for genre in target_genres]
-
-        for actor in target_actors:
-            target_actors_list.append(actor)
-
-        marked_movie_names = []
-        marked_movie_actors_name = []
-        marked_movie_directors_name = []
-        marked_movie_genre_name = []
-
-        for obj in marked_objs:
-            marked_movie_names.append(obj.movie.name)
-
-            marked_actors = obj.movie.actors.all()
-            for actor in marked_actors:
-                marked_movie_actors_name.append(actor.name)
-
-            marked_directors = obj.movie.directors.all()
-            for director in marked_directors:
-                marked_movie_directors_name.append(director.name)
-
-            marked_genres = obj.movie.genre.all()
-            for genre in marked_genres:
-                marked_movie_genre_name.append(genre.name)
-
-        for t_actor in target_actors_list:
-            actor_match_count = marked_movie_actors_name.count(t_actor)
-
-        for t_director in target_directors_list:
-            director_match_count = marked_movie_directors_name.count(t_director)
-
-        for t_genre in target_genres_list:
-            genre_match_count = marked_movie_genre_name.count(t_genre)
-
-        name_match_count = 0
-        for m_movie_name in marked_movie_names:
-            if target_movie_name in m_movie_name:
-                name_match_count += 1
-
-        return Response({})
 
 
 # 영화 추천 시스템

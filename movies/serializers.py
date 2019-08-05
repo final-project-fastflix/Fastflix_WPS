@@ -9,7 +9,7 @@ from .models import Movie, Genre, MovieContinue
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
+        fields = ['id', 'name', 'horizontal_image_path', 'vertical_image', 'ios_main_image']
 
 
 class HomePageSerializer(serializers.ModelSerializer):
@@ -282,6 +282,7 @@ class SimilarMovieSerializer(serializers.ModelSerializer):
             'horizontal_image_path',
             'vertical_image',
             'production_date',
+            'running_time',
         ]
         depth = 1
 

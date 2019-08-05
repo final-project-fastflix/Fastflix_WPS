@@ -50,8 +50,8 @@ class Movie(models.Model):
     name = models.CharField(max_length=50)
 
     video_file = models.CharField(max_length=100, blank=True, null=True)
-    sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
-    vertical_sample_video_file = models.FileField(upload_to=f'media/movie/{name}/sample_video', blank=True, null=True)
+    sample_video_file = models.TextField(default=None, blank=True, null=True)
+    vertical_sample_video_file = models.TextField(default=None, blank=True, null=True)
 
     directors = models.ManyToManyField(Director, related_name='movie')
     actors = models.ManyToManyField(Actor, related_name='movie')
@@ -73,8 +73,9 @@ class Movie(models.Model):
     logo_image_path = models.TextField(default=None, blank=True, null=True)
     horizontal_image_path = models.TextField(default=None, blank=True, null=True)
     vertical_image = models.TextField(default=None, blank=True, null=True)
-    circle_image = models.ImageField(upload_to=f'media/movie/{name}/circle', null=True, blank=True)
+    circle_image = models.TextField(default=None, blank=True, null=True)
     big_image_path = models.TextField(default=None, null=True, blank=True)
+    ios_main_image = models.TextField(default=None, null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
