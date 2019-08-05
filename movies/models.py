@@ -73,6 +73,7 @@ class Movie(models.Model):
     logo_image_path = models.TextField(default=None, blank=True, null=True)
     horizontal_image_path = models.TextField(default=None, blank=True, null=True)
     vertical_image = models.TextField(default=None, blank=True, null=True)
+    original_vertical_image_path = models.TextField(default="", blank=True, null=True)
     circle_image = models.TextField(default=None, blank=True, null=True)
     big_image_path = models.TextField(default=None, null=True, blank=True)
     ios_main_image = models.TextField(default=None, null=True, blank=True)
