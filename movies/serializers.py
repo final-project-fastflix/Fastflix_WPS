@@ -94,12 +94,14 @@ class MovieListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = [
+            'id',
             'name',
             'sample_video_file',
             'degree',
             'feature',
             'running_time',
-            'like',
+            'horizontal_image_path',
+            'vertical_image',
         ]
         depth = 1
 

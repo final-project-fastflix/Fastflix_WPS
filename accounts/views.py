@@ -1,12 +1,17 @@
+from openpyxl import load_workbook
+
 from accounts.models import ProfileImage, ProfileImageCategory
 from movies.models import *
 
+def origin(request):
 
-def add_f_category(request):
-    images = ProfileImage.objects.all()
+    wb2 = load_workbook('fast_flix.xlsx')
+    ws = wb2.active
 
-    for image in images:
-        category_name = image.category
-        category_obj = ProfileImageCategory.objects.get_or_create(name=category_name)[0]
-        image.f_category = category_obj
-        image.save()
+    for row in ws.values:
+        if row[3] == 1:
+            a = Movie.objects.get(pk=row[0])
+            a.genre.add(Genre.objects.get(name='넷플릭스 오리지널'))
+            a.save()
+
+
