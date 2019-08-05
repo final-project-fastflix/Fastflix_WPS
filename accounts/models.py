@@ -38,7 +38,7 @@ class LikeDisLikeMarked(models.Model):
     marked = models.BooleanField(default=False, db_index=True)
     # 추가
     created = models.DateTimeField(auto_now_add=True)
-    updated = models.DateTimeField(auto_now=True)
+    updated = models.DateTimeField(auto_now=True, db_index=True)
 
     def __str__(self):
         return f'{self.movie} ' \
