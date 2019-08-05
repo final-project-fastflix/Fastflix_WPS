@@ -29,13 +29,13 @@ class LikeDisLikeMarked(models.Model):
         ('dislike', 'Dislike'),
         ('none', 'None'),
     )
-    movie = models.ForeignKey(Movie, related_name='like', on_delete=models.CASCADE)
-    sub_user = models.ForeignKey(SubUser, related_name='like', on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, related_name='like', on_delete=models.CASCADE, db_index=True)
+    sub_user = models.ForeignKey(SubUser, related_name='like', on_delete=models.CASCADE, db_index=True)
 
     # 0: 선택안함 1 : 좋아요,  2 : 싫어요
-    like_or_dislike = models.SmallIntegerField(default=0)
+    like_or_dislike = models.SmallIntegerField(default=0, db_index=True)
     # like_status = models.CharField('좋아요 상태', choices=CHOICES_LIKE_STATUS, default='none', max_length=12)
-    marked = models.BooleanField(default=False)
+    marked = models.BooleanField(default=False, db_index=True)
     # 추가
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)

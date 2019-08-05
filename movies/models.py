@@ -25,7 +25,7 @@ class Author(models.Model):
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=40)
+    name = models.CharField(max_length=40, db_index=True)
 
     def __str__(self):
         return self.name
@@ -47,7 +47,7 @@ class Degree(models.Model):
 
 
 class Movie(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, db_index=True)
 
     video_file = models.CharField(max_length=100, blank=True, null=True)
     sample_video_file = models.TextField(default=None, blank=True, null=True)
@@ -68,7 +68,7 @@ class Movie(models.Model):
     real_running_time = models.PositiveIntegerField(default=0)
 
     view_count = models.PositiveIntegerField(default=0)
-    like_count = models.IntegerField(default=0)
+    like_count = models.IntegerField(default=0, db_index=True)
 
     logo_image_path = models.TextField(default=None, blank=True, null=True)
     horizontal_image_path = models.TextField(default=None, blank=True, null=True)

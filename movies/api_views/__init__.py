@@ -875,8 +875,6 @@ class Search(APIView):
             # 내가 찾고자 하는 영화를 보여주고 난뒤 나머지 영화를 보여줌
             queryset = (movies_name | movie_genre | movie_actor).difference(first_show).distinct()
 
-            print(first_show.exists())
-            print(queryset)
 
             if not first_show.exists() and not queryset.exists():
                 return Response({'search': False}, status=status.HTTP_406_NOT_ACCEPTABLE)
@@ -999,8 +997,8 @@ class RecommendSystem(generics.ListAPIView):
             like__sub_user=header_sub_user_id).distinct()
 
         # 비주류 영화 하위 5개
-        low_like_movie = Movie.objects.order_by('like_count')[:5]
+        # low_like_movie = Movie.objects.order_by('like_count')[:5]
         # 프로필 유저의 찜/좋아요 목록과 비주류 영화 하위 5개를 합침
-        queryset = movie_list.union(low_like_movie)
+        # queryset = movie_list.union(low_like_movie)
 
-        return queryset
+        return movie_list
