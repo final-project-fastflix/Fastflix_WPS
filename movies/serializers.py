@@ -102,6 +102,7 @@ class MovieListSerializer(serializers.ModelSerializer):
             'running_time',
             'like',
             'horizontal_image_path',
+            'vertical_image',
         ]
         depth = 1
 
