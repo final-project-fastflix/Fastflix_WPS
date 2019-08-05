@@ -125,7 +125,7 @@ class SubUserCreate(APIView):
             ```
         """
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         # 프로필계정을 5개를 초과할 수 없음
         # 기존 등록 되어있는 프로필계정의 목록
         sub_user_list = SubUser.objects.filter(parent_user_id=request.user.id)
@@ -178,8 +178,6 @@ class SubUserCreate(APIView):
                     sub_user_list_serializer = SubUserListSerializer(sub_user_list, many=True)
 
             return Response(data={'sub_user_list': sub_user_list_serializer.data}, status=status.HTTP_200_OK)
-
-
 
         # 입력된 username이 1개 인 경우(일반적인 경우)
         else:
@@ -261,7 +259,7 @@ class SubUserModify(APIView):
         sub_user_id = self.request.data.get('sub_user_id')
         return SubUser.objects.get(id=sub_user_id)
 
-    def patch(self, request, *args, **kwargs):
+    def patch(self, request):
         sub_user = self.get_object()
         serializer = SubUserUpdateSerializer(instance=sub_user, data=request.data, partial=True)
 
@@ -293,7 +291,7 @@ class SubUserDelete(APIView):
     """
     serializer_class = SubUserDeleteSerializer
 
-    def delete(self, request, *agrs, **kwargs):
+    def delete(self, request):
         sub_user_id = request.META['HTTP_SUBUSERID']
         sub_user = SubUser.objects.get(id=sub_user_id)
         # 자신이 가지고 있는 프로필계정만 삭제가능
@@ -366,8 +364,8 @@ class Login(APIView):
     # 로그인은 인증을 받지 않아도 접속가능
     permission_classes = (AllowAny,)
 
-    def post(self, request, *args, **kwargs):
-        # 바디 형1 -> request.POST로도 가능하나 request.data가 좀더 유연한 방식이다
+    def post(self, request):
+        # 바디 형1 -> request.POST 가능하나 request.data 좀더 유연한 방식이다
         # username = request.POST.get('id')
         # password = request.POST.get('pw')
 
@@ -421,7 +419,7 @@ class ChangeProfileImageList(APIView):
 
     """
 
-    def get(self, request, format=None, **kwargs):
+    def get(self, request):
         category_list = ProfileImageCategory.objects.all().prefetch_related('profile_images')
 
         ret = {}
