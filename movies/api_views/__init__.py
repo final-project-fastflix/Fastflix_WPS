@@ -1,3 +1,4 @@
+import operator
 import re
 
 from django.db.models import Max, Q, F
@@ -497,7 +498,6 @@ class RecommendMovieAfterCreateSubUser(generics.ListAPIView):
     serializer_class = MovieSerializer
 
     def get_queryset(self):
-
         # queryset = Movie.objects.all().order_by('-like_count')[:60]
         movie_list = [
             589, 587, 582, 575, 573,
@@ -953,16 +953,41 @@ class MatchRate(APIView):
         marked_movie_directors_name_counter = Counter(marked_objs.values_list('movie__directors__name', flat=True))
         marked_movie_genres_name_counter = Counter(marked_objs.values_list('movie__genre__name', flat=True))
 
+        # sorted_actors_counter = sorted(marked_movie_actors_name_counter.items(), key=operator.itemgetter(1))
+        # sorted_directors_counter = sorted(marked_movie_directors_name_counter.items(), key=operator.itemgetter(1))
+        # sorted_genres_counter = sorted(marked_movie_genres_name_counter.items(), key=operator.itemgetter(1))
+
+        self.make_premium_list(marked_movie_actors_name_counter)
+        self.make_premium_list(marked_movie_genres_name_counter)
+        self.make_premium_list(marked_movie_directors_name_counter)
+
+
+
         target_actors_count = sum([marked_movie_actors_name_counter.get(name, 0) for name in target_actors])
         target_directors_count = sum([marked_movie_directors_name_counter.get(name, 0) for name in target_directors])
         target_genres_count = sum([marked_movie_genres_name_counter.get(name, 0) for name in target_genres])
-
 
         match_rate = 10
         return Response({'match_rate': match_rate})
 
         # marked_objs = LikeDisLikeMarked.objects.filter(marked=True, sub_user=sub_user)
         # Movie.objects.all().prefetch_related('actors', 'directors', 'genre')
+
+    def make_premium_list(self, counter):
+        sorted_by_key = {}
+
+        for item in counter.items():
+            if item[1] in sorted_by_key:
+                sorted_by_key[item[1]].append(item[0])
+            else:
+                sorted_by_key[item[1]] = [item[0]]
+
+        sorted_list = sorted(sorted_by_key.items(), key=operator.itemgetter(0))
+
+        premium_list = [sorted_list.pop() for _ in range(math.ceil(len(sorted_list) / 2))]
+
+        return premium_list
+
 
 
 # 영화 추천 시스템

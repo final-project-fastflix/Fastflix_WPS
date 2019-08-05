@@ -100,7 +100,6 @@ class MovieListSerializer(serializers.ModelSerializer):
             'degree',
             'feature',
             'running_time',
-            'like',
             'horizontal_image_path',
             'vertical_image',
         ]
