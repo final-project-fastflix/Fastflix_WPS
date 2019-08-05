@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from accounts.models import ProfileImageCategory
-from .serializer import *
+from ..serializer import *
 
 
 # 회원가입 API
@@ -200,6 +200,7 @@ class SubUserCreate(APIView):
             return Response(data={'error': False}, status=status.HTTP_400_BAD_REQUEST)
 
 
+# 계정에 속한 프로필계정 모두 보여주기
 class SubUserList(generics.ListAPIView):
     """
         계정에 속한 모든 프로필을 보여주는 API입니다
@@ -210,8 +211,15 @@ class SubUserList(generics.ListAPIView):
             을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
 
             리턴값:
+                - id : 프로필 계정의 ID
+                - profile_info : {
+                    - image_id : 이미지의 고유 ID
+                    - profile_image_path : 프로필 이미지의 path
+                    }
                 - name : 프로필이름
                 - kid : 어린이인지? (true/false)
+                - parent_user : 속한 계정의 ID값
+
 
             return 값은 계정에 속한 모든 프로필을 리턴합니다
 
@@ -295,7 +303,6 @@ class SubUserDelete(APIView):
         sub_user_id = request.META['HTTP_SUBUSERID']
         sub_user = SubUser.objects.get(id=sub_user_id)
         # 자신이 가지고 있는 프로필계정만 삭제가능
-        print(request.user)
         is_exist_sub_user_list = SubUser.objects.filter(parent_user=request.user).exists()
 
         if is_exist_sub_user_list:
