@@ -944,22 +944,36 @@ class MatchRate(APIView):
         return Response({})
 
 
+# 영화 추천 시스템
 class RecommendSystem(generics.ListAPIView):
+    """
+        영화 추천 시스템 API뷰 입니다
+
+        ---
+
+            Header에
+                Authorization : Token 토큰값
+                subuserid : 프로필 계정 ID값
+            을 넣어주세요! (subuserid는 _(언더바)가 없습니다!)
+
+
+    """
     serializer_class = MovieSerializer
 
     def get_queryset(self):
         header_sub_user_id = self.request.META['HTTP_SUBUSERID']
 
         # 나의 찜/ 좋아요 목록에있는 영화
-        a_movie_list = Movie.objects.filter(Q(like__sub_user=header_sub_user_id), (Q(like__like_or_dislike=1) | Q(like__marked=True)))
+        a_movie_list = Movie.objects.filter(Q(like__sub_user=header_sub_user_id),
+                                            (Q(like__like_or_dislike=1) | Q(like__marked=True)))
         sub_user_id_list = []
 
         # 내가 좋아한 영화를 좋아한 프로필유저 리스트
         for movie in a_movie_list:
             sub_user_id_list.append(LikeDisLikeMarked.objects.filter(movie=movie).distinct().values('sub_user'))
 
+        # 위에 프로필 유저리스트의 중복을 제거
         remove_id = set()
-        # 프로필 유저의 중복을 제거
         for sub_user_id in sub_user_id_list:
             for sub_user in sub_user_id:
                 remove_id.add(sub_user['sub_user'])

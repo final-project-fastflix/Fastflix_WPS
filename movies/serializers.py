@@ -2,7 +2,7 @@ import random
 
 from rest_framework import serializers
 
-from accounts.models import LikeDisLikeMarked, SubUser
+from accounts.models import LikeDisLikeMarked
 from .models import Movie, Genre, MovieContinue
 
 
@@ -31,9 +31,6 @@ class HomePageSerializer(serializers.ModelSerializer):
         serializer_data['marked'] = marked
 
         home_page_list = {'메인 영화': serializer_data}
-        # special_list = ['넷플릭스 오리지널', '추천 영화', 'OST좋은 것', '여름과 관련 영화',
-        #                 '디즈니 영화', '미친듯이 웃을 수 있는 영화', '영어공부하기 좋은 영화', ]
-        # home_page_list.update({'특별 장르': special_list})
 
         """
         재생중인 목록, 
@@ -46,30 +43,8 @@ class HomePageSerializer(serializers.ModelSerializer):
        
         """
 
-        # 재생중인 목록 불러오기
-        # play_list = Movie.objects.filter(movie_continue__sub_user=sub_user_id).order_by('-like__updated')
-        # play_list_serializer = MovieSerializer(play_list, many=True)
-        # home_page_list.update({'재생중인 목록': play_list_serializer.data})
-        #
-        # # 찜 목록 불러오기
-        # bookmark_list = Movie.objects.filter(like__sub_user=sub_user_id, like__marked=True).order_by('-like__updated')
-        # bookmark_list_serializer = MovieSerializer(bookmark_list, many=True)
-        # home_page_list.update({"찜 목록": bookmark_list_serializer.data})
-        #
-        # for genre in special_list:
-        #     special_genre_list = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2) \
-        #                              .filter(genre__name__icontains=genre)[:20]
-        #     special_genre_list_serializer = MovieSerializer(special_genre_list, many=True)
-        #     home_page_list.update({genre: special_genre_list_serializer.data})
-
         return home_page_list
 
-
-# class ListByMovieGenreSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Movie
-#         fields = fields = ['id', 'name', 'horizontal_image_path', 'vertical_image']
-#         depth = 1
 
 # 영화 탭에서 영화 장르선택하기 전 화면
 class GenreSelectBeforeSerializer(serializers.ModelSerializer):
@@ -80,7 +55,6 @@ class GenreSelectBeforeSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         serializer_data = super().to_representation(instance)
-
         sub_user_id = self.context['sub_user_id']
 
         queryset = LikeDisLikeMarked.objects.filter(movie=instance.id, sub_user=sub_user_id)
@@ -185,9 +159,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         # 선택된 영화와 같은 장르를 가진 영화 6개를 골라서 딕셔너리에 추가
         genre = instance.genre.all()[0]
         similar_movies = genre.movie.exclude(pk=instance.id)[:6]
-        # similar_movies = LikeDisLikeMarked
         similar_movies_serializer = SimilarMovieSerializer(similar_movies, many=True)
-        # print(similar_movies_serializer.data)
 
         # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
         sub_user_like_all = LikeDisLikeMarked.objects.select_related('movie').filter(sub_user=sub_user_id)
@@ -294,7 +266,6 @@ class BigSizeVideoSerializer(serializers.ModelSerializer):
         except IndexError:
             marked_status = False
 
-        print(marked_status)
         serializer_data['marked'] = marked_status
 
         return serializer_data

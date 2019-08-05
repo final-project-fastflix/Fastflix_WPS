@@ -28,7 +28,6 @@ class SubUserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SubUser
-        # fields = '__all__'
         exclude = ['profile_image_path']
 
     def get_profile_info(self, obj):
