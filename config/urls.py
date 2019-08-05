@@ -47,6 +47,8 @@ urlpatterns = [
     path('config_site/', admin.site.urls),
     path('movies/', include('movies.urls')),
     path('accounts/', include('accounts.urls')),
+    path('face_reco/', include('aws_reko.urls')),
+
 
     # 스웨거 API 문서
 
