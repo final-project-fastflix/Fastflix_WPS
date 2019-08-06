@@ -8,9 +8,35 @@ from movies.serializers import MovieSerializer
 
 
 class FaceRecommend(APIView):
+    """
+
+        사진을 보내면 얼굴 표정을 인식하여 영화 추천을 하는 API입니다.
+
+        ---
+
+            Header에
+                Authorization : Token 토큰값
+
+            Body에
+                image : 이미지.png 또는 이미지.jpeg
+            를 보내주세요
+
+            리턴값 :
+                {
+                    "response": {
+                        "id": 영화의 ID
+                        "name": 영화 이름
+                        "horizontal_image_path": 영화 가로 이미지 path
+                        "vertical_image": 영화 세로 이미지 path
+                        "ios_main_image": IOS에서 사용하는 이미지
+                    }
+               }
+
+
+    """
     def post(self, request):
         imageFile = request.data['image']
-        client = boto3.client('rekognition')
+        client = boto3.client('rekognition', region_name='ap-northeast-2')
 
         response = client.detect_faces(Image={'Bytes': imageFile.read()}, Attributes=['ALL'])
         emotion = response['FaceDetails'][0]['Emotions']

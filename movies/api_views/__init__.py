@@ -1,5 +1,7 @@
+import math
 import operator
 import re
+from collections import Counter
 
 from django.db.models import Max, Q, F
 from django.utils import timezone
@@ -11,7 +13,6 @@ from rest_framework.views import APIView
 from accounts.models import SubUser
 from movies.models import Actor
 from ..serializers import *
-from collections import Counter
 
 
 # Create your views here.
@@ -882,7 +883,6 @@ class Search(APIView):
             # 내가 찾고자 하는 영화를 보여주고 난뒤 나머지 영화를 보여줌
             queryset = (movies_name | movie_genre | movie_actor).difference(first_show).distinct()
 
-
             if not first_show.exists() and not queryset.exists():
                 return Response({'search': False}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -959,8 +959,6 @@ class MatchRate(APIView):
         self.make_premium_list(marked_movie_genres_name_counter)
         self.make_premium_list(marked_movie_directors_name_counter)
 
-
-
         target_actors_count = sum([marked_movie_actors_name_counter.get(name, 0) for name in target_actors])
         target_directors_count = sum([marked_movie_directors_name_counter.get(name, 0) for name in target_directors])
         target_genres_count = sum([marked_movie_genres_name_counter.get(name, 0) for name in target_genres])
@@ -985,7 +983,6 @@ class MatchRate(APIView):
         premium_list = [sorted_list.pop() for _ in range(math.ceil(len(sorted_list) / 2))]
 
         return premium_list
-
 
 
 # 영화 추천 시스템
