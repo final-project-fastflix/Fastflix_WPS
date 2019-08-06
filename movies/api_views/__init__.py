@@ -980,6 +980,185 @@ class RecommendSystem(generics.ListAPIView):
 
         return movie_list
 
+
+class MovieDetail(APIView):
+
+    """
+    영화 디테일 페이지 url 입니다.
+
+    ---
+
+        Header에
+            Authorization : Token 토큰값
+            subuserid : 서브유저 ID
+        을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
+
+        - 요청할때 "/movie/'영화 ID값'" 으로 요청하시면 됩니다.
+
+            - Ex) /movie/2
+            - Ex) /movie/7
+
+            리턴값:
+                - id : 영화의 고유 ID 값
+                - name : 영화 이름
+                - video_file : 비디오파일
+                - sample_video_file : 샘플 비디오 파일
+                - production_date : 영화 개봉 날짜
+                - uploaded_date : 영화 등록(업로드) 날짜
+                - synopsis : 영화 줄거리
+                - running_time : 영화 러닝타임
+                - view_count : 영화 조회수
+                - logo_image_path : 로고 이미지의 경로
+                - horizontal_image_path : 가로 이미지 경로
+                - vertical_image : 세로 이미지(차후 변경 예정)
+                - circle_image : 원형 이미지(차후 변경예정)
+                - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
+                - directors : 영화 감독
+                - actors : 배우
+                - feature : 영화 특징(Ex.흥미진진)
+                - author : 각본가
+                - genre : 장르
+                - marked : 유저가 찜한 영화인
+                - like : 유저가 좋아요한 영화인지, 싫어요한 영화인지 (평가안함 = 0 , 좋아요 = 1, 싫어요 = 2)
+                - total_minute : 시간을 분으로 환산한 값
+                - match_rate : 일치율(현재 70~97 랜덤, 추후 업데이트 예정)
+                - to_be_continue : 유저가 재생을 멈춘시간
+                - remaining_time : running_time - to_be_continue
+                - can_i_store : 저장가능 여부
+                - similar_movies: :[
+                    {
+                        "id": 439,
+                        "name":
+                        "degree": {
+                            "id": 2,
+                            "name": "청소년은 관람할 수 없는 영화",
+                            "degree_image_path":
+                        },
+                        "synopsis":
+                        "horizontal_image_path":
+                        "vertical_image":
+                        "production_date":
+                        "running_time":
+                        "match_rate":
+                        "marked":
+                    },
+
+    """
+    def get(self, *args, **kwargs):
+        target = Movie.objects.get(pk=kwargs['pk'])
+        serializer_data = MovieDetailSerializer(target).data
+
+        # sub_user_id = self.request.META['HTTP_SUBUSERID']
+        sub_user_id = 100
+
+        like_dislike_marked = LikeDisLikeMarked.objects.filter(movie=kwargs['pk'], sub_user=sub_user_id)
+        if like_dislike_marked:
+            # 해당 서브유저의 좋아요 정보에 접근해서 찜목록과 좋아요 여부를 확인
+            # like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
+            marked = like_dislike_marked[0].marked
+            like = like_dislike_marked[0].like_or_dislike
+        else:
+            marked = False
+            like = 0
+
+        # 일치율 계산
+        marked_objs = LikeDisLikeMarked.objects.select_related('movie').filter(marked=True, sub_user=sub_user_id)
+
+        # marked_objs = LikeDisLikeMarked.objects.select_related(
+        #     'movie',
+        # ).prefetch_related(
+        #     'movie__actors',
+        #     'movie__directors',
+        #     'movie__genre',
+        # ).filter(marked=True, sub_user=sub_user_id)
+
+        marked_movie_actors_name_counter = Counter(marked_objs.values_list('movie__actors__name', flat=True))
+        marked_movie_directors_name_counter = Counter(marked_objs.values_list('movie__directors__name', flat=True))
+        marked_movie_genres_name_counter = Counter(marked_objs.values_list('movie__genre__name', flat=True))
+
+        counter_collection = {'actor': marked_movie_actors_name_counter,
+                              'director': marked_movie_directors_name_counter,
+                              'genre': marked_movie_genres_name_counter}
+
+        match_rate = match_rate_calculater(target, counter_collection)
+
+        serializer_data['match_rate'] = match_rate
+
+        # 영화정보의 러닝타임( x시간 x분 형식)과 유저가 이전에 재생을 멈춘시간을 xx분 형식으로 변환해서 남은시간과 총시간을 반환
+
+        runningtime = target.running_time
+        if '시간 ' in runningtime:
+            runningtime = runningtime.split('시간 ')
+            total_minute = int(runningtime[0]) * 60 + int(runningtime[1][:-1])
+        else:
+            total_minute = int(runningtime[:-1])
+
+        if target.movie_continue.filter(sub_user_id=sub_user_id):
+            to_be_continue = target.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue
+            cur_minute = to_be_continue // 60
+            remaining_time = total_minute - cur_minute
+        else:
+            to_be_continue = 0
+            remaining_time = total_minute
+
+        # 저장가능 영화인지 확인
+        can_i_store = int(target.production_date) < 2015
+
+        # 계산한 값들을 반환할 딕셔너리에 추가
+        key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'remaining_time', 'can_i_store']
+        value_list = [marked, like, match_rate, total_minute, to_be_continue, remaining_time, can_i_store]
+
+        for i in range(len(key_list)):
+            serializer_data[f'{key_list[i]}'] = value_list[i]
+
+        # 선택된 영화와 같은 장르를 가진 영화 6개를 골라서 딕셔너리에 추가
+        genre = target.genre.all()[0]
+        similar_movies = Movie.objects.select_related('degree').filter(~Q(pk=target.id), genre=genre)[:6]
+        similar_movies_serializer = SimilarMovieSerializer(similar_movies, many=True)
+
+        # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
+        # sub_user_like_all = LikeDisLikeMarked.objects.select_related('movie').filter(sub_user=sub_user_id)
+
+        similar_count = 0
+        for similar_movie in similar_movies:
+
+            match_rate = match_rate_calculater(similar_movie, counter_collection)
+            similar_movies_serializer.data[similar_count]['match_rate'] = match_rate
+
+            for like in marked_objs:
+                if like.movie == similar_movie:
+                    similar_movies_serializer.data[similar_count]['marked'] = True
+                    print(similar_movies_serializer.data[similar_count])
+
+            if 'marked' not in similar_movies_serializer.data[similar_count]:
+                similar_movies_serializer.data[similar_count]['marked'] = False
+
+            similar_count += 1
+
+        # for i in range(similar_movies.count()):
+        #     for like in sub_user_like_all:
+        #         if like.movie == similar_movies[i]:
+        #             similar_movies_serializer.data[i]['marked'] = like.marked
+        #         else:
+        #             similar_movies_serializer.data[i]['marked'] = False
+
+        serializer_data['similar_movies'] = similar_movies_serializer.data
+
+        return Response(serializer_data)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # class MatchRate(APIView):
 #
 #     def get(self, *args, **kwargs):

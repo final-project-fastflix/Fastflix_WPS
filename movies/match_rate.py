@@ -6,40 +6,25 @@ from accounts.models import LikeDisLikeMarked
 from movies.models import Movie
 
 
-def match_rate_calculater(sub_user, target):
-    marked_objs = LikeDisLikeMarked.objects.select_related(
-        'movie',
-    ).prefetch_related(
-        'movie__actors',
-        'movie__directors',
-        'movie__genre',
-    ).filter(marked=True, sub_user=sub_user)
-
-    # target = Movie.objects.get(pk=404)
-
+def match_rate_calculater(target, counter_collection):
     target_actors = target.actors.values_list('name', flat=True)
     target_directors = target.directors.values_list('name', flat=True)
     target_genres = target.genre.values_list('name', flat=True)
 
-    marked_movies_name_counter = Counter(marked_objs.values_list('movie__name', flat=True))
-    marked_movie_actors_name_counter = Counter(marked_objs.values_list('movie__actors__name', flat=True))
-    marked_movie_directors_name_counter = Counter(marked_objs.values_list('movie__directors__name', flat=True))
-    marked_movie_genres_name_counter = Counter(marked_objs.values_list('movie__genre__name', flat=True))
-
-    actor_grade = calculate_premium_grade(marked_movie_actors_name_counter, target_actors)
-    director_grade = calculate_premium_grade(marked_movie_directors_name_counter, target_directors)
-    genre_grade = calculate_premium_grade(marked_movie_genres_name_counter, target_genres)
+    actor_grade = calculate_premium_grade(counter_collection['actor'], target_actors)
+    director_grade = calculate_premium_grade(counter_collection['director'], target_directors)
+    genre_grade = calculate_premium_grade(counter_collection['genre'], target_genres)
 
     weight_table = {'1': 8, '2': 7, '3': 6, '4': 5, '5': 0}
 
     actor_point = weight_table[
-        calculate_normal_grade(actor_grade, target_actors, marked_movie_actors_name_counter)]
+        calculate_normal_grade(actor_grade, target_actors, counter_collection['actor'])]
 
     genre_point = weight_table[
-        calculate_normal_grade(genre_grade, target_genres, marked_movie_genres_name_counter)]
+        calculate_normal_grade(genre_grade, target_genres, counter_collection['genre'])]
 
     director_point = weight_table[calculate_normal_grade(director_grade, target_directors,
-                                                              marked_movie_directors_name_counter)]
+                                                         counter_collection['director'])]
 
     match_rate = 50 + actor_point * 2 + genre_point * 3 + director_point
 
