@@ -2,9 +2,12 @@ import random
 
 from rest_framework import serializers
 
-from accounts.models import LikeDisLikeMarked
+from accounts.models import LikeDisLikeMarked, SubUser
 from .models import Movie, Genre, MovieContinue
 
+from .match_rate import *
+
+sub_user_number = None
 
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
@@ -102,6 +105,7 @@ class MovieListSerializer(serializers.ModelSerializer):
             'running_time',
             'horizontal_image_path',
             'vertical_image',
+            'original_vertical_image_path',
         ]
         depth = 1
 
@@ -129,7 +133,8 @@ class MovieDetailSerializer(serializers.ModelSerializer):
             like = 0
 
         # 임시적으로 일치율 설정
-        match_rate = random.randint(70, 97)
+        sub_user = SubUser.objects.get(pk=sub_user_id)
+        match_rate = match_rate_calculater(sub_user, instance)
 
         # 영화정보의 러닝타임( x시간 x분 형식)과 유저가 이전에 재생을 멈춘시간을 xx분 형식으로 변환해서 남은시간과 총시간을 반환
 
@@ -161,6 +166,10 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         # 선택된 영화와 같은 장르를 가진 영화 6개를 골라서 딕셔너리에 추가
         genre = instance.genre.all()[0]
         similar_movies = genre.movie.exclude(pk=instance.id)[:6]
+
+        global sub_user_number
+        sub_user_number = sub_user
+
         similar_movies_serializer = SimilarMovieSerializer(similar_movies, many=True)
 
         # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
@@ -290,7 +299,7 @@ class SimilarMovieSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         serializer_data = super().to_representation(instance)
-        match_rate = random.randint(70, 97)
+        match_rate = match_rate_calculater(sub_user_number, instance)
         serializer_data['match_rate'] = match_rate
 
         return serializer_data

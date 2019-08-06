@@ -65,7 +65,6 @@ urlpatterns = [
     # 영화 검색기능
     path('search/', Search.as_view(), name='search'),
     path('update/', update_real,),
-    path('match/', MatchRate.as_view(),),
 
     # 영화 추천기능
     path('rcd/', RecommendSystem.as_view(), name='rcd'),

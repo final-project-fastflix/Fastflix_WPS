@@ -1,3 +1,4 @@
+import math
 import operator
 import re
 
@@ -205,10 +206,17 @@ class MovieListFirstGenre(generics.ListAPIView):
                 디즈니 영화
 
             리턴값:
+                - id : 영화 id
                 - name : 영화 이름
+                - sample_video_file : 미리보기 영상 경로
+                - degree : 영화 관람등급
+                - feature : 영화 특징
+                - running_time : 상영 시간
                 - logo_image_path : 로고 이미지의 경로
                 - horizontal_image_path : 가로 이미지 경로
                 - vertical_image : 세로 이미지(차후 변경 예정)
+                - horizontal_image_path : 영화 가로 이미지
+                - original_vertical_image_path : 넷플릭스 오리지널 전용 세로 이미지
 
     """
     serializer_class = MovieListSerializer
@@ -329,8 +337,8 @@ class MovieDetail(generics.RetrieveAPIView):
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        sub_user_id = self.request.META['HTTP_SUBUSERID']
-        # sub_user_id = 100
+        # sub_user_id = self.request.META['HTTP_SUBUSERID']
+        sub_user_id = 100
         context['sub_user_id'] = sub_user_id
         return context
 
@@ -882,7 +890,6 @@ class Search(APIView):
             # 내가 찾고자 하는 영화를 보여주고 난뒤 나머지 영화를 보여줌
             queryset = (movies_name | movie_genre | movie_actor).difference(first_show).distinct()
 
-
             if not first_show.exists() and not queryset.exists():
                 return Response({'search': False}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
@@ -923,69 +930,6 @@ class Search(APIView):
                              }, status=status.HTTP_202_ACCEPTED)
         else:
             return Response({'search_error': False}, status=status.HTTP_204_NO_CONTENT)
-
-
-class MatchRate(APIView):
-
-    def get(self, *args, **kwargs):
-        sub_user = SubUser.objects.get(pk=100)
-        marked_objs = LikeDisLikeMarked.objects.select_related(
-            'movie',
-        ).prefetch_related(
-            'movie__actors',
-            'movie__directors',
-            'movie__genre',
-        ).filter(marked=True, sub_user=sub_user)
-
-        movie_count = marked_objs.count()
-
-        target = Movie.objects.get(pk=521)
-        target_name = target.name[:2]
-
-        target_actors = target.actors.values_list('name', flat=True)
-        target_directors = target.directors.values_list('name', flat=True)
-        target_genres = target.genre.values_list('name', flat=True)
-
-        marked_movies_name_counter = Counter(marked_objs.values_list('movie__name', flat=True))
-        marked_movie_actors_name_counter = Counter(marked_objs.values_list('movie__actors__name', flat=True))
-        marked_movie_directors_name_counter = Counter(marked_objs.values_list('movie__directors__name', flat=True))
-        marked_movie_genres_name_counter = Counter(marked_objs.values_list('movie__genre__name', flat=True))
-
-        # sorted_actors_counter = sorted(marked_movie_actors_name_counter.items(), key=operator.itemgetter(1))
-        # sorted_directors_counter = sorted(marked_movie_directors_name_counter.items(), key=operator.itemgetter(1))
-        # sorted_genres_counter = sorted(marked_movie_genres_name_counter.items(), key=operator.itemgetter(1))
-
-        self.make_premium_list(marked_movie_actors_name_counter)
-        self.make_premium_list(marked_movie_genres_name_counter)
-        self.make_premium_list(marked_movie_directors_name_counter)
-
-
-
-        target_actors_count = sum([marked_movie_actors_name_counter.get(name, 0) for name in target_actors])
-        target_directors_count = sum([marked_movie_directors_name_counter.get(name, 0) for name in target_directors])
-        target_genres_count = sum([marked_movie_genres_name_counter.get(name, 0) for name in target_genres])
-
-        match_rate = 10
-        return Response({'match_rate': match_rate})
-
-        # marked_objs = LikeDisLikeMarked.objects.filter(marked=True, sub_user=sub_user)
-        # Movie.objects.all().prefetch_related('actors', 'directors', 'genre')
-
-    def make_premium_list(self, counter):
-        sorted_by_key = {}
-
-        for item in counter.items():
-            if item[1] in sorted_by_key:
-                sorted_by_key[item[1]].append(item[0])
-            else:
-                sorted_by_key[item[1]] = [item[0]]
-
-        sorted_list = sorted(sorted_by_key.items(), key=operator.itemgetter(0))
-
-        premium_list = [sorted_list.pop() for _ in range(math.ceil(len(sorted_list) / 2))]
-
-        return premium_list
-
 
 
 # 영화 추천 시스템
@@ -1035,3 +979,89 @@ class RecommendSystem(generics.ListAPIView):
         # queryset = movie_list.union(low_like_movie)
 
         return movie_list
+
+# class MatchRate(APIView):
+#
+#     def get(self, *args, **kwargs):
+#         sub_user = SubUser.objects.get(pk=100)
+#         marked_objs = LikeDisLikeMarked.objects.select_related(
+#             'movie',
+#         ).prefetch_related(
+#             'movie__actors',
+#             'movie__directors',
+#             'movie__genre',
+#         ).filter(marked=True, sub_user=sub_user)
+#
+#         target = Movie.objects.get(pk=404)
+#
+#         target_actors = target.actors.values_list('name', flat=True)
+#         target_directors = target.directors.values_list('name', flat=True)
+#         target_genres = target.genre.values_list('name', flat=True)
+#
+#         marked_movies_name_counter = Counter(marked_objs.values_list('movie__name', flat=True))
+#         marked_movie_actors_name_counter = Counter(marked_objs.values_list('movie__actors__name', flat=True))
+#         marked_movie_directors_name_counter = Counter(marked_objs.values_list('movie__directors__name', flat=True))
+#         marked_movie_genres_name_counter = Counter(marked_objs.values_list('movie__genre__name', flat=True))
+#
+#         actor_grade = self.calculate_premium_grade(marked_movie_actors_name_counter, target_actors)
+#         director_grade = self.calculate_premium_grade(marked_movie_directors_name_counter, target_directors)
+#         genre_grade = self.calculate_premium_grade(marked_movie_genres_name_counter, target_genres)
+#
+#         weight_table = {'1': 8, '2': 7, '3': 6, '4': 5, '5': 0}
+#
+#         actor_point = weight_table[
+#             self.calculate_normal_grade(actor_grade, target_actors, marked_movie_actors_name_counter)]
+#
+#         genre_point = weight_table[
+#             self.calculate_normal_grade(genre_grade, target_genres, marked_movie_genres_name_counter)]
+#
+#         director_point = weight_table[self.calculate_normal_grade(director_grade, target_directors,
+#                                                                   marked_movie_directors_name_counter)]
+#
+#         match_rate = 50 + actor_point * 3 + genre_point * 2 + director_point
+#
+#         return Response({'match_rate': match_rate})
+#
+#     def calculate_premium_grade(self, counter, target):
+#         sorted_by_key = {}
+#
+#         for item in counter.items():
+#             if item[1] in sorted_by_key:
+#                 sorted_by_key[item[1]].append(item[0])
+#             else:
+#                 sorted_by_key[item[1]] = [item[0]]
+#
+#         sorted_list = sorted(sorted_by_key.items(), key=operator.itemgetter(0))
+#         premium_list = [sorted_list.pop() for _ in range(math.ceil(len(sorted_list) / 2))]
+#
+#         total_count = 0
+#
+#         for i in premium_list:
+#             w = i[0]
+#             count = 0
+#             for j in target:
+#                 if j in i[1]:
+#                     count += 1
+#             total_count += count * w
+#
+#         if total_count >= target.count():
+#             return '1'
+#         elif total_count > target.count() // 2:
+#             return '2'
+#         else:
+#             return None
+#
+#     def calculate_normal_grade(self, grade, target, counter):
+#         if grade:
+#             return grade
+#         else:
+#             total_count = sum([counter.get(name, 0) for name in target])
+#
+#             if total_count >= target.count():
+#                 return '2'
+#             elif total_count > target.count() // 5:
+#                 return '3'
+#             elif total_count:
+#                 return '4'
+#             else:
+#                 return '5'
