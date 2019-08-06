@@ -26,6 +26,7 @@ from config import settings
 schema_url_v1_patterns = [
     path('movies/', include('movies.urls', namespace='movies_api')),
     path('accounts/', include('accounts.urls', namespace='accounts_api')),
+    path('face_reko/', include('awsreko.urls')),
 ]
 
 schema_view_v1 = get_schema_view(
@@ -47,6 +48,8 @@ urlpatterns = [
     path('config_site/', admin.site.urls),
     path('movies/', include('movies.urls')),
     path('accounts/', include('accounts.urls')),
+    path('face_reko/', include('awsreko.urls')),
+
 
     # 스웨거 API 문서
 
