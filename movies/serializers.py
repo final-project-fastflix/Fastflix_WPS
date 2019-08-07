@@ -5,8 +5,6 @@ from rest_framework import serializers
 from accounts.models import LikeDisLikeMarked, SubUser
 from .models import Movie, Genre, MovieContinue
 
-from .match_rate import *
-
 sub_user_number = None
 
 class MovieSerializer(serializers.ModelSerializer):
@@ -232,9 +230,12 @@ class MovieContinueSerializer(serializers.ModelSerializer):
         serializer_data = super().to_representation(instance)
         sub_user_id = self.context['sub_user_id']
 
+        print(sub_user_id)
+
         running_second = instance.movie.real_running_time
         print(running_second)
         paused_time = instance.to_be_continue
+        print(paused_time)
 
         progress_bar = 100 * paused_time // running_second
 
