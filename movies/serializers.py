@@ -2,9 +2,12 @@ import random
 
 from rest_framework import serializers
 
-from accounts.models import LikeDisLikeMarked
+from accounts.models import LikeDisLikeMarked, SubUser
 from .models import Movie, Genre, MovieContinue
 
+from .match_rate import *
+
+sub_user_number = None
 
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
@@ -102,6 +105,7 @@ class MovieListSerializer(serializers.ModelSerializer):
             'running_time',
             'horizontal_image_path',
             'vertical_image',
+            'original_vertical_image_path',
         ]
         depth = 1
 
@@ -113,68 +117,73 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         exclude = ['view_count', 'like_count', 'created']
         depth = 2
 
-    def to_representation(self, instance):
-        serializer_data = super().to_representation(instance)
-
-        sub_user_id = self.context['sub_user_id']
-
-        like_dislike_marked = LikeDisLikeMarked.objects.filter(movie=instance, sub_user=sub_user_id)
-        if like_dislike_marked:
-            # 해당 서브유저의 좋아요 정보에 접근해서 찜목록과 좋아요 여부를 확인
-            # like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
-            marked = like_dislike_marked[0].marked
-            like = like_dislike_marked[0].like_or_dislike
-        else:
-            marked = False
-            like = 0
-
-        # 임시적으로 일치율 설정
-        match_rate = random.randint(70, 97)
-
-        # 영화정보의 러닝타임( x시간 x분 형식)과 유저가 이전에 재생을 멈춘시간을 xx분 형식으로 변환해서 남은시간과 총시간을 반환
-
-        runningtime = instance.running_time
-        if '시간 ' in runningtime:
-            runningtime = runningtime.split('시간 ')
-            total_minute = int(runningtime[0]) * 60 + int(runningtime[1][:-1])
-        else:
-            total_minute = int(runningtime[:-1])
-
-        if instance.movie_continue.filter(sub_user_id=sub_user_id):
-            to_be_continue = instance.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue
-            cur_minute = to_be_continue // 60
-            remaining_time = total_minute - cur_minute
-        else:
-            to_be_continue = 0
-            remaining_time = total_minute
-
-        # 저장가능 영화인지 확인
-        can_i_store = int(instance.production_date) < 2015
-
-        # 계산한 값들을 반환할 딕셔너리에 추가
-        key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'remaining_time', 'can_i_store']
-        value_list = [marked, like, match_rate, total_minute, to_be_continue, remaining_time, can_i_store]
-
-        for i in range(len(key_list)):
-            serializer_data[f'{key_list[i]}'] = value_list[i]
-
-        # 선택된 영화와 같은 장르를 가진 영화 6개를 골라서 딕셔너리에 추가
-        genre = instance.genre.all()[0]
-        similar_movies = genre.movie.exclude(pk=instance.id)[:6]
-        similar_movies_serializer = SimilarMovieSerializer(similar_movies, many=True)
-
-        # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
-        sub_user_like_all = LikeDisLikeMarked.objects.select_related('movie').filter(sub_user=sub_user_id)
-
-        for i in range(similar_movies.count()):
-            for like in sub_user_like_all:
-                if like.movie == similar_movies[i]:
-                    similar_movies_serializer.data[i]['marked'] = like.marked
-                else:
-                    similar_movies_serializer.data[i]['marked'] = False
-
-        serializer_data['similar_movies'] = similar_movies_serializer.data
-        return serializer_data
+    # def to_representation(self, instance):
+        # serializer_data = super().to_representation(instance)
+        #
+        # sub_user_id = self.context['sub_user_id']
+        #
+        # like_dislike_marked = LikeDisLikeMarked.objects.filter(movie=instance, sub_user=sub_user_id)
+        # if like_dislike_marked:
+        #     # 해당 서브유저의 좋아요 정보에 접근해서 찜목록과 좋아요 여부를 확인
+        #     # like_dislike_marked = instance.like.filter(sub_user=sub_user_id)[0]
+        #     marked = like_dislike_marked[0].marked
+        #     like = like_dislike_marked[0].like_or_dislike
+        # else:
+        #     marked = False
+        #     like = 0
+        #
+        # # 임시적으로 일치율 설정
+        # sub_user = SubUser.objects.get(pk=sub_user_id)
+        # match_rate = match_rate_calculater(sub_user, instance)
+        #
+        # # 영화정보의 러닝타임( x시간 x분 형식)과 유저가 이전에 재생을 멈춘시간을 xx분 형식으로 변환해서 남은시간과 총시간을 반환
+        #
+        # runningtime = instance.running_time
+        # if '시간 ' in runningtime:
+        #     runningtime = runningtime.split('시간 ')
+        #     total_minute = int(runningtime[0]) * 60 + int(runningtime[1][:-1])
+        # else:
+        #     total_minute = int(runningtime[:-1])
+        #
+        # if instance.movie_continue.filter(sub_user_id=sub_user_id):
+        #     to_be_continue = instance.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue
+        #     cur_minute = to_be_continue // 60
+        #     remaining_time = total_minute - cur_minute
+        # else:
+        #     to_be_continue = 0
+        #     remaining_time = total_minute
+        #
+        # # 저장가능 영화인지 확인
+        # can_i_store = int(instance.production_date) < 2015
+        #
+        # # 계산한 값들을 반환할 딕셔너리에 추가
+        # key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'remaining_time', 'can_i_store']
+        # value_list = [marked, like, match_rate, total_minute, to_be_continue, remaining_time, can_i_store]
+        #
+        # for i in range(len(key_list)):
+        #     serializer_data[f'{key_list[i]}'] = value_list[i]
+        #
+        # # 선택된 영화와 같은 장르를 가진 영화 6개를 골라서 딕셔너리에 추가
+        # genre = instance.genre.all()[0]
+        # similar_movies = genre.movie.exclude(pk=instance.id)[:6]
+        #
+        # global sub_user_number
+        # sub_user_number = sub_user
+        #
+        # similar_movies_serializer = SimilarMovieSerializer(similar_movies, many=True)
+        #
+        # # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
+        # sub_user_like_all = LikeDisLikeMarked.objects.select_related('movie').filter(sub_user=sub_user_id)
+        #
+        # for i in range(similar_movies.count()):
+        #     for like in sub_user_like_all:
+        #         if like.movie == similar_movies[i]:
+        #             similar_movies_serializer.data[i]['marked'] = like.marked
+        #         else:
+        #             similar_movies_serializer.data[i]['marked'] = False
+        #
+        # serializer_data['similar_movies'] = similar_movies_serializer.data
+        # return serializer_data
 
 
 # 프로필 계정별 찜 목록 시리얼라이저
@@ -288,9 +297,9 @@ class SimilarMovieSerializer(serializers.ModelSerializer):
         ]
         depth = 1
 
-    def to_representation(self, instance):
-        serializer_data = super().to_representation(instance)
-        match_rate = random.randint(70, 97)
-        serializer_data['match_rate'] = match_rate
-
-        return serializer_data
+    # def to_representation(self, instance):
+    #     serializer_data = super().to_representation(instance)
+    #     match_rate = match_rate_calculater(sub_user_number, instance)
+    #     serializer_data['match_rate'] = match_rate
+    #
+    #     return serializer_data
