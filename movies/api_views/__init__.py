@@ -300,7 +300,7 @@ class FollowUpMovies(generics.ListAPIView):
 
     def get_queryset(self):
         sub_user_id = self.request.META['HTTP_SUBUSERID']
-        queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
+        queryset = MovieContinue.objects.filter(~Q(to_be_continue=0), sub_user_id=sub_user_id)
         return queryset.order_by('-updated')
 
     def get_serializer_context(self):
@@ -945,10 +945,11 @@ class MovieDetail(APIView):
                 - genre : 장르
                 - marked : 유저가 찜한 영화인
                 - like : 유저가 좋아요한 영화인지, 싫어요한 영화인지 (평가안함 = 0 , 좋아요 = 1, 싫어요 = 2)
-                - total_minute : 시간을 분으로 환산한 값
-                - match_rate : 일치율(현재 70~97 랜덤, 추후 업데이트 예정)
-                - to_be_continue : 유저가 재생을 멈춘시간
-                - remaining_time : running_time - to_be_continue
+                - total_minute : running_time을 분으로 환산한 값 (단위 : 분)
+                - match_rate : 유저 취향과의 일치율
+                - to_be_continue : 유저가 재생을 멈춘시간 (단위 : 초)
+                - progress_bar : 실제 총 재생시간 대비 유저가 재생한 시간의 비율
+                - paused_minute : 총 재생시간 * progress_bar 비율 (단위 : 분)
                 - can_i_store : 저장가능 여부
                 - similar_movies: :[
                     {
@@ -1021,31 +1022,27 @@ class MovieDetail(APIView):
 
         if target.movie_continue.filter(sub_user_id=sub_user_id):
             to_be_continue = target.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue
-            cur_minute = to_be_continue // 60
-            remaining_time = total_minute - cur_minute
         else:
             to_be_continue = 0
-            remaining_time = total_minute
 
         # progress bar
         running_second = target.real_running_time
-        print(running_second)
-        _continue = MovieContinue.objects.filter(sub_user=sub_user_id, movie=target)
-        paused_time = _continue.to_be_continue
-        print(paused_time)
 
-        progress_bar = 100 * paused_time // running_second
+        progress_bar = 100 * to_be_continue // running_second
+
+        if progress_bar > 100:
+            progress_bar = 100
 
         serializer_data['progress_bar'] = progress_bar
 
-
+        paused_minute = math.floor(total_minute * progress_bar / 100)
 
         # 저장가능 영화인지 확인
         can_i_store = int(target.production_date) < 2015
 
         # 계산한 값들을 반환할 딕셔너리에 추가
-        key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'remaining_time', 'can_i_store']
-        value_list = [marked, like, match_rate, total_minute, to_be_continue, remaining_time, can_i_store]
+        key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'paused_minute', 'can_i_store']
+        value_list = [marked, like, match_rate, total_minute, to_be_continue, paused_minute, can_i_store]
 
         for i in range(len(key_list)):
             serializer_data[f'{key_list[i]}'] = value_list[i]

@@ -230,14 +230,13 @@ class MovieContinueSerializer(serializers.ModelSerializer):
         serializer_data = super().to_representation(instance)
         sub_user_id = self.context['sub_user_id']
 
-        print(sub_user_id)
-
         running_second = instance.movie.real_running_time
-        print(running_second)
         paused_time = instance.to_be_continue
-        print(paused_time)
 
         progress_bar = 100 * paused_time // running_second
+
+        if progress_bar > 100:
+            progress_bar = 100
 
         serializer_data['progress_bar'] = progress_bar
         return serializer_data
