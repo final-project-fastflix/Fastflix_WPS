@@ -793,12 +793,13 @@ class Search(APIView):
 
     def get(self, *agrs, **kwargs):
         search_key = self.request.GET.get('search_key', None)
-        print(search_key)
+
         if search_key:
 
             # 주어진 문자열에서 문자와 숫자를 제외한 문자(특수문자)를 삭제함
             re_search_key = re.sub(r'[\W]+', '', search_key)
-
+            rex = re.compile(r'[\w]+')
+            rex2 = re.compile(r'[ㄱ-힗]+')
             # 영화이름중 검색어가 포함된 영화 목록
             movies_name = Movie.objects.filter(name__icontains=re_search_key)
 
@@ -808,9 +809,19 @@ class Search(APIView):
             # 배우들 중 검색어가 포함된 영화 목록
             movie_actor = Movie.objects.prefetch_related('actors').filter(actors__name__icontains=re_search_key)
 
+            if not movie_actor.exists():
+                matchobj = rex.findall(search_key)
+                movie_actor = Movie.objects.filter(actors__name__icontains=matchobj[-1])
+
             # 검색어로 시작하는 영화(내가 찾고자 하는 영화라고 예상함)를 맨 처음 보여주기 위함
             temp1 = Movie.objects.filter(name__startswith=re_search_key)
+
+            if not temp1.exists():
+                match_obj = rex2.findall(search_key)
+                temp1 = Movie.objects.filter(name__icontains=match_obj[0])
+
             first_show = temp1.union(movie_actor)
+            # if not first_show
 
             first_movies_serializer = MovieSerializer(first_show, many=True)
 
