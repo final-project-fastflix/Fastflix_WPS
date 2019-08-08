@@ -268,81 +268,6 @@ class MarkedList(generics.ListAPIView):
         return queryset
 
 
-# 영화 상세정보 뷰
-class MovieDetail(generics.RetrieveAPIView):
-    """
-    영화 디테일 페이지 url 입니다.
-
-    ---
-
-        Header에
-            Authorization : Token 토큰값
-            subuserid : 서브유저 ID
-        을 넣어주세요! (subuserid는 _(언더바)가 없습니다)
-
-        - 요청할때 "/movie/'영화 ID값'" 으로 요청하시면 됩니다.
-
-            - Ex) /movie/2
-            - Ex) /movie/7
-
-            리턴값:
-                - id : 영화의 고유 ID 값
-                - name : 영화 이름
-                - video_file : 비디오파일
-                - sample_video_file : 샘플 비디오 파일
-                - production_date : 영화 개봉 날짜
-                - uploaded_date : 영화 등록(업로드) 날짜
-                - synopsis : 영화 줄거리
-                - running_time : 영화 러닝타임
-                - view_count : 영화 조회수
-                - logo_image_path : 로고 이미지의 경로
-                - horizontal_image_path : 가로 이미지 경로
-                - vertical_image : 세로 이미지(차후 변경 예정)
-                - circle_image : 원형 이미지(차후 변경예정)
-                - degree : 영화 등급 (Ex.청소년 관람불가, 15세 등등)
-                - directors : 영화 감독
-                - actors : 배우
-                - feature : 영화 특징(Ex.흥미진진)
-                - author : 각본가
-                - genre : 장르
-                - marked : 유저가 찜한 영화인
-                - like : 유저가 좋아요한 영화인지, 싫어요한 영화인지 (평가안함 = 0 , 좋아요 = 1, 싫어요 = 2)
-                - total_minute : 시간을 분으로 환산한 값
-                - match_rate : 일치율(현재 70~97 랜덤, 추후 업데이트 예정)
-                - to_be_continue : 유저가 재생을 멈춘시간
-                - remaining_time : running_time - to_be_continue
-                - can_i_store : 저장가능 여부
-                - similar_movies: :[
-                    {
-                        "id": 439,
-                        "name":
-                        "degree": {
-                            "id": 2,
-                            "name": "청소년은 관람할 수 없는 영화",
-                            "degree_image_path":
-                        },
-                        "synopsis":
-                        "horizontal_image_path":
-                        "vertical_image":
-                        "production_date":
-                        "running_time":
-                        "match_rate":
-                        "marked":
-                    },
-
-    """
-
-    queryset = Movie.objects.all()
-    serializer_class = MovieDetailSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        # sub_user_id = self.request.META['HTTP_SUBUSERID']
-        sub_user_id = 100
-        context['sub_user_id'] = sub_user_id
-        return context
-
-
 # 시청중인 목록 뷰
 class FollowUpMovies(generics.ListAPIView):
     """
@@ -363,10 +288,12 @@ class FollowUpMovies(generics.ListAPIView):
                 - video_file : 비디오파일
                 - logo_image_path : 로고 이미지의 경로
                 - horizontal_image_path : 가로 이미지 경로
-                - vertical_image : 세로 이미지(차후 변경 예정)
+                - vertical_image : 세로 이미지
                 - real_running_time : 영상의 실제 총 러닝타임
                 - to_be_continue : 유저가 재생을 멈춘시간
                 - progress_bar : 영상 진행률
+
+                - total_minute : 러닝타임을 분으로 환산한
 
     """
 
@@ -375,7 +302,7 @@ class FollowUpMovies(generics.ListAPIView):
 
     def get_queryset(self):
         sub_user_id = self.request.META['HTTP_SUBUSERID']
-        queryset = MovieContinue.objects.filter(sub_user_id=sub_user_id)
+        queryset = MovieContinue.objects.filter(~Q(to_be_continue=0), sub_user_id=sub_user_id)
         return queryset.order_by('-updated')
 
     def get_serializer_context(self):
@@ -932,66 +859,6 @@ class Search(APIView):
             return Response({'search_error': False}, status=status.HTTP_204_NO_CONTENT)
 
 
-class MatchRate(APIView):
-
-    def get(self, *args, **kwargs):
-        sub_user = SubUser.objects.get(pk=100)
-        marked_objs = LikeDisLikeMarked.objects.select_related(
-            'movie',
-        ).prefetch_related(
-            'movie__actors',
-            'movie__directors',
-            'movie__genre',
-        ).filter(marked=True, sub_user=sub_user)
-
-        movie_count = marked_objs.count()
-
-        target = Movie.objects.get(pk=521)
-        target_name = target.name[:2]
-
-        target_actors = target.actors.values_list('name', flat=True)
-        target_directors = target.directors.values_list('name', flat=True)
-        target_genres = target.genre.values_list('name', flat=True)
-
-        marked_movies_name_counter = Counter(marked_objs.values_list('movie__name', flat=True))
-        marked_movie_actors_name_counter = Counter(marked_objs.values_list('movie__actors__name', flat=True))
-        marked_movie_directors_name_counter = Counter(marked_objs.values_list('movie__directors__name', flat=True))
-        marked_movie_genres_name_counter = Counter(marked_objs.values_list('movie__genre__name', flat=True))
-
-        # sorted_actors_counter = sorted(marked_movie_actors_name_counter.items(), key=operator.itemgetter(1))
-        # sorted_directors_counter = sorted(marked_movie_directors_name_counter.items(), key=operator.itemgetter(1))
-        # sorted_genres_counter = sorted(marked_movie_genres_name_counter.items(), key=operator.itemgetter(1))
-
-        self.make_premium_list(marked_movie_actors_name_counter)
-        self.make_premium_list(marked_movie_genres_name_counter)
-        self.make_premium_list(marked_movie_directors_name_counter)
-
-        target_actors_count = sum([marked_movie_actors_name_counter.get(name, 0) for name in target_actors])
-        target_directors_count = sum([marked_movie_directors_name_counter.get(name, 0) for name in target_directors])
-        target_genres_count = sum([marked_movie_genres_name_counter.get(name, 0) for name in target_genres])
-
-        match_rate = 10
-        return Response({'match_rate': match_rate})
-
-        # marked_objs = LikeDisLikeMarked.objects.filter(marked=True, sub_user=sub_user)
-        # Movie.objects.all().prefetch_related('actors', 'directors', 'genre')
-
-    def make_premium_list(self, counter):
-        sorted_by_key = {}
-
-        for item in counter.items():
-            if item[1] in sorted_by_key:
-                sorted_by_key[item[1]].append(item[0])
-            else:
-                sorted_by_key[item[1]] = [item[0]]
-
-        sorted_list = sorted(sorted_by_key.items(), key=operator.itemgetter(0))
-
-        premium_list = [sorted_list.pop() for _ in range(math.ceil(len(sorted_list) / 2))]
-
-        return premium_list
-
-
 # 영화 추천 시스템
 class RecommendSystem(generics.ListAPIView):
     """
@@ -1041,6 +908,7 @@ class RecommendSystem(generics.ListAPIView):
         return movie_list
 
 
+# 영화 상세정보 뷰
 class MovieDetail(APIView):
     """
     영화 디테일 페이지 url 입니다.
@@ -1079,11 +947,13 @@ class MovieDetail(APIView):
                 - genre : 장르
                 - marked : 유저가 찜한 영화인
                 - like : 유저가 좋아요한 영화인지, 싫어요한 영화인지 (평가안함 = 0 , 좋아요 = 1, 싫어요 = 2)
-                - total_minute : 시간을 분으로 환산한 값
-                - match_rate : 일치율(현재 70~97 랜덤, 추후 업데이트 예정)
-                - to_be_continue : 유저가 재생을 멈춘시간
-                - remaining_time : running_time - to_be_continue
+                - total_minute : running_time을 분으로 환산한 값 (단위 : 분)
+                - match_rate : 유저 취향과의 일치율
+                - to_be_continue : 유저가 재생을 멈춘시간 (단위 : 초)
+                - progress_bar : 실제 총 재생시간 대비 유저가 재생한 시간의 비율
+                - paused_minute : 총 재생시간 * progress_bar 비율 (단위 : 분)
                 - can_i_store : 저장가능 여부
+                - remaining_time : 전체시간 - 재생한시간 (단위 : 분)
                 - similar_movies: :[
                     {
                         "id": 439,
@@ -1140,33 +1010,46 @@ class MovieDetail(APIView):
                               'director': marked_movie_directors_name_counter,
                               'genre': marked_movie_genres_name_counter}
 
-        match_rate = match_rate_calculater(target, counter_collection)
+        match_rate = self.match_rate_calculater(target, counter_collection)
 
         serializer_data['match_rate'] = match_rate
 
         # 영화정보의 러닝타임( x시간 x분 형식)과 유저가 이전에 재생을 멈춘시간을 xx분 형식으로 변환해서 남은시간과 총시간을 반환
 
-        runningtime = target.running_time
-        if '시간 ' in runningtime:
-            runningtime = runningtime.split('시간 ')
-            total_minute = int(runningtime[0]) * 60 + int(runningtime[1][:-1])
+        target_running_time = target.running_time
+        if '시간 ' in target_running_time:
+            target_running_time = target_running_time.split('시간 ')
+            total_minute = int(target_running_time[0]) * 60 + int(target_running_time[1][:-1])
         else:
-            total_minute = int(runningtime[:-1])
+            total_minute = int(target_running_time[:-1])
 
         if target.movie_continue.filter(sub_user_id=sub_user_id):
             to_be_continue = target.movie_continue.filter(sub_user_id=sub_user_id)[0].to_be_continue
-            cur_minute = to_be_continue // 60
-            remaining_time = total_minute - cur_minute
         else:
             to_be_continue = 0
-            remaining_time = total_minute
+
+        # progress bar
+        running_second = target.real_running_time
+
+        progress_bar = 100 * to_be_continue // running_second
+
+        if progress_bar > 100:
+            progress_bar = 100
+
+        serializer_data['progress_bar'] = progress_bar
+
+        paused_minute = math.floor(total_minute * progress_bar / 100)
+
+        remaining_minute = total_minute - running_second // 60
 
         # 저장가능 영화인지 확인
         can_i_store = int(target.production_date) < 2015
 
         # 계산한 값들을 반환할 딕셔너리에 추가
-        key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'remaining_time', 'can_i_store']
-        value_list = [marked, like, match_rate, total_minute, to_be_continue, remaining_time, can_i_store]
+        key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'paused_minute', 'can_i_store',
+                    'remaining_time']
+        value_list = [marked, like, match_rate, total_minute, to_be_continue, paused_minute, can_i_store,
+                      remaining_minute]
 
         for i in range(len(key_list)):
             serializer_data[f'{key_list[i]}'] = value_list[i]
@@ -1177,12 +1060,10 @@ class MovieDetail(APIView):
         similar_movies_serializer = SimilarMovieSerializer(similar_movies, many=True)
 
         # 골라진 6개의 영화가 서브유저에게 찜되었는지 여부를 확인해서 영화정보 뒤에 추가
-        # sub_user_like_all = LikeDisLikeMarked.objects.select_related('movie').filter(sub_user=sub_user_id)
-
         similar_count = 0
         for similar_movie in similar_movies:
 
-            match_rate = match_rate_calculater(similar_movie, counter_collection)
+            match_rate = self.match_rate_calculater(similar_movie, counter_collection)
             similar_movies_serializer.data[similar_count]['match_rate'] = match_rate
 
             for like in marked_objs:
@@ -1195,99 +1076,74 @@ class MovieDetail(APIView):
 
             similar_count += 1
 
-        # for i in range(similar_movies.count()):
-        #     for like in sub_user_like_all:
-        #         if like.movie == similar_movies[i]:
-        #             similar_movies_serializer.data[i]['marked'] = like.marked
-        #         else:
-        #             similar_movies_serializer.data[i]['marked'] = False
-
         serializer_data['similar_movies'] = similar_movies_serializer.data
 
         return Response(serializer_data)
 
-# class MatchRate(APIView):
-#
-#     def get(self, *args, **kwargs):
-#         sub_user = SubUser.objects.get(pk=100)
-#         marked_objs = LikeDisLikeMarked.objects.select_related(
-#             'movie',
-#         ).prefetch_related(
-#             'movie__actors',
-#             'movie__directors',
-#             'movie__genre',
-#         ).filter(marked=True, sub_user=sub_user)
-#
-#         target = Movie.objects.get(pk=404)
-#
-#         target_actors = target.actors.values_list('name', flat=True)
-#         target_directors = target.directors.values_list('name', flat=True)
-#         target_genres = target.genre.values_list('name', flat=True)
-#
-#         marked_movies_name_counter = Counter(marked_objs.values_list('movie__name', flat=True))
-#         marked_movie_actors_name_counter = Counter(marked_objs.values_list('movie__actors__name', flat=True))
-#         marked_movie_directors_name_counter = Counter(marked_objs.values_list('movie__directors__name', flat=True))
-#         marked_movie_genres_name_counter = Counter(marked_objs.values_list('movie__genre__name', flat=True))
-#
-#         actor_grade = self.calculate_premium_grade(marked_movie_actors_name_counter, target_actors)
-#         director_grade = self.calculate_premium_grade(marked_movie_directors_name_counter, target_directors)
-#         genre_grade = self.calculate_premium_grade(marked_movie_genres_name_counter, target_genres)
-#
-#         weight_table = {'1': 8, '2': 7, '3': 6, '4': 5, '5': 0}
-#
-#         actor_point = weight_table[
-#             self.calculate_normal_grade(actor_grade, target_actors, marked_movie_actors_name_counter)]
-#
-#         genre_point = weight_table[
-#             self.calculate_normal_grade(genre_grade, target_genres, marked_movie_genres_name_counter)]
-#
-#         director_point = weight_table[self.calculate_normal_grade(director_grade, target_directors,
-#                                                                   marked_movie_directors_name_counter)]
-#
-#         match_rate = 50 + actor_point * 3 + genre_point * 2 + director_point
-#
-#         return Response({'match_rate': match_rate})
-#
-#     def calculate_premium_grade(self, counter, target):
-#         sorted_by_key = {}
-#
-#         for item in counter.items():
-#             if item[1] in sorted_by_key:
-#                 sorted_by_key[item[1]].append(item[0])
-#             else:
-#                 sorted_by_key[item[1]] = [item[0]]
-#
-#         sorted_list = sorted(sorted_by_key.items(), key=operator.itemgetter(0))
-#         premium_list = [sorted_list.pop() for _ in range(math.ceil(len(sorted_list) / 2))]
-#
-#         total_count = 0
-#
-#         for i in premium_list:
-#             w = i[0]
-#             count = 0
-#             for j in target:
-#                 if j in i[1]:
-#                     count += 1
-#             total_count += count * w
-#
-#         if total_count >= target.count():
-#             return '1'
-#         elif total_count > target.count() // 2:
-#             return '2'
-#         else:
-#             return None
-#
-#     def calculate_normal_grade(self, grade, target, counter):
-#         if grade:
-#             return grade
-#         else:
-#             total_count = sum([counter.get(name, 0) for name in target])
-#
-#             if total_count >= target.count():
-#                 return '2'
-#             elif total_count > target.count() // 5:
-#                 return '3'
-#             elif total_count:
-#                 return '4'
-#             else:
-#                 return '5'
+    def match_rate_calculater(self, target, counter_collection):
+        target_actors = target.actors.values_list('name', flat=True)
+        target_directors = target.directors.values_list('name', flat=True)
+        target_genres = target.genre.values_list('name', flat=True)
+
+        actor_grade = self.calculate_premium_grade(counter_collection['actor'], target_actors)
+        director_grade = self.calculate_premium_grade(counter_collection['director'], target_directors)
+        genre_grade = self.calculate_premium_grade(counter_collection['genre'], target_genres)
+
+        weight_table = {'1': 8, '2': 7, '3': 6, '4': 5, '5': 0}
+
+        actor_point = weight_table[
+            self.calculate_normal_grade(actor_grade, target_actors, counter_collection['actor'])]
+
+        genre_point = weight_table[
+            self.calculate_normal_grade(genre_grade, target_genres, counter_collection['genre'])]
+
+        director_point = weight_table[self.calculate_normal_grade(director_grade, target_directors,
+                                                                  counter_collection['director'])]
+
+        match_rate = 50 + actor_point * 2 + genre_point * 3 + director_point
+
+        return match_rate
+
+    def calculate_premium_grade(self, counter, target):
+        sorted_by_key = {}
+
+        for item in counter.items():
+            if item[1] in sorted_by_key:
+                sorted_by_key[item[1]].append(item[0])
+            else:
+                sorted_by_key[item[1]] = [item[0]]
+
+        sorted_list = sorted(sorted_by_key.items(), key=operator.itemgetter(0))
+        premium_list = [sorted_list.pop() for _ in range(math.ceil(len(sorted_list) / 2))]
+
+        total_count = 0
+
+        for i in premium_list:
+            w = i[0]
+            count = 0
+            for j in target:
+                if j in i[1]:
+                    count += 1
+            total_count += count * w
+
+        if total_count >= target.count():
+            return '1'
+        elif total_count > target.count() // 2:
+            return '2'
+        else:
+            return None
+
+    def calculate_normal_grade(self, grade, target, counter):
+        if grade:
+            return grade
+        else:
+            total_count = sum([counter.get(name, 0) for name in target])
+
+            if total_count >= target.count():
+                return '2'
+            elif total_count > target.count() // 5:
+                return '3'
+            elif total_count:
+                return '4'
+            else:
+                return '5'
