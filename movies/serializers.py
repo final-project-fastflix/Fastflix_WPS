@@ -10,7 +10,7 @@ sub_user_number = None
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ['id', 'name', 'horizontal_image_path', 'vertical_image', 'ios_main_image']
+        fields = ['id', 'name', 'horizontal_image_path', 'vertical_image', 'ios_main_image', 'sample_video_file']
 
 
 class HomePageSerializer(serializers.ModelSerializer):
