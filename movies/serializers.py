@@ -239,6 +239,16 @@ class MovieContinueSerializer(serializers.ModelSerializer):
             progress_bar = 100
 
         serializer_data['progress_bar'] = progress_bar
+
+        target_running_time = instance.movie.running_time
+        if '시간 ' in target_running_time:
+            target_running_time = target_running_time.split('시간 ')
+            total_minute = int(target_running_time[0]) * 60 + int(target_running_time[1][:-1])
+        else:
+            total_minute = int(target_running_time[:-1])
+
+        serializer_data['total_minute'] = total_minute
+
         return serializer_data
 
 

@@ -288,10 +288,12 @@ class FollowUpMovies(generics.ListAPIView):
                 - video_file : 비디오파일
                 - logo_image_path : 로고 이미지의 경로
                 - horizontal_image_path : 가로 이미지 경로
-                - vertical_image : 세로 이미지(차후 변경 예정)
+                - vertical_image : 세로 이미지
                 - real_running_time : 영상의 실제 총 러닝타임
                 - to_be_continue : 유저가 재생을 멈춘시간
                 - progress_bar : 영상 진행률
+
+                - total_minute : 러닝타임을 분으로 환산한
 
     """
 
@@ -951,6 +953,7 @@ class MovieDetail(APIView):
                 - progress_bar : 실제 총 재생시간 대비 유저가 재생한 시간의 비율
                 - paused_minute : 총 재생시간 * progress_bar 비율 (단위 : 분)
                 - can_i_store : 저장가능 여부
+                - remaining_time : 전체시간 - 재생한시간 (단위 : 분)
                 - similar_movies: :[
                     {
                         "id": 439,
@@ -1037,12 +1040,16 @@ class MovieDetail(APIView):
 
         paused_minute = math.floor(total_minute * progress_bar / 100)
 
+        remaining_minute = total_minute - running_second // 60
+
         # 저장가능 영화인지 확인
         can_i_store = int(target.production_date) < 2015
 
         # 계산한 값들을 반환할 딕셔너리에 추가
-        key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'paused_minute', 'can_i_store']
-        value_list = [marked, like, match_rate, total_minute, to_be_continue, paused_minute, can_i_store]
+        key_list = ['marked', 'like', 'match_rate', 'total_minute', 'to_be_continue', 'paused_minute', 'can_i_store',
+                    'remaining_time']
+        value_list = [marked, like, match_rate, total_minute, to_be_continue, paused_minute, can_i_store,
+                      remaining_minute]
 
         for i in range(len(key_list)):
             serializer_data[f'{key_list[i]}'] = value_list[i]
