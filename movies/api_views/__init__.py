@@ -911,10 +911,16 @@ class RecommendSystem(generics.ListAPIView):
                                           (Q(like__like_or_dislike=1) | Q(like__marked=True))).exclude(
             like__sub_user=header_sub_user_id).distinct()
 
+        if not movie_list.exists():
+            movie_list = Movie.objects.order_by('?')
+
+
         # 비주류 영화 하위 5개
         # low_like_movie = Movie.objects.order_by('like_count')[:5]
         # 프로필 유저의 찜/좋아요 목록과 비주류 영화 하위 5개를 합침
         # queryset = movie_list.union(low_like_movie)
+
+
 
         return movie_list
 
@@ -989,8 +995,7 @@ class MovieDetail(APIView):
         target = Movie.objects.get(pk=kwargs['pk'])
         serializer_data = MovieDetailSerializer(target).data
 
-        # sub_user_id = self.request.META['HTTP_SUBUSERID']
-        sub_user_id = 100
+        sub_user_id = self.request.META['HTTP_SUBUSERID']
 
         like_dislike_marked = LikeDisLikeMarked.objects.filter(movie=kwargs['pk'], sub_user=sub_user_id)
         if like_dislike_marked:

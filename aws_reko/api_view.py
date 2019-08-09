@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 from movies.models import Movie
 from movies.serializers import MovieSerializer
 
+import base64
+
 
 class FaceRecommend(APIView):
     """
@@ -37,7 +39,6 @@ class FaceRecommend(APIView):
     def post(self, request):
         imageFile = request.data['image']
         client = boto3.client('rekognition', region_name='ap-northeast-2')
-
         response = client.detect_faces(Image={'Bytes': imageFile.read()}, Attributes=['ALL'])
         emotion = response['FaceDetails'][0]['Emotions']
         emotion_type = sorted(emotion, key=lambda typ: typ['Confidence'], reverse=True)[0]['Type']
