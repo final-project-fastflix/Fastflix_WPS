@@ -18,6 +18,7 @@ class SubUser(models.Model):
     parent_user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='sub_user')
     kid = models.BooleanField(default=False, blank=True)
     profile_image_path = models.TextField(blank=True)
+    is_initialize = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
