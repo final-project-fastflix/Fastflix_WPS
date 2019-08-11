@@ -17,5 +17,3 @@ from movies.models import *
 #         obj.real_running_time = total_minute
 #         obj.save()
 
-def update_real(request):
-    Movie.objects.all().update(real_running_time=30)

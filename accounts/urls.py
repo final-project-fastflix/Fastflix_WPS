@@ -13,5 +13,4 @@ urlpatterns = [
     path('change_profile/', ChangeProfileImageList.as_view(), ),
     path('change_sub_user/', SubUserModify.as_view(), name='change_sub_user'),
     path('delete_sub_user/', SubUserDelete.as_view(), name='delete_sub_user'),
-    path('update/', update_real,),
 ]

@@ -648,7 +648,7 @@ class BrandNewMovieList(generics.ListAPIView):
 
     def get_queryset(self):
         sub_user = self.request.META['HTTP_SUBUSERID']
-        queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2).order_by('-created')[:10]
+        queryset = Movie.objects.exclude(like__sub_user=sub_user, like__like_or_dislike=2).order_by('-created')[:18]
 
         return queryset
 
@@ -724,7 +724,7 @@ class MostLikesMoives(generics.ListAPIView):
     def get_queryset(self):
         sub_user_id = self.request.META['HTTP_SUBUSERID']
         queryset = Movie.objects.exclude(like__sub_user=sub_user_id, like__like_or_dislike=2).order_by(
-            '-like_count')[:10]
+            '-like_count')[:18]
 
         return queryset
 
@@ -993,7 +993,7 @@ class MovieDetail(APIView):
 
         # 일치율 계산
         marked_objs = LikeDisLikeMarked.objects.select_related('movie').filter(marked=True, sub_user=sub_user_id)
-
+        # Movie.objects.filter(like_dislike_marked=True, like_dislike_marked__
         # marked_objs = LikeDisLikeMarked.objects.select_related(
         #     'movie',
         # ).prefetch_related(
