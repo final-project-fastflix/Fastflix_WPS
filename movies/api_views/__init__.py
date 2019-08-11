@@ -793,12 +793,13 @@ class Search(APIView):
 
     def get(self, *agrs, **kwargs):
         search_key = self.request.GET.get('search_key', None)
-        print(search_key)
+
         if search_key:
 
             # 주어진 문자열에서 문자와 숫자를 제외한 문자(특수문자)를 삭제함
             re_search_key = re.sub(r'[\W]+', '', search_key)
-
+            rex = re.compile(r'[\w]+')
+            rex2 = re.compile(r'[ㄱ-힗]+')
             # 영화이름중 검색어가 포함된 영화 목록
             movies_name = Movie.objects.filter(name__icontains=re_search_key)
 
@@ -808,9 +809,19 @@ class Search(APIView):
             # 배우들 중 검색어가 포함된 영화 목록
             movie_actor = Movie.objects.prefetch_related('actors').filter(actors__name__icontains=re_search_key)
 
+            if not movie_actor.exists():
+                matchobj = rex.findall(search_key)
+                movie_actor = Movie.objects.filter(actors__name__icontains=matchobj[-1])
+
             # 검색어로 시작하는 영화(내가 찾고자 하는 영화라고 예상함)를 맨 처음 보여주기 위함
             temp1 = Movie.objects.filter(name__startswith=re_search_key)
+
+            if not temp1.exists():
+                match_obj = rex2.findall(search_key)
+                temp1 = Movie.objects.filter(name__icontains=match_obj[0])
+
             first_show = temp1.union(movie_actor)
+            # if not first_show
 
             first_movies_serializer = MovieSerializer(first_show, many=True)
 
@@ -900,10 +911,16 @@ class RecommendSystem(generics.ListAPIView):
                                           (Q(like__like_or_dislike=1) | Q(like__marked=True))).exclude(
             like__sub_user=header_sub_user_id).distinct()
 
+        if not movie_list.exists():
+            movie_list = Movie.objects.order_by('?')
+
+
         # 비주류 영화 하위 5개
         # low_like_movie = Movie.objects.order_by('like_count')[:5]
         # 프로필 유저의 찜/좋아요 목록과 비주류 영화 하위 5개를 합침
         # queryset = movie_list.union(low_like_movie)
+
+
 
         return movie_list
 
@@ -978,8 +995,7 @@ class MovieDetail(APIView):
         target = Movie.objects.get(pk=kwargs['pk'])
         serializer_data = MovieDetailSerializer(target).data
 
-        # sub_user_id = self.request.META['HTTP_SUBUSERID']
-        sub_user_id = 100
+        sub_user_id = self.request.META['HTTP_SUBUSERID']
 
         like_dislike_marked = LikeDisLikeMarked.objects.filter(movie=kwargs['pk'], sub_user=sub_user_id)
         if like_dislike_marked:
