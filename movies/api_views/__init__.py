@@ -914,13 +914,10 @@ class RecommendSystem(generics.ListAPIView):
         if not movie_list.exists():
             movie_list = Movie.objects.order_by('?')
 
-
         # 비주류 영화 하위 5개
         # low_like_movie = Movie.objects.order_by('like_count')[:5]
         # 프로필 유저의 찜/좋아요 목록과 비주류 영화 하위 5개를 합침
         # queryset = movie_list.union(low_like_movie)
-
-
 
         return movie_list
 
@@ -1120,7 +1117,7 @@ class MovieDetail(APIView):
 
         return match_rate
 
-    def calculate_premium_grade(self, counter, target):
+    def calculate_premium_grade(self, counter, targets):
         sorted_by_key = {}
 
         for item in counter.items():
@@ -1137,27 +1134,27 @@ class MovieDetail(APIView):
         for i in premium_list:
             w = i[0]
             count = 0
-            for j in target:
-                if j in i[1]:
+            for target in targets:
+                if target in i[1]:
                     count += 1
             total_count += count * w
 
-        if total_count >= target.count():
+        if total_count >= targets.count():
             return '1'
-        elif total_count > target.count() // 2:
+        elif total_count > targets.count() // 2:
             return '2'
         else:
             return None
 
-    def calculate_normal_grade(self, grade, target, counter):
+    def calculate_normal_grade(self, grade, targets, counter):
         if grade:
             return grade
         else:
-            total_count = sum([counter.get(name, 0) for name in target])
+            total_count = sum([counter.get(name, 0) for name in targets])
 
-            if total_count >= target.count():
+            if total_count >= targets.count():
                 return '2'
-            elif total_count > target.count() // 5:
+            elif total_count > targets.count() // 5:
                 return '3'
             elif total_count:
                 return '4'
