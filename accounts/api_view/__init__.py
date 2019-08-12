@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework import status
 from rest_framework.permissions import AllowAny
@@ -436,6 +437,37 @@ class ChangeProfileImageList(APIView):
             ret[f'{category.name}'] = ChangeProfileImageSerializer(char_images, many=True).data
 
         return Response(ret)
+
+
+class VisitedBaseMovies(APIView):
+
+    """
+                해당 서브유저가 생성된 후 영화선택 페이지에 방문했다는 정보를 저장합니다.
+
+            ---
+
+                /accounts/visited_base_movies/  로 요청하시면 됩니다.
+
+            Header에
+                Authorization : Token 토큰값
+            을 넣어주세요!
+
+            Body에
+                sub_user_id : sub_user_id
+            를 넣어주세요!
+
+            해당 서브유저가 존재한다면 saved : True
+
+                         존재하지 않는다면 404 에러가 반환됩니다.
+
+    """
+
+    def post(self, *args, **kwargs):
+        sub_user = get_object_or_404(SubUser, pk=self.request.data.get('sub_user_id'))
+
+        sub_user.is_initialize = True
+        sub_user.save()
+        return Response({'saved': True})
 
 
 def add_default(request):
