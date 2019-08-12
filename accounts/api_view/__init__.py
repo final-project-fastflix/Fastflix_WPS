@@ -425,6 +425,7 @@ class ChangeProfileImageList(APIView):
 
                 의 순서로 데이터가 전달됩니다.
 
+
     """
 
     def get(self, request):
