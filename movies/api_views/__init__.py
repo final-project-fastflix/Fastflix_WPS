@@ -1,6 +1,7 @@
 import math
 import operator
 import re
+import random
 from collections import Counter
 
 from django.db.models import Max, Q, F
@@ -341,28 +342,31 @@ class MovieListByGenre(APIView):
                 - logo_image_path : 로고 이미지의 경로
                 - horizontal_image_path : 가로 이미지 경로
                 - vertical_image : 세로 이미지
+            ...
+            맨 마지막에 최상단에 들어가는 영화가 있습니다
+            "main_movie": {
+                - id : 영화의 고유 ID 값
+                - big_image_path : 큰 이미지 경로
+                - logo_image_path : 로고 이미지 경로
+                - name: 영화 이름
+                - degree: {
+                    "id": degree의 ID,
+                    "name": degree의 이름 Ex) 15세 미만 관람 불가
+                    "degree_image_path": degree의 이미지 경로
+                },
+                - synopsis: 영화의 줄거리
+                - marked: 찜 여부
+
+
     """
 
-    def get(self, request, format=None, **kwargs):
+    def get(self, request, *args, **kwargs):
         vertical_genre = self.kwargs['genre_key']
-        sub_user = self.request.META['HTTP_SUBUSERID']
-        # sub_user = 100
+        sub_user = request.META['HTTP_SUBUSERID']
 
         genre_list = [
-            '한국',
-            '미국',
-            '어린이',
-            '액션',
-            '스릴러',
-            'sf',
-            '판타지',
-            '범죄',
-            '호러',
-            '다큐',
-            '로맨스',
-            '코미디',
-            '애니',
-            '외국',
+            '한국', '미국', '어린이', '액션', '스릴러', 'sf', '판타지',
+            '범죄', '호러', '다큐', '로맨스', '코미디', '애니', '외국',
         ]
 
         context = {}
@@ -400,7 +404,12 @@ class MovieListByGenre(APIView):
 
         vertical_serializer_data = MovieListByGenreSerializer(vertical_queryset.order_by('?'), many=True).data
         random.shuffle(vertical_serializer_data)
+
         context[f'{vertical_genre}'] = vertical_serializer_data
+
+        main_movie_queryset = Movie.objects.filter(genre__name__icontains=vertical_genre).order_by("?").first()
+        main_movie_serializer = TopMovieSerializer(main_movie_queryset)
+        context['main_movie'] = main_movie_serializer.data
 
         return Response(context)
 
@@ -913,14 +922,6 @@ class RecommendSystem(generics.ListAPIView):
 
         if not movie_list.exists():
             movie_list = Movie.objects.order_by('?')
-
-
-        # 비주류 영화 하위 5개
-        # low_like_movie = Movie.objects.order_by('like_count')[:5]
-        # 프로필 유저의 찜/좋아요 목록과 비주류 영화 하위 5개를 합침
-        # queryset = movie_list.union(low_like_movie)
-
-
 
         return movie_list
 

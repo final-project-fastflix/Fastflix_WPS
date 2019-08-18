@@ -219,7 +219,9 @@ class SubUserList(generics.ListAPIView):
                     }
                 - name : 프로필이름
                 - kid : 어린이인지? (true/false)
+                - is_initialize : true/false
                 - parent_user : 속한 계정의 ID값
+
 
 
             return 값은 계정에 속한 모든 프로필을 리턴합니다
@@ -336,35 +338,16 @@ class Login(APIView):
             {
                 "sub_user_list": [
                     {
-                        "id": 1,
-                        "name": "HDS1",
-                        "kid": false,
-                        "parent_user": 2
+                        "id": 프로필 계정의 ID,
+                        "profile_info : {
+                            "image_id" : 프로필 이미지 ID
+                            "profile_image_path : 프로필 이미지의 path
+                        }
+                        "name": 프로필 계정명,
+                        "kid": true/false,
+                        "parent_user": 속한 계정의 ID
                     },
-                    {
-                        "id": 2,
-                        "name": "HDS2",
-                        "kid": false,
-                        "parent_user": 2
-                    },
-                    {
-                        "id": 5,
-                        "name": "HDS3",
-                        "kid": true,
-                        "parent_user": 2
-                    },
-                    {
-                        "id": 6,
-                        "name": "HDS4",
-                        "kid": false,
-                        "parent_user": 2
-                    },
-                    {
-                        "id": 7,
-                        "name": "HDS5",
-                        "kid": true,
-                        "parent_user": 2
-                    }
+                    ... 프로필 유저의 갯수만큼 나옴
                 ]
             }
         ```
@@ -440,13 +423,12 @@ class ChangeProfileImageList(APIView):
 
 
 class VisitedBaseMovies(APIView):
-
     """
-                해당 서브유저가 생성된 후 영화선택 페이지에 방문했다는 정보를 저장합니다.
+        해당 서브유저가 생성된 후 영화선택 페이지에 방문했다는 정보를 저장합니다.
 
-            ---
+        ---
 
-                /accounts/visited_base_movies/  로 요청하시면 됩니다.
+            /accounts/visited_base_movies/  로 요청하시면 됩니다.
 
             Header에
                 Authorization : Token 토큰값
@@ -457,8 +439,7 @@ class VisitedBaseMovies(APIView):
             를 넣어주세요!
 
             해당 서브유저가 존재한다면 saved : True
-
-                         존재하지 않는다면 404 에러가 반환됩니다.
+            존재하지 않는다면 404 에러가 반환됩니다.
 
     """
 
