@@ -1,10 +1,9 @@
 import math
-import operator
-import re
 import random
+import re
 from collections import Counter
 
-from django.db.models import Max, Q, F
+from django.db.models import Max, Q, F, Prefetch
 from django.utils import timezone
 from rest_framework import generics
 from rest_framework import status
@@ -879,6 +878,10 @@ class Search(APIView):
             return Response({'search_error': False}, status=status.HTTP_204_NO_CONTENT)
 
 
+from functools import reduce
+import operator
+
+
 # 영화 추천 시스템
 class RecommendSystem(generics.ListAPIView):
     """
@@ -890,38 +893,71 @@ class RecommendSystem(generics.ListAPIView):
                 Authorization : Token 토큰값
                 subuserid : 프로필 계정 ID값
             을 넣어주세요! (subuserid는 _(언더바)가 없습니다!)
-
-
     """
     serializer_class = MovieSerializer
 
     def get_queryset(self):
         header_sub_user_id = self.request.META['HTTP_SUBUSERID']
-
+        # header_sub_user_id = 104
         # 나의 찜/ 좋아요 목록에있는 영화
-        a_movie_list = Movie.objects.filter(Q(like__sub_user=header_sub_user_id),
-                                            (Q(like__like_or_dislike=1) | Q(like__marked=True)))
+        my_movie_list = Movie.objects.prefetch_related(
+            Prefetch(
+                'like',
+                queryset=Movie.objects.filter(Q(like__sub_user=header_sub_user_id), ~Q(like__like_or_dislike=2)),
+            )
+        )
+        my_movie_id = Movie.objects.filter(Q(like__sub_user=header_sub_user_id), ~Q(like__like_or_dislike=2))
         sub_user_id_list = []
 
         # 내가 좋아한 영화를 좋아한 프로필유저 리스트
-        for movie in a_movie_list:
-            sub_user_id_list.append(LikeDisLikeMarked.objects.filter(movie=movie).distinct().values('sub_user'))
+        for movie in my_movie_list:
+            sub_user_id_list.append(
+                LikeDisLikeMarked.objects.select_related('movie').filter(movie=movie).distinct().values('sub_user'))
 
-        # 위에 프로필 유저리스트의 중복을 제거
-        remove_id = set()
+        # # 위에 프로필 유저리스트의 중복을 제거
+        # remove_id = set()
+        # for sub_user_id in sub_user_id_list:
+        #     for sub_user in sub_user_id:
+        #         remove_id.add(sub_user['sub_user'])
+        #
+        # remove_id = list(remove_id)
+        #
+        # # 선택된 프로필 유저의 찜/좋아요 목록을 가져옴
+        # movie_list = Movie.objects.filter(Q(like__sub_user__in=remove_id),
+        #                                   (Q(like__like_or_dislike=1) | Q(like__marked=True)))\
+        #     .exclude(like__sub_user=header_sub_user_id).distinct()
+
+        li = []
+        # 프로필 유저 QuerySet을 리스트로 변환
         for sub_user_id in sub_user_id_list:
             for sub_user in sub_user_id:
-                remove_id.add(sub_user['sub_user'])
+                li.append(sub_user['sub_user'])
 
-        remove_id = list(remove_id)
+        # 나 자신의 ID를 제거
+        cnt = li.count(header_sub_user_id)
+        for _ in range(cnt):
+            li.remove(header_sub_user_id)
 
-        # 프로필 유저의 찜/좋아요 목록을 가져옴
-        movie_list = Movie.objects.filter(Q(like__sub_user__in=remove_id),
-                                          (Q(like__like_or_dislike=1) | Q(like__marked=True))).exclude(
-            like__sub_user=header_sub_user_id).distinct()
+        # 리스트내에서 프로필 ID가 얼마나 많이 중복(나와 취향이 얼마나 비슷한지)하냐?
+        word = reduce(lambda dic, b: dic.update({b: dic.get(b, 0) + 1}) or dic, li, {})
+        word_sorted = sorted(word.items(), key=operator.itemgetter(1))
 
+        idx = -1
+        movie_list = Movie.objects.prefetch_related('like').filter(Q(like__sub_user=word_sorted[-1][0]),
+                                                                   ~Q(like__like_or_dislike=2))
+        idx_substract = 1
+        # 추천 영화 목록이 20개가 될때까지 반복
+        while movie_list.count() < 20:
+            idx = idx - idx_substract
+            movie_list = movie_list.union(
+                Movie.objects.prefetch_related('like').filter(Q(like__sub_user=word_sorted[idx][0]),
+                                                              ~Q(like__like_or_dislike=2)))
+            # 내가 선호하는 영화를 제외한 추천 영화 목록
+            movie_list = movie_list.difference(my_movie_list)
+
+        # 추천영화 목록이 없을 시 내가 선호하는 영화를 제외한 무작위 영화를 추천
         if not movie_list.exists():
-            movie_list = Movie.objects.order_by('?')
+            movie_list = Movie.objects.exclude(Q(like__sub_user=header_sub_user_id)).order_by('?')
 
         return movie_list
 
